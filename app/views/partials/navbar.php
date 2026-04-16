@@ -40,6 +40,7 @@
                 <li class="nav-item"><a class="nav-link <?= $path === 'events' ? 'active' : '' ?>" href="<?= e(base_url('events')) ?>">Events</a></li>
                 <li class="nav-item"><a class="nav-link <?= $path === 'library' ? 'active' : '' ?>" href="<?= e(base_url('library')) ?>">Library</a></li>
                 <li class="nav-item"><a class="nav-link <?= in_array($path, ['media', 'gallery']) ? 'active' : '' ?>" href="<?= e(base_url('media')) ?>">Media Desk</a></li>
+                <li class="nav-item"><a class="nav-link <?= $path === 'test' ? 'active' : '' ?>" href="<?= e(base_url('test')) ?>">Test</a></li>
                 <li class="nav-item"><a class="btn btn-primary ms-lg-2" href="<?= e(base_url('contact')) ?>">Contact Us</a></li>
             </ul>
         </div>
