@@ -23,9 +23,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           local-dir: ./
-          # Many cPanel FTP accounts are already jailed into public_html.
-          # Using "/" deploys into the FTP account's root directory.
-          server-dir: /
+          server-dir: /public_html/
           exclude: |
             .git/**
             **/.git/**
