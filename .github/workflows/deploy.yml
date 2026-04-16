@@ -21,7 +21,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ftps
           local-dir: ./
           # cPanel FTP users are often jailed directly into public_html.
           # Using "/" avoids accidental double nesting (public_html/public_html).
