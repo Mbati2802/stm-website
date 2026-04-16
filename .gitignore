@@ -1,0 +1,18 @@
+.github/.DS_Store
+.DS_Store
+Thumbs.db
+
+# Live/server-only configuration
+config/config.php
+
+# User-uploaded files
+uploads/
+public/uploads/
+
+# Runtime/log artifacts
+error_log
+*.log
+
+# Editor/system files
+.vscode/
+.idea/
