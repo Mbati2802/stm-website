@@ -8,6 +8,6 @@ deployment:
     - /bin/cp -R app/* ${DEPLOYPATH}/app
     - /bin/cp -R public/assets/* ${DEPLOYPATH}/assets
     - /bin/cp public/.htaccess ${DEPLOYPATH}/.htaccess
-    - /bin/cp public/index.php ${DEPLOYPATH}/index.php
+    - /bin/cp index.php ${DEPLOYPATH}/index.php
     - /bin/cp bootstrap.php ${DEPLOYPATH}/bootstrap.php
     - /bin/cp server.php ${DEPLOYPATH}/server.php
