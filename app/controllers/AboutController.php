@@ -79,9 +79,4 @@ class AboutController extends Controller
         }
         $this->view('pages/faqs', ['metaTitle' => 'FAQs', 'faqs' => $this->model->faqs()]);
     }
-
-    public function test(): void
-    {
-        $this->view('pages/test', ['metaTitle' => 'Test']);
-    }
 }

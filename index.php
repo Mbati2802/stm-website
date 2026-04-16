@@ -14,7 +14,6 @@ $router->add('GET', 'registrar', [AboutController::class, 'registrar']);
 $router->add('GET', 'contact', [AboutController::class, 'contact']);
 $router->add('POST', 'contact', [AboutController::class, 'submitContact']);
 $router->add('GET', 'faqs', [AboutController::class, 'faqs']);
-$router->add('GET', 'test', [AboutController::class, 'test']);
 $router->add('GET', 'programmes', [ProgrammesController::class, 'index']);
 $router->add('GET', 'programmes/apply', [ProgrammesController::class, 'applyForm']);
 $router->add('POST', 'programmes/apply', [ProgrammesController::class, 'submitApplication']);

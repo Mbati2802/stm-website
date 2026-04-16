@@ -1,9 +1,21 @@
 <nav id="mainNav" class="navbar navbar-expand-lg bg-white shadow-sm sticky-top main-nav">
     <div class="site-width d-flex flex-wrap align-items-center justify-content-between">
         <?php $logoPublic = 'assets/images/logo.png'; ?>
-        <?php $logoFile = __DIR__ . '/../../../public/' . $logoPublic; ?>
+        <?php
+        $logoCandidates = [
+            __DIR__ . '/../../../public/' . $logoPublic,
+            __DIR__ . '/../../../' . $logoPublic,
+        ];
+        $logoFile = '';
+        foreach ($logoCandidates as $candidate) {
+            if (file_exists($candidate)) {
+                $logoFile = $candidate;
+                break;
+            }
+        }
+        ?>
         <a class="navbar-brand fw-bold d-flex align-items-center" href="<?= e(base_url()) ?>">
-            <?php if (file_exists($logoFile)): ?>
+            <?php if ($logoFile !== ''): ?>
                 <img src="<?= e(base_url($logoPublic)) ?>" alt="College logo" class="site-logo">
             <?php else: ?>
                 St. Mary's Mother & Child Hospital MTC
@@ -40,7 +52,6 @@
                 <li class="nav-item"><a class="nav-link <?= $path === 'events' ? 'active' : '' ?>" href="<?= e(base_url('events')) ?>">Events</a></li>
                 <li class="nav-item"><a class="nav-link <?= $path === 'library' ? 'active' : '' ?>" href="<?= e(base_url('library')) ?>">Library</a></li>
                 <li class="nav-item"><a class="nav-link <?= in_array($path, ['media', 'gallery']) ? 'active' : '' ?>" href="<?= e(base_url('media')) ?>">Media Desk</a></li>
-                <li class="nav-item"><a class="nav-link <?= $path === 'test' ? 'active' : '' ?>" href="<?= e(base_url('test')) ?>">Test</a></li>
                 <li class="nav-item"><a class="btn btn-primary ms-lg-2" href="<?= e(base_url('contact')) ?>">Contact Us</a></li>
             </ul>
         </div>
