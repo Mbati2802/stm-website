@@ -1,0 +1,241 @@
+<?php
+$toggleItems = [
+    'show_page_about' => 'Show About Page',
+    'show_page_programmes' => 'Show Programmes Page',
+    'show_page_library' => 'Show Library Page',
+    'show_page_media' => 'Show Media/Gallery Pages',
+    'show_page_contact' => 'Show Contact Page',
+    'show_page_faqs' => 'Show FAQs Page',
+    'show_page_principal' => 'Show Principal Page',
+    'show_home_hero' => 'Show Home Hero',
+    'show_home_cards' => 'Show Home Intro Cards',
+    'show_home_banner' => 'Show Home Banner Image',
+    'show_home_why' => 'Show Why Choose Us',
+    'show_home_courses' => 'Show Courses On Offer',
+    'show_home_testimonials' => 'Show Testimonials',
+    'show_home_events' => 'Show Events',
+    'show_home_news' => 'Show Latest News',
+    'show_home_cta' => 'Show Final CTA Block',
+];
+?>
+
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div>
+                <h1 class="h4 fw-bold mb-1">Site Settings</h1>
+                <p class="text-muted mb-0">Manage global content, homepage sections, and page visibility.</p>
+            </div>
+            <button form="settings-form" class="btn btn-primary">Save Settings</button>
+        </div>
+
+        <?php if ($msg = flash('success')): ?>
+            <div class="alert alert-success"><?= e($msg) ?></div>
+        <?php endif; ?>
+
+        <form id="settings-form" method="POST" enctype="multipart/form-data">
+            <div class="row g-3">
+                <div class="col-lg-6 d-grid gap-3">
+                    <div class="soft-card p-4">
+                        <h2 class="h6 text-uppercase text-muted mb-3">General</h2>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Phone</label>
+                                <input name="phone" class="form-control" value="<?= e($settings['phone'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input name="email" class="form-control" value="<?= e($settings['email'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Location</label>
+                                <input name="location" class="form-control" value="<?= e($settings['location'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Top Bar Message</label>
+                                <input name="top_message" class="form-control" value="<?= e($settings['top_message'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Current Intake</label>
+                                <select name="current_intake" class="form-select">
+                                    <?php foreach (['January', 'March', 'May', 'July', 'September', 'November'] as $intake): ?>
+                                        <option value="<?= e($intake) ?>" <?= ($settings['current_intake'] ?? 'January') === $intake ? 'selected' : '' ?>><?= e($intake) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="soft-card p-4">
+                        <h2 class="h6 text-uppercase text-muted mb-3">Homepage Vertical Cards</h2>
+                        <label class="form-label">Cards JSON</label>
+                        <textarea name="home_value_cards" rows="12" class="form-control" placeholder='[{\"title_primary\":\"Flexibility\",\"title_secondary\":\"That Fits You\",\"text\":\"...\",\"icon\":\"bi-calendar-check\",\"cta_label\":\"Apply\",\"cta_link\":\"programmes\"}]'><?= e($settings['home_value_cards'] ?? '') ?></textarea>
+                        <small class="text-muted">Use Bootstrap Icons classes like <code>bi-heart-pulse</code>, <code>bi-people</code>, <code>bi-award</code>.</small>
+                    </div>
+
+                    <div class="soft-card p-4">
+                        <h2 class="h6 text-uppercase text-muted mb-3">Visibility Controls</h2>
+                        <div class="row g-2">
+                            <?php foreach ($toggleItems as $k => $label): ?>
+                                <?php $checked = !isset($settings[$k]) || in_array(strtolower((string)$settings[$k]), ['1', 'true', 'yes', 'on'], true); ?>
+                                <div class="col-md-6">
+                                    <label class="form-check-label d-flex align-items-center gap-2">
+                                        <input class="form-check-input m-0" type="checkbox" name="<?= e($k) ?>" <?= $checked ? 'checked' : '' ?>>
+                                        <?= e($label) ?>
+                                    </label>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 d-grid gap-3">
+                    <div class="soft-card p-4">
+                        <h2 class="h6 text-uppercase text-muted mb-3">Homepage Hero</h2>
+                        <div class="mb-3">
+                            <label class="form-label">Hero Title</label>
+                            <input name="home_hero_title" class="form-control" value="<?= e($settings['home_hero_title'] ?? '') ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Hero Description</label>
+                            <textarea name="home_hero_description" rows="3" class="form-control"><?= e($settings['home_hero_description'] ?? '') ?></textarea>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Primary CTA Label</label>
+                                <input name="home_hero_primary_cta_label" class="form-control" value="<?= e($settings['home_hero_primary_cta_label'] ?? 'How to Apply') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Primary CTA Link (relative)</label>
+                                <input name="home_hero_primary_cta_link" class="form-control" value="<?= e($settings['home_hero_primary_cta_link'] ?? 'programmes') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Secondary CTA Label</label>
+                                <input name="home_hero_secondary_cta_label" class="form-control" value="<?= e($settings['home_hero_secondary_cta_label'] ?? 'Downloads') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Secondary CTA Link (relative)</label>
+                                <input name="home_hero_secondary_cta_link" class="form-control" value="<?= e($settings['home_hero_secondary_cta_link'] ?? 'about') ?>">
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label">Hero Slider Images (JSON array of image paths/URLs)</label>
+                            <textarea name="hero_images" rows="5" class="form-control" placeholder='[\"https://...\",\"https://...\"]'><?= e($settings['hero_images'] ?? '') ?></textarea>
+                            <div class="mt-2">
+                                <label class="form-label">Upload Hero Images</label>
+                                <input type="file" name="hero_image_files[]" class="form-control" accept="image/png,image/jpeg,image/webp" multiple>
+                                <small class="text-muted">Uploading files will replace the current hero image list and save file paths in the database.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="soft-card p-4">
+                        <h2 class="h6 text-uppercase text-muted mb-3">About Page Content</h2>
+                        <div class="mb-3">
+                            <label class="form-label">About Title</label>
+                            <input name="about_title" class="form-control" value="<?= e($settings['about_title'] ?? '') ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">About Intro</label>
+                            <textarea name="about_intro" rows="6" class="form-control rich-editor"><?= e($settings['about_intro'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mission</label>
+                            <textarea name="about_mission" rows="4" class="form-control rich-editor"><?= e($settings['about_mission'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Vision</label>
+                            <textarea name="about_vision" rows="4" class="form-control rich-editor"><?= e($settings['about_vision'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Core Values (comma-separated)</label>
+                            <input name="about_values" class="form-control" value="<?= e($settings['about_values'] ?? '') ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Why Choose Us (use | between items)</label>
+                            <textarea name="about_why_choose" rows="3" class="form-control"><?= e($settings['about_why_choose'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Snapshot Stats (format: value|label, separated by commas)</label>
+                            <input name="about_stats" class="form-control" value="<?= e($settings['about_stats'] ?? '') ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">What Makes Us Different (use | between items)</label>
+                            <textarea name="about_differentiators" rows="3" class="form-control"><?= e($settings['about_differentiators'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Programmes List (use | between items)</label>
+                            <textarea name="about_programmes" rows="3" class="form-control"><?= e($settings['about_programmes'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Commitment Text</label>
+                            <textarea name="about_commitment" rows="6" class="form-control rich-editor"><?= e($settings['about_commitment'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Short Tagline</label>
+                            <textarea name="about_short_tagline" rows="4" class="form-control rich-editor"><?= e($settings['about_short_tagline'] ?? '') ?></textarea>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">About CTA 1 Label</label>
+                                <input name="about_cta_primary_label" class="form-control" value="<?= e($settings['about_cta_primary_label'] ?? 'View Programmes') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">About CTA 1 Link (relative)</label>
+                                <input name="about_cta_primary_link" class="form-control" value="<?= e($settings['about_cta_primary_link'] ?? 'programmes') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">About CTA 2 Label</label>
+                                <input name="about_cta_secondary_label" class="form-control" value="<?= e($settings['about_cta_secondary_label'] ?? 'Contact Admissions') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">About CTA 2 Link (relative)</label>
+                                <input name="about_cta_secondary_link" class="form-control" value="<?= e($settings['about_cta_secondary_link'] ?? 'contact') ?>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="soft-card p-4">
+                        <h2 class="h6 text-uppercase text-muted mb-3">Principal Page Content</h2>
+                        <div class="mb-3">
+                            <label class="form-label">Principal Name</label>
+                            <input name="principal_name" class="form-control" value="<?= e($settings['principal_name'] ?? '') ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Principal Title</label>
+                            <input name="principal_title" class="form-control" value="<?= e($settings['principal_title'] ?? '') ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Principal Image Path/URL</label>
+                            <input name="principal_image" class="form-control" value="<?= e($settings['principal_image'] ?? '') ?>" placeholder="https://...">
+                            <div class="mt-2">
+                                <label class="form-label">Upload Principal Image</label>
+                                <input type="file" name="principal_image_file" class="form-control" accept="image/png,image/jpeg,image/webp">
+                                <small class="text-muted">If you upload an image, it will be stored and this setting will be updated automatically.</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Principal Message</label>
+                            <textarea name="principal_message" rows="6" class="form-control rich-editor"><?= e($settings['principal_message'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Vision Priorities (use | between items)</label>
+                            <textarea name="principal_vision_points" rows="3" class="form-control"><?= e($settings['principal_vision_points'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Current Focus Areas (use | between items)</label>
+                            <textarea name="principal_focus_areas" rows="3" class="form-control"><?= e($settings['principal_focus_areas'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label">Closing Signature Line</label>
+                            <input name="principal_signature" class="form-control" value="<?= e($settings['principal_signature'] ?? '') ?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-primary">Save Settings</button>
+            </div>
+        </form>
+    </div>
+</section>

@@ -1,0 +1,34 @@
+.admin-theme{
+    --primary: rgba(0, 170, 232, 1);
+    --secondary: rgba(24, 84, 144, 1);
+    --bs-primary: rgba(0, 170, 232, 1);
+    --bs-primary-rgb: 0,170,232;
+    background:#f4f7fb;
+}
+.admin-shell{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+.admin-sidebar{
+    background:var(--secondary);
+    color:#fff;
+    padding:1rem;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow:auto;
+}
+.admin-sidebar .nav-link{
+    color:rgba(255,255,255,.86);
+    border-radius:0;
+    font-size:.9rem;
+    padding:.5rem .65rem;
+}
+.admin-sidebar .nav-link:hover,.admin-sidebar .nav-link.active{
+    background:rgba(255,255,255,.16);
+    color:#fff!important;
+}
+.admin-main{padding:1rem 1.25rem}
+.admin-main .container{max-width:none;width:100%;padding:0}
+.admin-main .soft-card{border-radius:0}
+@media (max-width: 991px){
+    .admin-shell{grid-template-columns:1fr}
+    .admin-sidebar{position:static;height:auto}
+}
