@@ -80,11 +80,19 @@ a{text-decoration:none}
     border-color:#ffbf00!important;
     color:#1f2937!important;
     font-weight:700;
+    text-decoration:none!important;
 }
 .hero-apply-btn:hover{
     background:#e6ab00!important;
     border-color:#e6ab00!important;
     color:#1f2937!important;
+}
+.hero-apply-btn:focus,
+.hero-apply-btn:active{
+    background:#e6ab00!important;
+    border-color:#e6ab00!important;
+    color:#1f2937!important;
+    box-shadow:0 0 0 .2rem rgba(255,191,0,.35)!important;
 }
 .dynamic-page-banner{
     object-fit:cover;
