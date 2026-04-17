@@ -1,4 +1,5 @@
 <?php $registrarEmail = trim((string)($settings['registrar_email'] ?? 'registrar@stmarysmchmcollege.ac.ke')); ?>
+<?php $registrarImage = trim((string)($settings['registrar_image'] ?? 'https://images.unsplash.com/photo-1556157382-97eda2d62296?w=900')); ?>
 <?php
 $heroTitlePrimary = 'Office of the';
 $heroTitleSecondary = 'Registrar';
@@ -12,10 +13,17 @@ include __DIR__ . '/../partials/page_hero.php';
 
 <section class="section-stack">
     <div class="site-width boxed-section">
-        <h2 class="h4 mb-3">About the Registrar&rsquo;s Office</h2>
-        <p class="mb-0 text-muted">
-            The Registrar&rsquo;s Office is responsible for managing all student academic records, admissions processes, and institutional documentation. We ensure that every student&rsquo;s academic journey is well-coordinated, accurate, and aligned with institutional and regulatory standards.
-        </p>
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-8">
+                <h2 class="h4 mb-3">About the Registrar&rsquo;s Office</h2>
+                <p class="mb-0 text-muted">
+                    The Registrar&rsquo;s Office is responsible for managing all student academic records, admissions processes, and institutional documentation. We ensure that every student&rsquo;s academic journey is well-coordinated, accurate, and aligned with institutional and regulatory standards.
+                </p>
+            </div>
+            <div class="col-lg-4">
+                <img src="<?= e($registrarImage) ?>" alt="Registrar" class="img-fluid soft-card w-100">
+            </div>
+        </div>
     </div>
 </section>
 

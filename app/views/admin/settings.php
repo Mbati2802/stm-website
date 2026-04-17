@@ -252,6 +252,16 @@ $toggleItems = [
                                 <input name="principal_linkedin" class="form-control" value="<?= e($settings['principal_linkedin'] ?? '') ?>" placeholder="https://linkedin.com/in/...">
                             </div>
                         </div>
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <label class="form-label">Registrar Email</label>
+                                <input name="registrar_email" class="form-control" value="<?= e($settings['registrar_email'] ?? 'registrar@stmarysmchmcollege.ac.ke') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Registrar Image Path/URL</label>
+                                <input name="registrar_image" class="form-control" value="<?= e($settings['registrar_image'] ?? '') ?>" placeholder="/uploads/settings/registrar.jpg or https://...">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

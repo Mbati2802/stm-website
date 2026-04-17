@@ -43,6 +43,8 @@ class AdminContentController extends Controller
         'principal_x',
         'principal_linkedin',
         'admission_number_format',
+        'registrar_email',
+        'registrar_image',
     ];
     private const SETTINGS_TOGGLE_FIELDS = [
         'show_page_about',
