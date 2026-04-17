@@ -93,6 +93,7 @@ class ProgrammesController extends Controller
             'selectedCourse' => $selectedCourse,
             'selectedLevel' => in_array($selectedLevel, self::CATEGORIES, true) ? $selectedLevel : '',
             'currentIntake' => $settings['current_intake'] ?? 'January',
+            'siteSettings' => $settings,
         ]);
     }
 
@@ -152,7 +153,7 @@ class ProgrammesController extends Controller
             'message' => $message,
         ]);
 
-        $notifyTo = trim((string)($this->config['application_notification_email'] ?? ($this->config['notification_email'] ?? ($this->config['admin_email'] ?? ''))));
+        $notifyTo = trim((string)($this->config['application_notification_email'] ?? ($this->config['notification_email'] ?? 'admission@stmarysmchmcollege.ac.ke')));
         if ($notifyTo !== '') {
             $mailBody = implode("\n", [
                 'A new programme application was submitted.',
@@ -168,6 +169,55 @@ class ProgrammesController extends Controller
             ]);
             send_notification_email($notifyTo, 'New Programme Application - ' . $name, $mailBody);
         }
+
+        $principalName = trim((string)($model->getSettings()['principal_name'] ?? 'The Principal'));
+        $applicantBody = implode("\n", [
+            'Congratulations ' . $name . ',',
+            '',
+            'Thank you for applying to St. Mary\'s College of Health Sciences.',
+            'We have received your application and attached your interim admission letter.',
+            '',
+            'Our admissions office will contact you with the next steps.',
+            '',
+            'Admissions Office',
+            'St. Mary\'s College of Health Sciences',
+        ]);
+
+        $letterLines = [
+            'ST. MARY\'S COLLEGE OF HEALTH SCIENCES',
+            'P.O BOX 1666-20117, NAIVASHA',
+            '',
+            'INTERIM ADMISSION LETTER',
+            'Ref: STM/ADM/' . date('Y') . '/' . strtoupper(substr(md5($email . $phone . $name), 0, 6)),
+            'Date: ' . date('d M Y'),
+            '',
+            'Applicant Details',
+            'Name: ' . $name,
+            'Email: ' . $email,
+            'Phone: ' . $phone,
+            'County: ' . $county,
+            '',
+            'Dear ' . $name . ',',
+            'Congratulations on your application to pursue ' . $course . '.',
+            'You have been issued this interim admission letter pending final admission processing.',
+            'Please keep this letter for reference as we complete your admission workflow.',
+            '',
+            'Principal\'s Message:',
+            'Welcome to St. Mary\'s College of Health Sciences. We look forward to supporting your training journey.',
+            '',
+            'Signed:',
+            $principalName,
+            'Principal',
+        ];
+        $pdf = generate_simple_pdf($letterLines);
+        send_notification_email_with_attachment(
+            $email,
+            'Application Received - Interim Admission Letter',
+            $applicantBody,
+            'interim_admission_letter.pdf',
+            $pdf,
+            'application/pdf'
+        );
 
         flash('success', 'Your application has been submitted successfully.');
         $this->redirect('programmes/apply');

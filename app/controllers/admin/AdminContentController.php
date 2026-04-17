@@ -38,6 +38,10 @@ class AdminContentController extends Controller
         'principal_focus_areas',
         'principal_signature',
         'principal_image',
+        'principal_email',
+        'principal_facebook',
+        'principal_x',
+        'principal_linkedin',
     ];
     private const SETTINGS_TOGGLE_FIELDS = [
         'show_page_about',

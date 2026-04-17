@@ -118,3 +118,93 @@ function send_notification_email(string $to, string $subject, string $message): 
 
     return @mail($to, $subject, $message, implode("\r\n", $headers));
 }
+
+function send_notification_email_with_attachment(
+    string $to,
+    string $subject,
+    string $message,
+    string $attachmentName,
+    string $attachmentContent,
+    string $attachmentMime = 'application/octet-stream'
+): bool {
+    $to = trim($to);
+    if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
+        return false;
+    }
+
+    $subject = trim($subject) !== '' ? trim($subject) : 'Website Notification';
+    $boundary = '=_Part_' . bin2hex(random_bytes(12));
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $from = 'no-reply@' . preg_replace('/^www\./', '', $host);
+
+    $headers = [
+        'MIME-Version: 1.0',
+        'From: ' . $from,
+        'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
+    ];
+
+    $body = '';
+    $body .= '--' . $boundary . "\r\n";
+    $body .= "Content-Type: text/plain; charset=UTF-8\r\n";
+    $body .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+    $body .= $message . "\r\n\r\n";
+    $body .= '--' . $boundary . "\r\n";
+    $body .= 'Content-Type: ' . $attachmentMime . '; name="' . $attachmentName . '"' . "\r\n";
+    $body .= "Content-Transfer-Encoding: base64\r\n";
+    $body .= 'Content-Disposition: attachment; filename="' . $attachmentName . '"' . "\r\n\r\n";
+    $body .= chunk_split(base64_encode($attachmentContent)) . "\r\n";
+    $body .= '--' . $boundary . "--\r\n";
+
+    return @mail($to, $subject, $body, implode("\r\n", $headers));
+}
+
+function generate_simple_pdf(array $lines): string
+{
+    $safeLines = array_values(array_filter(array_map(
+        static fn($line) => trim((string)$line),
+        $lines
+    ), static fn($line) => $line !== ''));
+
+    if ($safeLines === []) {
+        $safeLines = ['Admission Letter'];
+    }
+
+    $objects = [];
+
+    $content = "BT\n/F1 12 Tf\n50 800 Td\n";
+    $first = true;
+    foreach ($safeLines as $line) {
+        $escaped = str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $line);
+        if ($first) {
+            $content .= '(' . $escaped . ") Tj\n";
+            $first = false;
+        } else {
+            $content .= "0 -16 Td\n(" . $escaped . ") Tj\n";
+        }
+    }
+    $content .= "ET";
+
+    $objects[] = "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
+    $objects[] = "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n";
+    $objects[] = "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n";
+    $objects[] = "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n";
+    $objects[] = "5 0 obj\n<< /Length " . strlen($content) . " >>\nstream\n" . $content . "\nendstream\nendobj\n";
+
+    $pdf = "%PDF-1.4\n";
+    $offsets = [0];
+    foreach ($objects as $object) {
+        $offsets[] = strlen($pdf);
+        $pdf .= $object;
+    }
+
+    $xrefPos = strlen($pdf);
+    $pdf .= "xref\n0 " . (count($objects) + 1) . "\n";
+    $pdf .= "0000000000 65535 f \n";
+    for ($i = 1; $i <= count($objects); $i++) {
+        $pdf .= str_pad((string)$offsets[$i], 10, '0', STR_PAD_LEFT) . " 00000 n \n";
+    }
+    $pdf .= "trailer\n<< /Size " . (count($objects) + 1) . " /Root 1 0 R >>\n";
+    $pdf .= "startxref\n" . $xrefPos . "\n%%EOF";
+
+    return $pdf;
+}

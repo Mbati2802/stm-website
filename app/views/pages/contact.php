@@ -25,7 +25,15 @@ include __DIR__ . '/../partials/page_hero.php';
           <button class="btn btn-primary">Send Message</button>
         </form>
       </div>
-      <div class="col-md-6"><iframe class="w-100 rounded-4" height="450" src="https://maps.google.com/maps?q=Nairobi%20Kenya&t=&z=12&ie=UTF8&iwloc=&output=embed"></iframe></div>
+      <div class="col-md-6 d-grid gap-3">
+        <div class="soft-card p-4">
+          <h2 class="h6 text-uppercase text-muted mb-3">Contact Details</h2>
+          <p class="mb-1"><strong>Email:</strong> contact@stmarysmchmcollege.ac.ke</p>
+          <p class="mb-1"><strong>Phone:</strong> +254 791 309011</p>
+          <p class="mb-0"><strong>Alt Phone:</strong> +254101711499</p>
+        </div>
+        <iframe class="w-100 rounded-4" height="300" src="https://maps.google.com/maps?q=Nairobi%20Kenya&t=&z=12&ie=UTF8&iwloc=&output=embed"></iframe>
+      </div>
     </div>
   </div>
 </section>

@@ -229,6 +229,24 @@ $toggleItems = [
                             <label class="form-label">Closing Signature Line</label>
                             <input name="principal_signature" class="form-control" value="<?= e($settings['principal_signature'] ?? '') ?>">
                         </div>
+                        <div class="mt-3">
+                            <label class="form-label">Principal Email</label>
+                            <input name="principal_email" class="form-control" value="<?= e($settings['principal_email'] ?? 'principal@stmarysmchmcollege.ac.ke') ?>">
+                        </div>
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-4">
+                                <label class="form-label">Facebook Link</label>
+                                <input name="principal_facebook" class="form-control" value="<?= e($settings['principal_facebook'] ?? '') ?>" placeholder="https://facebook.com/...">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">X (Twitter) Link</label>
+                                <input name="principal_x" class="form-control" value="<?= e($settings['principal_x'] ?? '') ?>" placeholder="https://x.com/...">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">LinkedIn Link</label>
+                                <input name="principal_linkedin" class="form-control" value="<?= e($settings['principal_linkedin'] ?? '') ?>" placeholder="https://linkedin.com/in/...">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

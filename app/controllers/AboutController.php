@@ -67,7 +67,7 @@ class AboutController extends Controller
 
         $this->model->saveMessage(compact('name', 'email', 'phone', 'subject', 'message'));
 
-        $notifyTo = trim((string)($this->config['contact_notification_email'] ?? ($this->config['notification_email'] ?? ($this->config['admin_email'] ?? ''))));
+        $notifyTo = trim((string)($this->config['contact_notification_email'] ?? ($this->config['notification_email'] ?? 'contact@stmarysmchmcollege.ac.ke')));
         if ($notifyTo !== '') {
             $mailBody = implode("\n", [
                 'A new contact form message was submitted.',

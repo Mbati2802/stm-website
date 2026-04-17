@@ -105,8 +105,8 @@ $currentIntake = (string)($currentIntake ?? 'January');
 
         <div class="soft-card p-4 bg-white mt-3">
           <h2 class="h6 text-uppercase text-muted mb-3">Contacts</h2>
-          <p class="mb-1 small text-muted">Phone: <?= e($siteSettings['phone'] ?? '+254 700 000 000') ?></p>
-          <p class="mb-0 small text-muted">Email: <?= e($siteSettings['email'] ?? 'admissions@stm.ac.ke') ?></p>
+          <p class="mb-1 small text-muted">Phone: +254 791 309011 or +254101711499</p>
+          <p class="mb-0 small text-muted">Email: admission@stmarysmchmcollege.ac.ke</p>
         </div>
       </div>
     </div>
