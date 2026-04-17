@@ -179,6 +179,7 @@ a{text-decoration:none}
 .footer-wrap{background:transparent}
 .footer-wrap{margin-top:0!important;padding-top:0!important}
 .footer-box{background:var(--primary)!important}
+.footer-box h1,.footer-box h2,.footer-box h3,.footer-box h4,.footer-box h5,.footer-box h6{color:#fff}
 .footer-box .text-white-50,.footer-box a.text-white-50{color:rgba(255,255,255,.82)!important}
 .line-clamp-3{
     display:-webkit-box;
