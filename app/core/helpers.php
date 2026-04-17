@@ -3,6 +3,12 @@ function base_url(string $path = ''): string
 {
     global $config;
     $base = trim((string)($config['base_url'] ?? ''));
+    if ($base !== '') {
+        $base = preg_replace('#^https?://https?://#i', 'https://', $base) ?? $base;
+        if (!preg_match('#^https?://#i', $base)) {
+            $base = '';
+        }
+    }
 
     if ($base === '') {
         $https = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';

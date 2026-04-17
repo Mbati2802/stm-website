@@ -145,6 +145,40 @@ CREATE TABLE settings (
     setting_value TEXT NULL
 );
 
+CREATE TABLE student_accounts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(160) NOT NULL,
+    email VARCHAR(190) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE student_password_resets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    reset_code VARCHAR(12) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used_at DATETIME NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_student_reset_student (student_id),
+    INDEX idx_student_reset_code (reset_code),
+    CONSTRAINT fk_student_reset_student FOREIGN KEY (student_id) REFERENCES student_accounts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE student_announcements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(190) NOT NULL,
+    body TEXT NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE student_timetables (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(190) NOT NULL,
+    file_path VARCHAR(255) NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 INSERT INTO users(name, email, password) VALUES
 ('System Admin', 'admin@stm.ac.ke', '$2y$10$A0QHJ7MFHAnYpLEB.E7Tc.63GiGi7wZe5YCG8VvI7YsV7e59ri.BS');
 
@@ -205,7 +239,15 @@ INSERT INTO pages(title, slug, content) VALUES
 ('Registrar', 'registrar', 'The Registrar office supports admissions, records and progression with timely and transparent service.');
 
 INSERT INTO settings(setting_key, setting_value) VALUES
-('phone', '+254 700 000 000'),
-('email', 'admissions@stm.ac.ke'),
-('location', 'Nairobi, Kenya'),
-('top_message', 'Admissions Open - Apply Today');
+('phone', '+254 791 309011 or +254101711499'),
+('email', 'contact@stmarysmchmcollege.ac.ke'),
+('location', 'Amani House, along Biashara Street, Kiambu Town'),
+('top_message', 'Admissions Open - Apply Today'),
+('registrar_email', 'registrar@stmarysmchmcollege.ac.ke');
+
+INSERT INTO student_announcements(title, body) VALUES
+('Welcome to Student Portal', 'This portal helps you access announcements, timetables, and key academic updates.'),
+('May Intake Reminder', 'New students should complete onboarding documentation before reporting date.');
+
+INSERT INTO student_timetables(title, file_path) VALUES
+('Semester 1 Timetable', '/uploads/library/semester-1-timetable.pdf');

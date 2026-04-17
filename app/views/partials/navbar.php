@@ -28,10 +28,10 @@
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
                 <li class="nav-item"><a class="nav-link <?= $path === '' ? 'active' : '' ?>" href="<?= e(base_url()) ?>">Home</a></li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle <?= in_array($path, ['about', 'principal', 'registrar', 'contact', 'faqs']) ? 'active' : '' ?>" href="#" data-bs-toggle="dropdown">About Us <i class="bi bi-chevron-down dropdown-arrow"></i></a>
+                    <a class="nav-link dropdown-toggle <?= in_array($path, ['about', 'uniqueness', 'principal', 'registrar', 'contact', 'faqs']) ? 'active' : '' ?>" href="#" data-bs-toggle="dropdown">About Us <i class="bi bi-chevron-down dropdown-arrow"></i></a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="<?= e(base_url('about')) ?>">About St. Mary's</a></li>
-                        <li><a class="dropdown-item" href="<?= e(base_url('about')) ?>">College Uniqueness</a></li>
+                        <li><a class="dropdown-item" href="<?= e(base_url('uniqueness')) ?>">College Uniqueness</a></li>
                         <li><a class="dropdown-item" href="<?= e(base_url('principal')) ?>">The Principal</a></li>
                         <li><a class="dropdown-item" href="<?= e(base_url('registrar')) ?>">Registrar</a></li>
                         <li><a class="dropdown-item" href="<?= e(base_url('about')) ?>">Downloads</a></li>
@@ -52,6 +52,7 @@
                 <li class="nav-item"><a class="nav-link <?= $path === 'events' ? 'active' : '' ?>" href="<?= e(base_url('events')) ?>">Events</a></li>
                 <li class="nav-item"><a class="nav-link <?= $path === 'library' ? 'active' : '' ?>" href="<?= e(base_url('library')) ?>">Library</a></li>
                 <li class="nav-item"><a class="nav-link <?= in_array($path, ['media', 'gallery']) ? 'active' : '' ?>" href="<?= e(base_url('media')) ?>">Media Desk</a></li>
+                <li class="nav-item"><a class="nav-link <?= str_starts_with($path, 'portal') ? 'active' : '' ?>" href="<?= e(base_url('portal/login')) ?>">Student Portal</a></li>
                 <li class="nav-item"><a class="btn btn-primary ms-lg-2" href="<?= e(base_url('contact')) ?>">Contact Us</a></li>
             </ul>
         </div>

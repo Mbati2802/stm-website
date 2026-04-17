@@ -95,11 +95,11 @@ include __DIR__ . '/../partials/page_hero.php';
 </section>
 
 <section class="section-stack">
-    <div class="site-width boxed-section">
+    <div class="site-width boxed-section" style="background: linear-gradient(180deg,#f7fbff 0%, #eef6ff 100%);">
         <h3 class="h5 split-title mb-3"><span class="title-primary">What Makes</span> <span class="title-secondary">Us Different</span></h3>
         <div class="row g-3">
             <?php foreach ($whyItems as $item): ?>
-                <div class="col-md-6">
+                <div class="col-md-6 col-lg-3">
                     <div class="soft-card p-3 h-100 d-flex align-items-center gap-2">
                         <i class="bi bi-arrow-right-circle text-secondary"></i>
                         <span><?= e($item) ?></span>

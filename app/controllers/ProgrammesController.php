@@ -170,7 +170,9 @@ class ProgrammesController extends Controller
             send_notification_email($notifyTo, 'New Programme Application - ' . $name, $mailBody);
         }
 
-        $principalName = trim((string)($model->getSettings()['principal_name'] ?? 'The Principal'));
+        $siteSettings = $model->getSettings();
+        $principalName = trim((string)($siteSettings['principal_name'] ?? 'The Principal'));
+        $principalMessage = trim(plain_text((string)($siteSettings['principal_message'] ?? 'Welcome to St. Mary\'s College of Health Sciences.')));
         $applicantBody = implode("\n", [
             'Congratulations ' . $name . ',',
             '',
@@ -203,7 +205,7 @@ class ProgrammesController extends Controller
             'Please keep this letter for reference as we complete your admission workflow.',
             '',
             'Principal\'s Message:',
-            'Welcome to St. Mary\'s College of Health Sciences. We look forward to supporting your training journey.',
+            $principalMessage,
             '',
             'Signed:',
             $principalName,

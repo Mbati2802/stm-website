@@ -16,9 +16,9 @@
             </div>
             <div class="col-md-3">
                 <h6>Contact</h6>
-                <p class="mb-1 text-white-50">Phone: 0791 309 011</p>
-                <p class="mb-1 text-white-50">Email: info@stmarysmchmcollege.ac.ke</p>
-                <p class="text-white-50">Location: Amani House, along Biashara Street, Kiambu Town</p>
+                <p class="mb-1 text-white-50">Phone: <?= e($siteSettings['phone'] ?? '+254 791 309011 or +254101711499') ?></p>
+                <p class="mb-1 text-white-50">Email: <?= e($siteSettings['email'] ?? 'contact@stmarysmchmcollege.ac.ke') ?></p>
+                <p class="text-white-50">Location: <?= e($siteSettings['location'] ?? 'Amani House, along Biashara Street, Kiambu Town') ?></p>
             </div>
             <div class="col-md-3">
                 <h6>Map</h6>

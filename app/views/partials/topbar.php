@@ -1,7 +1,7 @@
 <?php
-$phone = $siteSettings['phone'] ?? '+254 700 000 000';
-$email = $siteSettings['email'] ?? 'admissions@stm.ac.ke';
-$location = $siteSettings['location'] ?? 'Nairobi, Kenya';
+$phone = $siteSettings['phone'] ?? '+254 791 309011 or +254101711499';
+$email = $siteSettings['email'] ?? 'contact@stmarysmchmcollege.ac.ke';
+$location = $siteSettings['location'] ?? 'Amani House, along Biashara Street, Kiambu Town';
 $topMessage = $siteSettings['top_message'] ?? 'Admissions Open - Apply Today';
 ?>
 <div class="topbar py-2">
@@ -11,7 +11,7 @@ $topMessage = $siteSettings['top_message'] ?? 'Admissions Open - Apply Today';
             <span><i class="bi bi-envelope-fill me-1"></i><?= e($email) ?></span>
             <span><i class="bi bi-geo-alt-fill me-1"></i><?= e($location) ?></span>
         </div>
-        <div class="ticker-wrap"><span class="ticker"><?= e($topMessage) ?> • Applications for May intake ongoing • Scholarships available</span></div>
+        <div class="ticker-wrap"><span class="ticker"><?= e($topMessage) ?></span></div>
         <div class="d-flex align-items-center gap-2">
             <a href="https://www.facebook.com/profile.php?id=61587395616193" target="_blank" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
             <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>

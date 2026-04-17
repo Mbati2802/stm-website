@@ -63,9 +63,19 @@ $secondaryCtaLink = $settings['home_hero_secondary_cta_link'] ?? 'about';
 
 <?php
 $bannerPublic = 'assets/images/banner.png';
-$bannerFile = __DIR__ . '/../../../public/' . $bannerPublic;
+$bannerCandidates = [
+    __DIR__ . '/../../../public/' . $bannerPublic,
+    __DIR__ . '/../../../' . $bannerPublic,
+];
+$bannerFile = '';
+foreach ($bannerCandidates as $candidate) {
+    if (file_exists($candidate)) {
+        $bannerFile = $candidate;
+        break;
+    }
+}
 ?>
-<?php if ($sv['banner'] && file_exists($bannerFile)): ?>
+<?php if ($sv['banner'] && $bannerFile !== ''): ?>
 <section class="section-stack">
     <div class="site-width boxed-section banner-section">
         <a href="<?= e(base_url('programmes/apply')) ?>" aria-label="Go to programme application page">

@@ -39,7 +39,18 @@ class AboutController extends Controller
 
     public function registrar(): void
     {
-        $this->view('pages/registrar', ['metaTitle' => 'Registrar', 'page' => $this->model->page('registrar')]);
+        $this->view('pages/registrar', ['metaTitle' => 'Registrar', 'page' => $this->model->page('registrar'), 'settings' => $this->model->getSettings()]);
+    }
+
+    public function uniqueness(): void
+    {
+        $settings = $this->model->getSettings();
+        $whyItems = array_filter(array_map('trim', explode('|', (string)($settings['about_differentiators'] ?? 'Practical-Based Learning|Market-Driven Courses|Supportive Learning Environment|Affordable & Accessible Education'))));
+        $this->view('pages/uniqueness', [
+            'metaTitle' => 'College Uniqueness',
+            'settings' => $settings,
+            'whyItems' => $whyItems,
+        ]);
     }
 
     public function contact(): void

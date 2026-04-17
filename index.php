@@ -9,6 +9,7 @@ $router = new Router();
 
 $router->add('GET', '', [HomeController::class, 'index']);
 $router->add('GET', 'about', [AboutController::class, 'about']);
+$router->add('GET', 'uniqueness', [AboutController::class, 'uniqueness']);
 $router->add('GET', 'principal', [AboutController::class, 'principal']);
 $router->add('GET', 'registrar', [AboutController::class, 'registrar']);
 $router->add('GET', 'contact', [AboutController::class, 'contact']);
@@ -26,6 +27,17 @@ $router->add('GET', 'events', [EventsController::class, 'index']);
 $router->add('GET', 'events/{slug}', [EventsController::class, 'show']);
 $router->add('GET', 'events/{slug}/register', [EventsController::class, 'registerForm']);
 $router->add('POST', 'events/{slug}/register', [EventsController::class, 'submitRegistration']);
+
+$router->add('GET', 'portal/register', [StudentPortalController::class, 'registerForm']);
+$router->add('POST', 'portal/register', [StudentPortalController::class, 'register']);
+$router->add('GET', 'portal/login', [StudentPortalController::class, 'loginForm']);
+$router->add('POST', 'portal/login', [StudentPortalController::class, 'login']);
+$router->add('GET', 'portal/logout', [StudentPortalController::class, 'logout']);
+$router->add('GET', 'portal/dashboard', [StudentPortalController::class, 'dashboard']);
+$router->add('GET', 'portal/forgot-password', [StudentPortalController::class, 'forgotPasswordForm']);
+$router->add('POST', 'portal/forgot-password', [StudentPortalController::class, 'sendResetCode']);
+$router->add('GET', 'portal/reset-password', [StudentPortalController::class, 'resetPasswordForm']);
+$router->add('POST', 'portal/reset-password', [StudentPortalController::class, 'resetPassword']);
 
 $router->add('GET', 'admin/login', [AdminAuthController::class, 'login']);
 $router->add('POST', 'admin/login', [AdminAuthController::class, 'authenticate']);

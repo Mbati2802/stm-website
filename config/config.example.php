@@ -15,4 +15,5 @@ return [
     'notification_email' => 'admission@stmarysmchmcollege.ac.ke',
     'contact_notification_email' => 'contact@stmarysmchmcollege.ac.ke',
     'application_notification_email' => 'admission@stmarysmchmcollege.ac.ke',
+    'registrar_email' => 'registrar@stmarysmchmcollege.ac.ke',
 ];
