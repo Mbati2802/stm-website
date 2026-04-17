@@ -64,6 +64,11 @@ $toggleItems = [
                                 <label class="form-label">Top Bar Message</label>
                                 <input name="top_message" class="form-control" value="<?= e($settings['top_message'] ?? '') ?>">
                             </div>
+                            <div class="col-12">
+                                <label class="form-label">Programme Application Confirmation Message</label>
+                                <textarea name="application_confirmation_message" rows="10" class="form-control" placeholder="Shown after a programme application is submitted. Use {PHONE} and {EMAIL} placeholders."><?= e($settings['application_confirmation_message'] ?? '') ?></textarea>
+                                <small class="text-muted">Placeholders supported: <code>{PHONE}</code>, <code>{EMAIL}</code>.</small>
+                            </div>
                             <div class="col-md-6">
                                 <label class="form-label">Current Intake</label>
                                 <select name="current_intake" class="form-select">

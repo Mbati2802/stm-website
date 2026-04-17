@@ -13,7 +13,7 @@ $topMessage = $siteSettings['top_message'] ?? 'Admissions Open - Apply Today';
             <span class="d-inline-flex align-items-center gap-2">
                 <a href="https://www.facebook.com/profile.php?id=61587395616193" target="_blank" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
                 <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-                <a href="https://wa.me/254700000000" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                <a href="https://wa.me/254791309011" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
             </span>
         </div>
         <div class="ticker-wrap"><span class="ticker"><?= e($topMessage) ?></span></div>

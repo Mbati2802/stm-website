@@ -8,6 +8,7 @@ class AdminContentController extends Controller
         'location',
         'current_intake',
         'top_message',
+        'application_confirmation_message',
         'home_hero_title',
         'home_hero_description',
         'home_hero_primary_cta_label',

@@ -176,69 +176,31 @@ class ProgrammesController extends Controller
         }
 
         $siteSettings = $model->getSettings();
-        $principalName = trim((string)($siteSettings['principal_name'] ?? 'The Principal'));
-        $principalMessage = trim(plain_text((string)($siteSettings['principal_message'] ?? 'Welcome to St. Mary\'s College of Health Sciences.')));
-        $applicantBody = implode("\n", [
-            'Congratulations ' . $name . ',',
+        $sitePhone = trim((string)($siteSettings['phone'] ?? '')) ?: '+254 791 309011';
+        $siteEmail = trim((string)($siteSettings['email'] ?? '')) ?: 'contact@stmarysmchmcollege.ac.ke';
+
+        $defaultConfirmation = implode("\n\n", [
+            'Application Received Successfully',
+            "Thank you for applying to St. Mary\u{2019}s Mother and Child Hospital Medical Training College.",
+            'We have received your application, and our admissions team is currently reviewing your details. You have taken an important step toward building a meaningful and rewarding career in the healthcare field—and we are excited to be part of your journey.',
+            'Our team will contact you soon with the next steps regarding your application. In the meantime, feel free to reach out if you have any questions or need further assistance.',
+            'We look forward to welcoming you to our community of passionate and dedicated healthcare professionals.',
+            '📞 Contact Us: {PHONE}',
+            '📩 Email: {EMAIL}',
             '',
-            'Thank you for applying to St. Mary\'s College of Health Sciences.',
-            'We have received your application and attached your interim admission letter.',
-            '',
-            'Our admissions office will contact you with the next steps.',
-            '',
-            'Admissions Office',
-            'St. Mary\'s College of Health Sciences',
+            'Your future in healthcare starts here.',
         ]);
 
-        $letterLines = [
-            'ST. MARY\'S COLLEGE OF HEALTH SCIENCES',
-            'P.O BOX 1666-20117, NAIVASHA',
-            '',
-            'INTERIM ADMISSION LETTER',
-            'Ref: STM/ADM/' . date('Y') . '/' . strtoupper(substr(md5($email . $phone . $name), 0, 6)),
-            'Date: ' . date('d M Y'),
-            '',
-            'Applicant Details',
-            'Name: ' . $name,
-            'Email: ' . $email,
-            'Phone: ' . $phone,
-            'County: ' . $county,
-            '',
-            'Dear ' . $name . ',',
-            'Congratulations on your application to pursue ' . $course . '.',
-            'You have been issued this interim admission letter pending final admission processing.',
-            'Please keep this letter for reference as we complete your admission workflow.',
-            '',
-            'Principal\'s Message:',
-            $principalMessage,
-            '',
-            'Signed:',
-            $principalName,
-            'Principal',
-        ];
-        $pdf = generate_simple_pdf($letterLines);
-        $sentApplicantEmail = send_notification_email_with_attachment(
-            $email,
-            'Application Received - Interim Admission Letter',
-            $applicantBody,
-            'interim_admission_letter.pdf',
-            $pdf,
-            'application/pdf'
-        );
-        if (!$sentApplicantEmail) {
-            $sentApplicantEmail = send_notification_email(
-                $email,
-                'Application Received - Interim Admission Update',
-                $applicantBody . "\n\nNote: We could not attach your interim letter in this message. Admissions will share it with you shortly."
-            );
+        $template = trim((string)($siteSettings['application_confirmation_message'] ?? ''));
+        if ($template === '') {
+            $template = $defaultConfirmation;
         }
+        $confirmation = strtr($template, [
+            '{PHONE}' => $sitePhone,
+            '{EMAIL}' => $siteEmail,
+        ]);
 
-        if (!$sentApplicantEmail) {
-            flash('error', 'Application received, but confirmation email could not be sent right now. Admissions will still contact you.');
-            $this->redirect('programmes');
-        }
-
-        flash('success', 'Your application has been submitted successfully.');
-        $this->redirect('programmes');
+        flash('success', $confirmation);
+        $this->redirect('programmes/apply');
     }
 }

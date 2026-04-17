@@ -12,8 +12,8 @@ $currentIntake = (string)($currentIntake ?? 'January');
 <section class="section-stack">
   <div class="site-width boxed-section">
     <h1 class="split-title mb-3"><span class="title-primary">Programme</span> | <span class="title-secondary">Application Form</span></h1>
-    <?php if ($msg = flash('success')): ?><div class="alert alert-success"><?= e($msg) ?></div><?php endif; ?>
-    <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= e($msg) ?></div><?php endif; ?>
+    <?php if ($msg = flash('success')): ?><div class="alert alert-success"><?= nl2br(e($msg)) ?></div><?php endif; ?>
+    <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= nl2br(e($msg)) ?></div><?php endif; ?>
 
     <div class="row g-4">
       <div class="col-lg-8">

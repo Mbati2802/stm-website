@@ -30,7 +30,7 @@ $path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
 
     <?php include __DIR__ . '/../partials/footer.php'; ?>
 
-    <a class="whatsapp-float" href="https://wa.me/254700000000" target="_blank" aria-label="Chat on WhatsApp">
+    <a class="whatsapp-float" href="https://wa.me/254791309011" target="_blank" aria-label="Chat on WhatsApp">
         <i class="bi bi-whatsapp"></i>
     </a>
 
