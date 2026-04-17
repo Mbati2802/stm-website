@@ -42,6 +42,7 @@ class AdminContentController extends Controller
         'principal_facebook',
         'principal_x',
         'principal_linkedin',
+        'admission_number_format',
     ];
     private const SETTINGS_TOGGLE_FIELDS = [
         'show_page_about',
@@ -236,6 +237,52 @@ class AdminContentController extends Controller
         Auth::requireAdmin();
         $model = new ContentModel($this->config);
         $this->view('admin/settings', ['metaTitle' => 'Settings', 'settings' => $model->getSettings()]);
+    }
+
+    public function students(): void
+    {
+        Auth::requireAdmin();
+        $portalModel = new StudentPortalModel($this->config);
+        $contentModel = new ContentModel($this->config);
+        $settings = $contentModel->getSettings();
+        $this->view('admin/students', [
+            'metaTitle' => 'Student Accounts',
+            'rows' => $portalModel->allStudents(),
+            'admissionNumberFormat' => (string)($settings['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}'),
+        ]);
+    }
+
+    public function assignStudentAdmissionNumber(int $id): void
+    {
+        Auth::requireAdmin();
+        $portalModel = new StudentPortalModel($this->config);
+        $student = $portalModel->findStudentById($id);
+        if ($student === null) {
+            flash('error', 'Student not found.');
+            $this->redirect('admin/students');
+        }
+
+        $admissionNumber = strtoupper(trim($_POST['admission_number'] ?? ''));
+        if ($admissionNumber === '') {
+            $contentModel = new ContentModel($this->config);
+            $format = (string)($contentModel->getSettings()['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}');
+            $admissionNumber = $this->buildAdmissionNumber($format, (int)$student['id']);
+        }
+
+        if (!preg_match('/^[A-Z0-9\/\-_]+$/', $admissionNumber)) {
+            flash('error', 'Admission number format is invalid. Use letters, numbers, /, -, _.');
+            $this->redirect('admin/students');
+        }
+
+        try {
+            $portalModel->assignAdmissionNumber($id, $admissionNumber);
+        } catch (PDOException) {
+            flash('error', 'Admission number already exists. Please choose another one.');
+            $this->redirect('admin/students');
+        }
+
+        flash('success', 'Admission number assigned successfully.');
+        $this->redirect('admin/students');
     }
 
     public function saveSettings(): void
@@ -591,5 +638,26 @@ class AdminContentController extends Controller
         $value = str_replace(["\r\n", "\r"], "\n", $value);
         $value = str_replace("\t", ' ', $value);
         return '"' . str_replace('"', '""', $value) . '"';
+    }
+
+    private function buildAdmissionNumber(string $format, int $studentId): string
+    {
+        $year = date('Y');
+        $month = date('m');
+        $day = date('d');
+        $seq4 = str_pad((string)$studentId, 4, '0', STR_PAD_LEFT);
+        $seq5 = str_pad((string)$studentId, 5, '0', STR_PAD_LEFT);
+        $seq6 = str_pad((string)$studentId, 6, '0', STR_PAD_LEFT);
+        $replacements = [
+            '{YEAR}' => $year,
+            '{YY}' => substr($year, -2),
+            '{MM}' => $month,
+            '{DD}' => $day,
+            '{SEQ4}' => $seq4,
+            '{SEQ5}' => $seq5,
+            '{SEQ6}' => $seq6,
+            '{ID}' => (string)$studentId,
+        ];
+        return strtr($format, $replacements);
     }
 }

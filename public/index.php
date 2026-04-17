@@ -53,6 +53,8 @@ $router->add('GET', 'admin/delete/{entity}/{id}', [AdminContentController::class
 $router->add('GET', 'admin/messages', [AdminContentController::class, 'messages']);
 $router->add('GET', 'admin/messages/export', [AdminContentController::class, 'exportMessages']);
 $router->add('GET', 'admin/event-registrations', [AdminContentController::class, 'eventRegistrations']);
+$router->add('GET', 'admin/students', [AdminContentController::class, 'students']);
+$router->add('POST', 'admin/students/assign/{id}', [AdminContentController::class, 'assignStudentAdmissionNumber']);
 $router->add('GET', 'admin/media', [AdminContentController::class, 'mediaLibrary']);
 $router->add('POST', 'admin/media/upload', [AdminContentController::class, 'uploadMedia']);
 $router->add('GET', 'admin/media/delete/{id}', [AdminContentController::class, 'deleteMedia']);

@@ -22,7 +22,10 @@
                 </div>
             </div>
             <button class="btn btn-primary w-100 mt-4">Create Account</button>
-            <p class="small mb-0 mt-3 text-center">Already have an account? <a href="<?= e(base_url('portal/login')) ?>">Log in</a></p>
+            <p class="small text-muted mt-3 mb-2">
+                After registration, the admissions office will assign your admission number. Use that admission number and your password to log in.
+            </p>
+            <p class="small mb-0 text-center">Already have an account? <a href="<?= e(base_url('portal/login')) ?>">Log in</a></p>
         </form>
     </div>
 </section>

@@ -1,5 +1,6 @@
 <?php
 $studentName = (string)($student['name'] ?? ($_SESSION['student_name'] ?? 'Student'));
+$admissionNumber = (string)($student['admission_number'] ?? ($_SESSION['student_admission_number'] ?? 'Not assigned'));
 ?>
 <section class="hero-ou-wrap">
     <div class="site-width hero-boxed">
@@ -11,6 +12,7 @@ $studentName = (string)($student['name'] ?? ($_SESSION['student_name'] ?? 'Stude
                         <span class="title-secondary text-white"><?= e($studentName) ?></span>
                     </h1>
                     <p class="mb-0 text-white-50">Student Portal dashboard for timetables, announcements, and updates.</p>
+                    <p class="mb-0 text-white-50 small">Admission Number: <?= e($admissionNumber) ?></p>
                 </div>
                 <a class="btn btn-light" href="<?= e(base_url('portal/logout')) ?>">Logout</a>
             </div>

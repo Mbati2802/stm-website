@@ -15,6 +15,13 @@ class StudentPortalModel
         return $stmt->fetch() ?: null;
     }
 
+    public function findStudentByAdmissionNumber(string $admissionNumber): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM student_accounts WHERE admission_number = :admission_number LIMIT 1');
+        $stmt->execute(['admission_number' => $admissionNumber]);
+        return $stmt->fetch() ?: null;
+    }
+
     public function createStudent(string $name, string $email, string $passwordHash): bool
     {
         $stmt = $this->pdo->prepare('INSERT INTO student_accounts(name, email, password, created_at) VALUES(:name, :email, :password, NOW())');
@@ -69,6 +76,24 @@ class StudentPortalModel
     {
         $stmt = $this->pdo->prepare('UPDATE student_accounts SET password = :password WHERE id = :id');
         $stmt->execute(['password' => $passwordHash, 'id' => $studentId]);
+    }
+
+    public function allStudents(): array
+    {
+        try {
+            return $this->pdo->query('SELECT * FROM student_accounts ORDER BY id DESC')->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function assignAdmissionNumber(int $studentId, string $admissionNumber): bool
+    {
+        $stmt = $this->pdo->prepare('UPDATE student_accounts SET admission_number = :admission_number WHERE id = :id');
+        return $stmt->execute([
+            'admission_number' => $admissionNumber,
+            'id' => $studentId,
+        ]);
     }
 
     public function latestTimetables(int $limit = 10): array

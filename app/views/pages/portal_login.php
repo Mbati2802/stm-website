@@ -5,8 +5,8 @@
         <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= e($msg) ?></div><?php endif; ?>
         <form method="POST" action="<?= e(base_url('portal/login')) ?>" class="soft-card p-4 bg-white">
             <div class="mb-3">
-                <label class="form-label">Email Address</label>
-                <input type="email" name="email" class="form-control" required>
+                <label class="form-label">Admission Number</label>
+                <input name="admission_number" class="form-control" required>
             </div>
             <div class="mb-3">
                 <label class="form-label">Password</label>

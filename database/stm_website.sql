@@ -149,6 +149,7 @@ CREATE TABLE student_accounts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(160) NOT NULL,
     email VARCHAR(190) NOT NULL UNIQUE,
+    admission_number VARCHAR(80) NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -243,7 +244,8 @@ INSERT INTO settings(setting_key, setting_value) VALUES
 ('email', 'contact@stmarysmchmcollege.ac.ke'),
 ('location', 'Amani House, along Biashara Street, Kiambu Town'),
 ('top_message', 'Admissions Open - Apply Today'),
-('registrar_email', 'registrar@stmarysmchmcollege.ac.ke');
+('registrar_email', 'registrar@stmarysmchmcollege.ac.ke'),
+('admission_number_format', 'STM/{YEAR}/{SEQ4}');
 
 INSERT INTO student_announcements(title, body) VALUES
 ('Welcome to Student Portal', 'This portal helps you access announcements, timetables, and key academic updates.'),

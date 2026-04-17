@@ -63,6 +63,11 @@ $toggleItems = [
                                     <?php endforeach; ?>
                                 </select>
                             </div>
+                            <div class="col-12">
+                                <label class="form-label">Admission Number Format</label>
+                                <input name="admission_number_format" class="form-control" value="<?= e($settings['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}') ?>">
+                                <small class="text-muted">Available placeholders: {YEAR}, {YY}, {MM}, {DD}, {SEQ4}, {SEQ5}, {SEQ6}, {ID}</small>
+                            </div>
                         </div>
                     </div>
 

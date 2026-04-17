@@ -25,7 +25,7 @@ class StudentPortalController extends Controller
         }
 
         $model->createStudent($name, $email, password_hash($password, PASSWORD_DEFAULT));
-        flash('success', 'Account created successfully. Please log in.');
+        flash('success', 'Account created successfully. Admissions will assign your admission number. You will use admission number plus your password to log in.');
         $this->redirect('portal/login');
     }
 
@@ -36,25 +36,26 @@ class StudentPortalController extends Controller
 
     public function login(): void
     {
-        $email = trim($_POST['email'] ?? '');
+        $admissionNumber = strtoupper(trim($_POST['admission_number'] ?? ''));
         $password = (string)($_POST['password'] ?? '');
         $model = new StudentPortalModel($this->config);
-        $student = $model->findStudentByEmail($email);
+        $student = $model->findStudentByAdmissionNumber($admissionNumber);
 
         if ($student === null || !password_verify($password, (string)$student['password'])) {
-            flash('error', 'Invalid email or password.');
+            flash('error', 'Invalid admission number or password.');
             $this->redirect('portal/login');
         }
 
         $_SESSION['student_id'] = (int)$student['id'];
         $_SESSION['student_name'] = (string)$student['name'];
         $_SESSION['student_email'] = (string)$student['email'];
+        $_SESSION['student_admission_number'] = (string)($student['admission_number'] ?? '');
         $this->redirect('portal/dashboard');
     }
 
     public function logout(): void
     {
-        unset($_SESSION['student_id'], $_SESSION['student_name'], $_SESSION['student_email']);
+        unset($_SESSION['student_id'], $_SESSION['student_name'], $_SESSION['student_email'], $_SESSION['student_admission_number']);
         flash('success', 'You have been logged out.');
         $this->redirect('portal/login');
     }
