@@ -42,5 +42,6 @@
 <div class="col-12"><label class="form-label">Featured Image URL (fallback)</label><input name="image_path" class="form-control" value="<?= e($row['image_path'] ?? '') ?>"></div>
 <?php else: ?>
 <div class="col-md-6"><label class="form-label">Title</label><input name="title" class="form-control" value="<?= e($row['title'] ?? '') ?>" required></div><div class="col-12"><label class="form-label">Summary</label><textarea name="summary" class="form-control rich-editor"><?= e($row['summary'] ?? '') ?></textarea></div><div class="col-12"><label class="form-label">Body</label><textarea name="body" rows="6" class="form-control rich-editor"><?= e($row['body'] ?? '') ?></textarea></div><div class="col-12"><label class="form-label">Featured Image URL (optional)</label><input name="image_path" class="form-control" value="<?= e($row['image_path'] ?? '') ?>"></div>
+<div class="col-12"><label class="form-label">Upload Image (optional)</label><input type="file" name="image_file" accept="image/png,image/jpeg,image/webp" class="form-control"></div>
 <?php endif; ?>
 </div><div class="mt-3"><button class="btn btn-primary"><?= $isEdit ? 'Update' : 'Save' ?></button> <a class="btn btn-outline-secondary" href="<?= e(base_url('admin/list/' . $entity)) ?>">Cancel</a></div></form></div></section>

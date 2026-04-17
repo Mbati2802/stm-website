@@ -13,8 +13,8 @@ class StudentPortalController extends Controller
         $password = (string)($_POST['password'] ?? '');
         $confirmPassword = (string)($_POST['confirm_password'] ?? '');
 
-        $normalizedEmail = strtolower($email);
-        $validDomain = str_ends_with($normalizedEmail, '@stmarysmchmcollege.ac.ke');
+        $normalizedEmail = strtolower(trim($email));
+        $validDomain = (bool)preg_match('/^[a-z0-9._%+\-]+@stmarysmchmcollege\.ac\.ke$/', $normalizedEmail);
         if (
             $name === '' ||
             !filter_var($email, FILTER_VALIDATE_EMAIL) ||

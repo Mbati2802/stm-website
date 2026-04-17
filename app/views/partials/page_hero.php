@@ -20,7 +20,7 @@ $heroSecondaryLink = (string)($heroSecondaryLink ?? '');
         </div>
         <div class="d-flex gap-2 flex-wrap">
           <?php if ($heroPrimaryLabel !== '' && $heroPrimaryLink !== ''): ?>
-            <a class="btn btn-light" href="<?= e(base_url($heroPrimaryLink)) ?>"><?= e($heroPrimaryLabel) ?></a>
+            <a class="btn hero-apply-btn" href="<?= e(base_url($heroPrimaryLink)) ?>"><?= e($heroPrimaryLabel) ?></a>
           <?php endif; ?>
           <?php if ($heroSecondaryLabel !== '' && $heroSecondaryLink !== ''): ?>
             <a class="btn btn-outline-light" href="<?= e(base_url($heroSecondaryLink)) ?>"><?= e($heroSecondaryLabel) ?></a>

@@ -48,13 +48,14 @@ $overviewParagraphs = array_values(array_filter(array_map('trim', preg_split('/\
 if ($overviewParagraphs === []) {
     $overviewParagraphs = [$overviewNormalized];
 }
+$programmeMainImage = trim((string)($settings['programme_detail_image'] ?? 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=900'));
 ?>
 
 <section class="section-stack">
   <div class="site-width boxed-section programme-detail-layout">
     <aside class="programme-floating-sidebar">
       <div class="soft-card p-3 mb-3">
-        <img class="img-fluid mb-3" src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=900" alt="<?= e($programmeName) ?>">
+        <img class="img-fluid mb-3" src="<?= e($programmeMainImage) ?>" alt="<?= e($programmeName) ?>">
         <h3 class="h4 fw-bold text-primary mb-2">Need Guidance?</h3>
         <p class="small text-muted">Kindly ask for a return call from our proficient consultants to have your inquiries addressed.</p>
         <a class="btn btn-sm btn-primary" href="<?= e(base_url('programmes/apply?course=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>">Apply Now</a>

@@ -45,6 +45,17 @@ class AdminContentController extends Controller
         'admission_number_format',
         'registrar_email',
         'registrar_image',
+        'home_programme_images_json',
+        'programme_detail_image',
+        'home_extra_sections_json',
+        'banner_home',
+        'banner_programmes',
+        'banner_about',
+        'banner_contact',
+        'banner_events',
+        'banner_library',
+        'banner_media',
+        'banner_default_height',
     ];
     private const SETTINGS_TOGGLE_FIELDS = [
         'show_page_about',
@@ -359,6 +370,53 @@ class AdminContentController extends Controller
             $settings['hero_images'] = $currentSettings['hero_images'];
         }
 
+        $programmeCards = $this->uploadMultipleFiles('home_programme_image_files', ['image/jpeg', 'image/png', 'image/webp'], 'settings');
+        if ($programmeCards !== []) {
+            $existing = [];
+            if (!empty($settings['home_programme_images_json'])) {
+                $decoded = json_decode((string)$settings['home_programme_images_json'], true);
+                if (is_array($decoded)) {
+                    $existing = $decoded;
+                }
+            } elseif (!empty($currentSettings['home_programme_images_json'])) {
+                $decoded = json_decode((string)$currentSettings['home_programme_images_json'], true);
+                if (is_array($decoded)) {
+                    $existing = $decoded;
+                }
+            }
+            foreach ($programmeCards as $index => $img) {
+                $existing['uploaded_' . ($index + 1)] = $img;
+            }
+            $settings['home_programme_images_json'] = json_encode($existing, JSON_UNESCAPED_SLASHES);
+        } elseif (($settings['home_programme_images_json'] ?? '') === '' && isset($currentSettings['home_programme_images_json'])) {
+            $settings['home_programme_images_json'] = $currentSettings['home_programme_images_json'];
+        }
+
+        $programmeDetailImage = $this->uploadFile('programme_detail_image_file', ['image/jpeg', 'image/png', 'image/webp'], 'settings');
+        if ($programmeDetailImage !== '') {
+            $settings['programme_detail_image'] = $programmeDetailImage;
+        } elseif (($settings['programme_detail_image'] ?? '') === '' && isset($currentSettings['programme_detail_image'])) {
+            $settings['programme_detail_image'] = $currentSettings['programme_detail_image'];
+        }
+
+        $bannerFields = [
+            'banner_home_file' => 'banner_home',
+            'banner_programmes_file' => 'banner_programmes',
+            'banner_about_file' => 'banner_about',
+            'banner_contact_file' => 'banner_contact',
+            'banner_events_file' => 'banner_events',
+            'banner_library_file' => 'banner_library',
+            'banner_media_file' => 'banner_media',
+        ];
+        foreach ($bannerFields as $fileField => $settingKey) {
+            $uploaded = $this->uploadFile($fileField, ['image/jpeg', 'image/png', 'image/webp'], 'banners');
+            if ($uploaded !== '') {
+                $settings[$settingKey] = $uploaded;
+            } elseif (($settings[$settingKey] ?? '') === '' && isset($currentSettings[$settingKey])) {
+                $settings[$settingKey] = $currentSettings[$settingKey];
+            }
+        }
+
         return $settings;
     }
 
@@ -511,12 +569,13 @@ class AdminContentController extends Controller
                 break;
             default:
                 $title = trim($_POST['title'] ?? '');
+                $uploadedImage = $this->uploadFile('image_file', ['image/jpeg', 'image/png', 'image/webp'], $entity);
                 $params = [
                     'title' => $title,
                     'slug' => slugify($title),
                     'summary' => trim($_POST['summary'] ?? ''),
                     'body' => trim($_POST['body'] ?? ''),
-                    'image_path' => trim($_POST['image_path'] ?? ''),
+                    'image_path' => $uploadedImage !== '' ? $uploadedImage : trim($_POST['image_path'] ?? ''),
                 ];
                 if ($isUpdate) {
                     $stmt = $pdo->prepare("UPDATE {$entity} SET title=:title, slug=:slug, summary=:summary, body=:body, image_path=:image_path WHERE id=:id");

@@ -142,6 +142,50 @@ $toggleItems = [
                         </div>
                     </div>
 
+                    <div class="soft-card p-4" data-settings-section="home">
+                        <h2 class="h6 text-uppercase text-muted mb-3">Programme & Banner Images</h2>
+                        <div class="mb-3">
+                            <label class="form-label">Home Programme Images JSON (key: category/name, value: image URL/path)</label>
+                            <textarea name="home_programme_images_json" rows="5" class="form-control" placeholder='{"Diploma":"/uploads/settings/diploma.jpg","Certificate":"/uploads/settings/certificate.jpg"}'><?= e($settings['home_programme_images_json'] ?? '') ?></textarea>
+                            <div class="mt-2">
+                                <label class="form-label">Upload Programme Card Images</label>
+                                <input type="file" name="home_programme_image_files[]" class="form-control" accept="image/png,image/jpeg,image/webp" multiple>
+                                <small class="text-muted">Uploaded images are appended into the JSON as uploaded_1, uploaded_2...</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Programme Details Page Main Image Path/URL</label>
+                            <input name="programme_detail_image" class="form-control" value="<?= e($settings['programme_detail_image'] ?? '') ?>" placeholder="/uploads/settings/programme-detail.jpg">
+                            <div class="mt-2">
+                                <label class="form-label">Upload Programme Details Image</label>
+                                <input type="file" name="programme_detail_image_file" class="form-control" accept="image/png,image/jpeg,image/webp">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Home Extra Sections JSON</label>
+                            <textarea name="home_extra_sections_json" rows="5" class="form-control" placeholder='[{"title":"Scholarships","text":"Apply for support.","button_label":"Learn More","button_link":"contact","image":"/uploads/settings/section.jpg"}]'><?= e($settings['home_extra_sections_json'] ?? '') ?></textarea>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label">Banner Height (px)</label><input name="banner_default_height" class="form-control" value="<?= e($settings['banner_default_height'] ?? '300') ?>"></div>
+                            <div class="col-md-6"><label class="form-label">Banner Home Path/URL</label><input name="banner_home" class="form-control" value="<?= e($settings['banner_home'] ?? '') ?>"></div>
+                            <div class="col-md-6"><label class="form-label">Banner Programmes Path/URL</label><input name="banner_programmes" class="form-control" value="<?= e($settings['banner_programmes'] ?? '') ?>"></div>
+                            <div class="col-md-6"><label class="form-label">Banner About Path/URL</label><input name="banner_about" class="form-control" value="<?= e($settings['banner_about'] ?? '') ?>"></div>
+                            <div class="col-md-6"><label class="form-label">Banner Contact Path/URL</label><input name="banner_contact" class="form-control" value="<?= e($settings['banner_contact'] ?? '') ?>"></div>
+                            <div class="col-md-6"><label class="form-label">Banner Events Path/URL</label><input name="banner_events" class="form-control" value="<?= e($settings['banner_events'] ?? '') ?>"></div>
+                            <div class="col-md-6"><label class="form-label">Banner Library Path/URL</label><input name="banner_library" class="form-control" value="<?= e($settings['banner_library'] ?? '') ?>"></div>
+                            <div class="col-md-6"><label class="form-label">Banner Media Path/URL</label><input name="banner_media" class="form-control" value="<?= e($settings['banner_media'] ?? '') ?>"></div>
+                        </div>
+                        <div class="row g-2 mt-2">
+                            <div class="col-md-6"><label class="form-label">Upload Home Banner</label><input type="file" name="banner_home_file" class="form-control" accept="image/png,image/jpeg,image/webp"></div>
+                            <div class="col-md-6"><label class="form-label">Upload Programmes Banner</label><input type="file" name="banner_programmes_file" class="form-control" accept="image/png,image/jpeg,image/webp"></div>
+                            <div class="col-md-6"><label class="form-label">Upload About Banner</label><input type="file" name="banner_about_file" class="form-control" accept="image/png,image/jpeg,image/webp"></div>
+                            <div class="col-md-6"><label class="form-label">Upload Contact Banner</label><input type="file" name="banner_contact_file" class="form-control" accept="image/png,image/jpeg,image/webp"></div>
+                            <div class="col-md-6"><label class="form-label">Upload Events Banner</label><input type="file" name="banner_events_file" class="form-control" accept="image/png,image/jpeg,image/webp"></div>
+                            <div class="col-md-6"><label class="form-label">Upload Library Banner</label><input type="file" name="banner_library_file" class="form-control" accept="image/png,image/jpeg,image/webp"></div>
+                            <div class="col-md-6"><label class="form-label">Upload Media Banner</label><input type="file" name="banner_media_file" class="form-control" accept="image/png,image/jpeg,image/webp"></div>
+                        </div>
+                    </div>
+
                     <div class="soft-card p-4" data-settings-section="about">
                         <h2 class="h6 text-uppercase text-muted mb-3">About Page Content</h2>
                         <div class="mb-3">

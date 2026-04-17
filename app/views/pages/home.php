@@ -5,6 +5,14 @@ $primaryCtaLabel = $settings['home_hero_primary_cta_label'] ?? 'How to Apply';
 $primaryCtaLink = $settings['home_hero_primary_cta_link'] ?? 'programmes';
 $secondaryCtaLabel = $settings['home_hero_secondary_cta_label'] ?? 'Downloads';
 $secondaryCtaLink = $settings['home_hero_secondary_cta_link'] ?? 'about';
+$programmeImageSettings = json_decode((string)($settings['home_programme_images_json'] ?? ''), true);
+if (!is_array($programmeImageSettings)) {
+    $programmeImageSettings = [];
+}
+$homeExtraSections = json_decode((string)($settings['home_extra_sections_json'] ?? ''), true);
+if (!is_array($homeExtraSections)) {
+    $homeExtraSections = [];
+}
 ?>
 <?php $sv = $sectionVisibility ?? ['hero'=>true,'cards'=>true,'banner'=>true,'why'=>true,'courses'=>true,'testimonials'=>true,'events'=>true,'news'=>true,'cta'=>true]; ?>
 <?php if ($sv['hero']): ?>
@@ -17,7 +25,7 @@ $secondaryCtaLink = $settings['home_hero_secondary_cta_link'] ?? 'about';
                 <h1 class="display-5 fw-bold mb-3"><?= e($heroTitle) ?></h1>
                 <p class="lead text-secondary-emphasis mb-4"><?= e($heroDescription) ?></p>
                 <div class="d-flex gap-3 flex-wrap">
-                    <a class="btn btn-primary btn-lg" href="<?= e(base_url($primaryCtaLink)) ?>"><?= e($primaryCtaLabel) ?></a>
+                    <a class="btn btn-primary btn-lg hero-apply-btn" href="<?= e(base_url($primaryCtaLink)) ?>"><?= e($primaryCtaLabel) ?></a>
                     <a class="btn btn-outline-primary btn-lg" href="<?= e(base_url($secondaryCtaLink)) ?>"><?= e($secondaryCtaLabel) ?></a>
                 </div>
                 </div>
@@ -122,7 +130,7 @@ foreach ($bannerCandidates as $candidate) {
                 <div class="col-md-6 col-lg-4" data-aos="fade-up">
                     <article class="card h-100 border-0 soft-card course-card">
                         <img
-                            src="<?= e($courseImageByCategory[$programme['category']] ?? 'https://images.unsplash.com/photo-1584433144859-1fc3ab64a957?w=900') ?>"
+                            src="<?= e($programmeImageSettings[$programme['name']] ?? $programmeImageSettings[$programme['category']] ?? $courseImageByCategory[$programme['category']] ?? 'https://images.unsplash.com/photo-1584433144859-1fc3ab64a957?w=900') ?>"
                             class="card-img-top course-card-image"
                             alt="<?= e($programme['name']) ?>"
                         >
@@ -133,6 +141,27 @@ foreach ($bannerCandidates as $candidate) {
                             <a class="link-arrow mt-2" href="<?= e(base_url('programmes/' . $programme['slug'])) ?>">Read more <span aria-hidden="true">→</span></a>
                         </div>
                     </article>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<?php if ($homeExtraSections !== []): ?>
+<section class="section-stack">
+    <div class="site-width boxed-section">
+        <div class="row g-4">
+            <?php foreach ($homeExtraSections as $section): ?>
+                <div class="col-lg-4">
+                    <div class="soft-card p-3 h-100">
+                        <?php if (!empty($section['image'])): ?><img src="<?= e((string)$section['image']) ?>" alt="" class="img-fluid mb-3"><?php endif; ?>
+                        <h3 class="h5 mb-2"><?= e((string)($section['title'] ?? 'Section')) ?></h3>
+                        <p class="small text-muted mb-3"><?= e((string)($section['text'] ?? '')) ?></p>
+                        <?php if (!empty($section['button_link'])): ?>
+                            <a class="btn btn-sm btn-primary" href="<?= e(base_url((string)$section['button_link'])) ?>"><?= e((string)($section['button_label'] ?? 'Learn More')) ?></a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             <?php endforeach; ?>
         </div>

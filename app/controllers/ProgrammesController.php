@@ -225,6 +225,13 @@ class ProgrammesController extends Controller
             $pdf,
             'application/pdf'
         );
+        if (!$sentApplicantEmail) {
+            $sentApplicantEmail = send_notification_email(
+                $email,
+                'Application Received - Interim Admission Update',
+                $applicantBody . "\n\nNote: We could not attach your interim letter in this message. Admissions will share it with you shortly."
+            );
+        }
 
         if (!$sentApplicantEmail) {
             flash('error', 'Application received, but confirmation email could not be sent right now. Admissions will still contact you.');

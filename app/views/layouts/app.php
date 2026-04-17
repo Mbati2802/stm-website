@@ -22,6 +22,7 @@ $path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
 <body>
     <?php include __DIR__ . '/../partials/topbar.php'; ?>
     <?php include __DIR__ . '/../partials/navbar.php'; ?>
+    <?php include __DIR__ . '/../partials/page_banner.php'; ?>
 
     <main>
         <?php include $viewPath; ?>
