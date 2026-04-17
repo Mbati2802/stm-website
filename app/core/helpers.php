@@ -108,7 +108,7 @@ function safe_html(?string $html, array $allowedTags = ['p','br','strong','b','e
     return $clean;
 }
 
-function send_notification_email(string $to, string $subject, string $message): bool
+function send_notification_email(string $to, string $subject, string $message, ?string $htmlMessage = null): bool
 {
     global $config;
     $to = trim($to);
@@ -135,17 +135,42 @@ function send_notification_email(string $to, string $subject, string $message): 
         $replyTo = '';
     }
 
+    $plainBody = (string)$message;
+    $htmlBody = $htmlMessage !== null ? trim((string)$htmlMessage) : '';
+    $useHtml = $htmlBody !== '';
+
+    $boundary = null;
+    $body = $plainBody;
+
     // When SMTP is configured, smtp_send_email() will generate the From header.
     // Including a second From header here can cause external providers to reject the message.
-    $baseHeaders = [
-        'MIME-Version: 1.0',
-        'Content-type: text/plain; charset=UTF-8',
-    ];
+    $baseHeaders = ['MIME-Version: 1.0'];
+    if ($useHtml) {
+        try {
+            $boundary = '=_Alt_' . bin2hex(random_bytes(12));
+        } catch (Throwable) {
+            $boundary = '=_Alt_' . md5((string)microtime(true) . $to . $subject);
+        }
+        $baseHeaders[] = 'Content-Type: multipart/alternative; boundary="' . $boundary . '"';
+
+        $body = '';
+        $body .= '--' . $boundary . "\r\n";
+        $body .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        $body .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+        $body .= $plainBody . "\r\n\r\n";
+        $body .= '--' . $boundary . "\r\n";
+        $body .= "Content-Type: text/html; charset=UTF-8\r\n";
+        $body .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+        $body .= $htmlBody . "\r\n\r\n";
+        $body .= '--' . $boundary . "--\r\n";
+    } else {
+        $baseHeaders[] = 'Content-type: text/plain; charset=UTF-8';
+    }
     if ($replyTo !== '') {
         $baseHeaders[] = 'Reply-To: ' . $replyTo;
     }
 
-    $smtpSent = smtp_send_email($to, $subject, $message, implode("\r\n", $baseHeaders), null, $config ?? []);
+    $smtpSent = smtp_send_email($to, $subject, $body, implode("\r\n", $baseHeaders), $boundary, $config ?? []);
     if ($smtpSent !== null) {
         return $smtpSent;
     }
@@ -153,7 +178,7 @@ function send_notification_email(string $to, string $subject, string $message): 
     try {
         $mailHeaders = $baseHeaders;
         $mailHeaders[] = 'From: ' . $fromAddress;
-        return @mail($to, $subject, $message, implode("\r\n", $mailHeaders));
+        return @mail($to, $subject, $body, implode("\r\n", $mailHeaders));
     } catch (Throwable) {
         return false;
     }

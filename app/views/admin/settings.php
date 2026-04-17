@@ -67,7 +67,7 @@ $toggleItems = [
                             <div class="col-12">
                                 <label class="form-label">Programme Application Confirmation Email Message</label>
                                 <textarea name="application_confirmation_message" rows="10" class="form-control" placeholder="Sent to the applicant after a programme application is submitted. Use {PHONE} and {EMAIL} placeholders."><?= e($settings['application_confirmation_message'] ?? '') ?></textarea>
-                                <small class="text-muted">Placeholders supported: <code>{PHONE}</code>, <code>{EMAIL}</code>.</small>
+                                <small class="text-muted">Placeholders supported: <code>{PHONE}</code>, <code>{EMAIL}</code>. You can paste HTML here for a richer email.</small>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Current Intake</label>

@@ -200,11 +200,43 @@ class ProgrammesController extends Controller
             '{EMAIL}' => $siteEmail,
         ]);
 
+        $isHtmlTemplate = str_contains($confirmation, '<') && str_contains($confirmation, '>');
+        $plainConfirmation = $isHtmlTemplate ? plain_text_multiline($confirmation) : $confirmation;
+        $htmlConfirmation = $isHtmlTemplate
+            ? $confirmation
+            : (
+                '<!doctype html><html><body style="margin:0;padding:0;background:#f5f7fb;">' .
+                '<div style="max-width:640px;margin:0 auto;padding:24px;">' .
+                '<div style="background:#ffffff;border:1px solid #e9eef5;border-radius:14px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;">' .
+                '<div style="padding:22px 22px 12px;background:linear-gradient(135deg,#0d6efd 0%,#1b8cff 100%);color:#fff;">' .
+                '<div style="font-size:18px;font-weight:700;letter-spacing:.2px;">Application Received Successfully</div>' .
+                '<div style="margin-top:6px;font-size:13px;opacity:.95;">St. Mary’s Mother and Child Hospital Medical Training College</div>' .
+                '</div>' .
+                '<div style="padding:22px;color:#1f2a37;line-height:1.55;font-size:14px;">' .
+                '<p style="margin:0 0 12px;">Thank you for applying to <strong>St. Mary’s Mother and Child Hospital Medical Training College</strong>.</p>' .
+                '<p style="margin:0 0 12px;">We have received your application, and our admissions team is currently reviewing your details. You have taken an important step toward building a meaningful and rewarding career in the healthcare field—and we are excited to be part of your journey.</p>' .
+                '<p style="margin:0 0 12px;">Our team will contact you soon with the next steps regarding your application. In the meantime, feel free to reach out if you have any questions or need further assistance.</p>' .
+                '<p style="margin:0 0 16px;">We look forward to welcoming you to our community of passionate and dedicated healthcare professionals.</p>' .
+                '<div style="padding:14px 16px;background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;">' .
+                '<div style="font-weight:700;margin-bottom:8px;">Contact Us</div>' .
+                '<div style="margin:0 0 6px;">📞 <strong>Phone:</strong> ' . e($sitePhone) . '</div>' .
+                '<div style="margin:0;">📩 <strong>Email:</strong> ' . e($siteEmail) . '</div>' .
+                '</div>' .
+                '<p style="margin:16px 0 0;font-weight:700;">Your future in healthcare starts here.</p>' .
+                '</div>' .
+                '<div style="padding:14px 22px;background:#ffffff;border-top:1px solid #eef2f7;color:#6b7280;font-size:12px;">' .
+                'This is an automated confirmation. If you have questions, reply to this email.' .
+                '</div>' .
+                '</div>' .
+                '</div></body></html>'
+            );
+
         // Email the applicant (no PDF). UI only shows a short confirmation.
         send_notification_email(
             $email,
             'Application Received Successfully',
-            $confirmation
+            $plainConfirmation,
+            $htmlConfirmation
         );
 
         flash('success', 'Application received successfully. Thank you for applying — our admissions team will contact you soon.');
