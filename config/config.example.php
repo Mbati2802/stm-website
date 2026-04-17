@@ -13,4 +13,6 @@ return [
     'session_name' => 'stm_session',
     'admin_email' => 'admin@stm.ac.ke',
     'notification_email' => 'admissions@your-domain.example',
+    'contact_notification_email' => 'contact@your-domain.example',
+    'application_notification_email' => 'admissions@your-domain.example',
 ];

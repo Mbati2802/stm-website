@@ -152,7 +152,7 @@ class ProgrammesController extends Controller
             'message' => $message,
         ]);
 
-        $notifyTo = trim((string)($this->config['notification_email'] ?? ($this->config['admin_email'] ?? '')));
+        $notifyTo = trim((string)($this->config['application_notification_email'] ?? ($this->config['notification_email'] ?? ($this->config['admin_email'] ?? ''))));
         if ($notifyTo !== '') {
             $mailBody = implode("\n", [
                 'A new programme application was submitted.',
