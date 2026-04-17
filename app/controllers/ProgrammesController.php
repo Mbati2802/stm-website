@@ -96,6 +96,21 @@ class ProgrammesController extends Controller
         ]);
     }
 
+    public function howToApply(): void
+    {
+        $model = new ContentModel($this->config);
+        if (!$model->isEnabled('show_page_programmes')) {
+            http_response_code(404);
+            echo 'Page not available.';
+            return;
+        }
+
+        $this->view('pages/how_to_apply', [
+            'metaTitle' => 'How to Apply',
+            'settings' => $model->getSettings(),
+        ]);
+    }
+
     public function submitApplication(): void
     {
         $model = new ContentModel($this->config);
@@ -136,6 +151,23 @@ class ProgrammesController extends Controller
             'subject' => 'Programme Application',
             'message' => $message,
         ]);
+
+        $notifyTo = trim((string)($this->config['notification_email'] ?? ($this->config['admin_email'] ?? '')));
+        if ($notifyTo !== '') {
+            $mailBody = implode("\n", [
+                'A new programme application was submitted.',
+                'Name: ' . $name,
+                'Email: ' . $email,
+                'Phone: ' . $phone,
+                'Course: ' . $course,
+                'Level: ' . $level,
+                'Preferred Intake: ' . $intake,
+                '',
+                'Application Details:',
+                $message,
+            ]);
+            send_notification_email($notifyTo, 'New Programme Application - ' . $name, $mailBody);
+        }
 
         flash('success', 'Your application has been submitted successfully.');
         $this->redirect('programmes/apply');

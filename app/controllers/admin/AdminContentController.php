@@ -175,6 +175,36 @@ class AdminContentController extends Controller
         $this->view('admin/messages', ['metaTitle' => 'Contact Messages', 'rows' => $model->all('messages')]);
     }
 
+    public function exportMessages(): void
+    {
+        Auth::requireAdmin();
+        $model = new ContentModel($this->config);
+        $rows = $model->all('messages');
+
+        $filename = 'messages_export_' . date('Ymd_His') . '.xls';
+        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        echo "\xEF\xBB\xBF";
+        $columns = ['Name', 'Email', 'Phone', 'Subject', 'Message', 'Date'];
+        echo implode("\t", $columns) . "\n";
+
+        foreach ($rows as $row) {
+            $line = [
+                $this->cleanExportValue((string)($row['name'] ?? '')),
+                $this->cleanExportValue((string)($row['email'] ?? '')),
+                $this->cleanExportValue((string)($row['phone'] ?? '')),
+                $this->cleanExportValue((string)($row['subject'] ?? '')),
+                $this->cleanExportValue((string)($row['message'] ?? '')),
+                $this->cleanExportValue((string)($row['created_at'] ?? '')),
+            ];
+            echo implode("\t", $line) . "\n";
+        }
+        exit;
+    }
+
     public function eventRegistrations(): void
     {
         Auth::requireAdmin();
@@ -550,5 +580,12 @@ class AdminContentController extends Controller
     private function uploadsRootPath(): string
     {
         return $this->webRootPath() . DIRECTORY_SEPARATOR . 'uploads';
+    }
+
+    private function cleanExportValue(string $value): string
+    {
+        $value = str_replace(["\r\n", "\r"], "\n", $value);
+        $value = str_replace("\t", ' ', $value);
+        return '"' . str_replace('"', '""', $value) . '"';
     }
 }

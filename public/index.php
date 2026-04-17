@@ -15,6 +15,7 @@ $router->add('GET', 'contact', [AboutController::class, 'contact']);
 $router->add('POST', 'contact', [AboutController::class, 'submitContact']);
 $router->add('GET', 'faqs', [AboutController::class, 'faqs']);
 $router->add('GET', 'programmes', [ProgrammesController::class, 'index']);
+$router->add('GET', 'programmes/how-to-apply', [ProgrammesController::class, 'howToApply']);
 $router->add('GET', 'programmes/apply', [ProgrammesController::class, 'applyForm']);
 $router->add('POST', 'programmes/apply', [ProgrammesController::class, 'submitApplication']);
 $router->add('GET', 'programmes/{slug}', [ProgrammesController::class, 'show']);
@@ -38,6 +39,7 @@ $router->add('POST', 'admin/edit/{entity}/{id}', [AdminContentController::class,
 $router->add('GET', 'admin/toggle/{entity}/{id}', [AdminContentController::class, 'toggleVisibility']);
 $router->add('GET', 'admin/delete/{entity}/{id}', [AdminContentController::class, 'delete']);
 $router->add('GET', 'admin/messages', [AdminContentController::class, 'messages']);
+$router->add('GET', 'admin/messages/export', [AdminContentController::class, 'exportMessages']);
 $router->add('GET', 'admin/event-registrations', [AdminContentController::class, 'eventRegistrations']);
 $router->add('GET', 'admin/media', [AdminContentController::class, 'mediaLibrary']);
 $router->add('POST', 'admin/media/upload', [AdminContentController::class, 'uploadMedia']);

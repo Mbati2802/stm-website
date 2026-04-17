@@ -101,3 +101,20 @@ function safe_html(?string $html, array $allowedTags = ['p','br','strong','b','e
 
     return $clean;
 }
+
+function send_notification_email(string $to, string $subject, string $message): bool
+{
+    $to = trim($to);
+    if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
+        return false;
+    }
+
+    $subject = trim($subject) !== '' ? trim($subject) : 'Website Notification';
+    $headers = [
+        'MIME-Version: 1.0',
+        'Content-type: text/plain; charset=UTF-8',
+        'From: no-reply@' . ($_SERVER['HTTP_HOST'] ?? 'localhost'),
+    ];
+
+    return @mail($to, $subject, $message, implode("\r\n", $headers));
+}
