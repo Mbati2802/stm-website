@@ -177,7 +177,7 @@ class ProgrammesController extends Controller
 
         $siteSettings = $model->getSettings();
         $sitePhone = trim((string)($siteSettings['phone'] ?? '')) ?: '+254 791 309011';
-        $siteEmail = trim((string)($siteSettings['email'] ?? '')) ?: 'contact@stmarysmchmcollege.ac.ke';
+        $siteEmail = trim((string)($siteSettings['email'] ?? '')) ?: 'admission@stmarysmchmcollege.ac.ke';
 
         $defaultConfirmation = implode("\n\n", [
             'Application Received Successfully',
@@ -200,7 +200,14 @@ class ProgrammesController extends Controller
             '{EMAIL}' => $siteEmail,
         ]);
 
-        flash('success', $confirmation);
+        // Email the applicant (no PDF). UI only shows a short confirmation.
+        send_notification_email(
+            $email,
+            'Application Received Successfully',
+            $confirmation
+        );
+
+        flash('success', 'Application received successfully. Thank you for applying — our admissions team will contact you soon.');
         $this->redirect('programmes/apply');
     }
 }
