@@ -116,13 +116,24 @@ function send_notification_email(string $to, string $subject, string $message): 
     }
 
     $subject = trim($subject) !== '' ? trim($subject) : 'Website Notification';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $fromDomain = preg_replace('/^www\./i', '', (string)$host) ?: 'localhost';
+    $fromAddress = 'no-reply@' . $fromDomain;
+    if (!filter_var($fromAddress, FILTER_VALIDATE_EMAIL)) {
+        $fromAddress = 'no-reply@localhost.localdomain';
+    }
+
     $headers = [
         'MIME-Version: 1.0',
         'Content-type: text/plain; charset=UTF-8',
-        'From: no-reply@' . ($_SERVER['HTTP_HOST'] ?? 'localhost'),
+        'From: ' . $fromAddress,
     ];
 
-    return @mail($to, $subject, $message, implode("\r\n", $headers));
+    try {
+        return @mail($to, $subject, $message, implode("\r\n", $headers));
+    } catch (Throwable) {
+        return false;
+    }
 }
 
 function send_notification_email_with_attachment(
@@ -139,9 +150,17 @@ function send_notification_email_with_attachment(
     }
 
     $subject = trim($subject) !== '' ? trim($subject) : 'Website Notification';
-    $boundary = '=_Part_' . bin2hex(random_bytes(12));
+    try {
+        $boundary = '=_Part_' . bin2hex(random_bytes(12));
+    } catch (Throwable) {
+        $boundary = '=_Part_' . md5((string)microtime(true) . $to . $subject);
+    }
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $from = 'no-reply@' . preg_replace('/^www\./', '', $host);
+    $fromDomain = preg_replace('/^www\./i', '', (string)$host) ?: 'localhost';
+    $from = 'no-reply@' . $fromDomain;
+    if (!filter_var($from, FILTER_VALIDATE_EMAIL)) {
+        $from = 'no-reply@localhost.localdomain';
+    }
 
     $headers = [
         'MIME-Version: 1.0',
@@ -161,7 +180,11 @@ function send_notification_email_with_attachment(
     $body .= chunk_split(base64_encode($attachmentContent)) . "\r\n";
     $body .= '--' . $boundary . "--\r\n";
 
-    return @mail($to, $subject, $body, implode("\r\n", $headers));
+    try {
+        return @mail($to, $subject, $body, implode("\r\n", $headers));
+    } catch (Throwable) {
+        return false;
+    }
 }
 
 function generate_simple_pdf(array $lines): string

@@ -13,6 +13,10 @@ h1{font-size:clamp(1.7rem,2.2vw,2.4rem)}
 h2{font-size:clamp(1.35rem,1.8vw,1.9rem)}
 h3{font-size:clamp(1.15rem,1.35vw,1.45rem)}
 p,li{font-size:.96rem;line-height:1.6}
+img{max-width:100%;height:auto}
+[data-aos]{transition-duration:.65s!important}
+.boxed-section,.soft-card,.card,.gallery-item,.event-row,.cta-banner{animation:fadeUp .5s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 a{text-decoration:none}
 .site-width{width:100%;padding-left:1.25rem;padding-right:1.25rem;margin-left:auto;margin-right:auto}
 @media (min-width:576px){.site-width{max-width:540px}}
@@ -228,6 +232,8 @@ a{text-decoration:none}
     .site-width{width:100%;max-width:none;padding-left:.75rem;padding-right:.75rem}
     .hero-boxed{padding-left:0!important;padding-right:0!important}
     .hero-grid{grid-template-columns:1fr;min-height:70vh}
+    .hero-left{order:2}
+    .hero-right{order:1}
     .hero-left,.hero-right{min-height:35vh}
     .hero-content{padding:22px 18px;text-align:center;justify-content:center}
     .hero-content h1{font-size:clamp(1.85rem,7vw,2.45rem)}
@@ -253,4 +259,15 @@ a{text-decoration:none}
     .testimonials-section .carousel-control-next{opacity:1}
     .banner-section{min-height:auto}
     .banner-section img{height:auto;max-height:none}
+    .topbar .container{display:flex;flex-direction:column;align-items:flex-start!important;gap:.35rem!important}
+    .topbar .container > div{width:100%}
+    .topbar .container > div:nth-child(2){display:none}
+    .topbar .container > div:first-child{
+        display:flex!important;
+        flex-wrap:nowrap!important;
+        overflow-x:auto;
+        white-space:nowrap;
+        gap:.9rem!important;
+        align-items:center;
+    }
 }

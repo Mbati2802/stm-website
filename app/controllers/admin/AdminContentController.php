@@ -287,6 +287,36 @@ class AdminContentController extends Controller
         $this->redirect('admin/students');
     }
 
+    public function bulkAssignAdmissionNumbers(): void
+    {
+        Auth::requireAdmin();
+        $portalModel = new StudentPortalModel($this->config);
+        $contentModel = new ContentModel($this->config);
+        $format = (string)($contentModel->getSettings()['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}');
+        $students = $portalModel->allStudents();
+
+        $assigned = 0;
+        foreach ($students as $student) {
+            $id = (int)($student['id'] ?? 0);
+            $current = trim((string)($student['admission_number'] ?? ''));
+            if ($id <= 0 || $current !== '') {
+                continue;
+            }
+
+            $admissionNumber = $this->buildAdmissionNumber($format, $id);
+            try {
+                $portalModel->assignAdmissionNumber($id, $admissionNumber);
+                $assigned++;
+            } catch (PDOException) {
+                // Skip duplicates and continue assigning others.
+                continue;
+            }
+        }
+
+        flash('success', 'Bulk generation complete. Assigned admission numbers to ' . $assigned . ' student(s).');
+        $this->redirect('admin/students');
+    }
+
     public function saveSettings(): void
     {
         Auth::requireAdmin();

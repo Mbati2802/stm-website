@@ -76,7 +76,12 @@ class AboutController extends Controller
             $this->redirect('contact');
         }
 
-        $this->model->saveMessage(compact('name', 'email', 'phone', 'subject', 'message'));
+        try {
+            $this->model->saveMessage(compact('name', 'email', 'phone', 'subject', 'message'));
+        } catch (Throwable) {
+            flash('error', 'Contact service is temporarily unavailable. Please try again shortly.');
+            $this->redirect('contact');
+        }
 
         $notifyTo = trim((string)($this->config['contact_notification_email'] ?? ($this->config['notification_email'] ?? 'contact@stmarysmchmcollege.ac.ke')));
         if ($notifyTo !== '') {

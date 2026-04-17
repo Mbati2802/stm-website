@@ -145,13 +145,18 @@ class ProgrammesController extends Controller
             'Heard About Us Via: ' . $referral,
         ]);
 
-        $model->saveMessage([
-            'name' => $name,
-            'email' => $email,
-            'phone' => $phone,
-            'subject' => 'Programme Application',
-            'message' => $message,
-        ]);
+        try {
+            $model->saveMessage([
+                'name' => $name,
+                'email' => $email,
+                'phone' => $phone,
+                'subject' => 'Programme Application',
+                'message' => $message,
+            ]);
+        } catch (Throwable) {
+            flash('error', 'Application service is temporarily unavailable. Please try again shortly.');
+            $this->redirect('programmes/apply');
+        }
 
         $notifyTo = trim((string)($this->config['application_notification_email'] ?? ($this->config['notification_email'] ?? 'admission@stmarysmchmcollege.ac.ke')));
         if ($notifyTo !== '') {
@@ -212,7 +217,7 @@ class ProgrammesController extends Controller
             'Principal',
         ];
         $pdf = generate_simple_pdf($letterLines);
-        send_notification_email_with_attachment(
+        $sentApplicantEmail = send_notification_email_with_attachment(
             $email,
             'Application Received - Interim Admission Letter',
             $applicantBody,
@@ -220,6 +225,11 @@ class ProgrammesController extends Controller
             $pdf,
             'application/pdf'
         );
+
+        if (!$sentApplicantEmail) {
+            flash('error', 'Application received, but confirmation email could not be sent right now. Admissions will still contact you.');
+            $this->redirect('programmes/apply');
+        }
 
         flash('success', 'Your application has been submitted successfully.');
         $this->redirect('programmes/apply');

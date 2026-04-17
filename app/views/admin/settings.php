@@ -20,13 +20,22 @@ $toggleItems = [
 ?>
 
 <section class="py-4">
-    <div class="container">
+    <div class="admin-content-wrap">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
                 <h1 class="h4 fw-bold mb-1">Site Settings</h1>
                 <p class="text-muted mb-0">Manage global content, homepage sections, and page visibility.</p>
             </div>
             <button form="settings-form" class="btn btn-primary">Save Settings</button>
+        </div>
+        <div class="soft-card p-3 mb-3">
+            <div class="d-flex flex-wrap gap-2" id="settings-tabs">
+                <button type="button" class="btn btn-sm btn-primary" data-settings-tab="all">All Sections</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="general">General</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="home">Homepage</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="about">About Page</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="principal">Principal/Registrar</button>
+            </div>
         </div>
 
         <?php if ($msg = flash('success')): ?>
@@ -36,7 +45,7 @@ $toggleItems = [
         <form id="settings-form" method="POST" enctype="multipart/form-data">
             <div class="row g-3">
                 <div class="col-lg-6 d-grid gap-3">
-                    <div class="soft-card p-4">
+                    <div class="soft-card p-4" data-settings-section="general home">
                         <h2 class="h6 text-uppercase text-muted mb-3">General</h2>
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -71,14 +80,14 @@ $toggleItems = [
                         </div>
                     </div>
 
-                    <div class="soft-card p-4">
+                    <div class="soft-card p-4" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Homepage Vertical Cards</h2>
                         <label class="form-label">Cards JSON</label>
                         <textarea name="home_value_cards" rows="12" class="form-control" placeholder='[{\"title_primary\":\"Flexibility\",\"title_secondary\":\"That Fits You\",\"text\":\"...\",\"icon\":\"bi-calendar-check\",\"cta_label\":\"Apply\",\"cta_link\":\"programmes\"}]'><?= e($settings['home_value_cards'] ?? '') ?></textarea>
                         <small class="text-muted">Use Bootstrap Icons classes like <code>bi-heart-pulse</code>, <code>bi-people</code>, <code>bi-award</code>.</small>
                     </div>
 
-                    <div class="soft-card p-4">
+                    <div class="soft-card p-4" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Visibility Controls</h2>
                         <div class="row g-2">
                             <?php foreach ($toggleItems as $k => $label): ?>
@@ -94,7 +103,7 @@ $toggleItems = [
                     </div>
                 </div>
                 <div class="col-lg-6 d-grid gap-3">
-                    <div class="soft-card p-4">
+                    <div class="soft-card p-4" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Homepage Hero</h2>
                         <div class="mb-3">
                             <label class="form-label">Hero Title</label>
@@ -133,7 +142,7 @@ $toggleItems = [
                         </div>
                     </div>
 
-                    <div class="soft-card p-4">
+                    <div class="soft-card p-4" data-settings-section="about">
                         <h2 class="h6 text-uppercase text-muted mb-3">About Page Content</h2>
                         <div class="mb-3">
                             <label class="form-label">About Title</label>
@@ -199,7 +208,7 @@ $toggleItems = [
                         </div>
                     </div>
 
-                    <div class="soft-card p-4">
+                    <div class="soft-card p-4" data-settings-section="principal">
                         <h2 class="h6 text-uppercase text-muted mb-3">Principal Page Content</h2>
                         <div class="mb-3">
                             <label class="form-label">Principal Name</label>
@@ -272,3 +281,26 @@ $toggleItems = [
         </form>
     </div>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.querySelectorAll('[data-settings-tab]');
+    const cards = document.querySelectorAll('[data-settings-section]');
+    if (!tabs.length || !cards.length) return;
+    tabs.forEach((tab) => {
+        tab.addEventListener('click', function () {
+            const target = tab.getAttribute('data-settings-tab') || 'all';
+            tabs.forEach((btn) => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-primary');
+            });
+            tab.classList.remove('btn-outline-primary');
+            tab.classList.add('btn-primary');
+            cards.forEach((card) => {
+                const groups = (card.getAttribute('data-settings-section') || '').split(/\s+/);
+                const visible = target === 'all' || groups.includes(target);
+                card.style.display = visible ? '' : 'none';
+            });
+        });
+    });
+});
+</script>

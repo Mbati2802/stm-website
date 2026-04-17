@@ -10,6 +10,7 @@
             <div class="mb-3">
                 <label class="form-label">Email Address</label>
                 <input type="email" name="email" class="form-control" required>
+                <small class="text-muted">Use your official college email ending with <strong>@stmarysmchmcollege.ac.ke</strong>.</small>
             </div>
             <div class="row g-3">
                 <div class="col-md-6">

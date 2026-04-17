@@ -13,8 +13,16 @@ class StudentPortalController extends Controller
         $password = (string)($_POST['password'] ?? '');
         $confirmPassword = (string)($_POST['confirm_password'] ?? '');
 
-        if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 6 || $password !== $confirmPassword) {
-            flash('error', 'Please provide valid details. Password must be at least 6 characters and match confirmation.');
+        $normalizedEmail = strtolower($email);
+        $validDomain = str_ends_with($normalizedEmail, '@stmarysmchmcollege.ac.ke');
+        if (
+            $name === '' ||
+            !filter_var($email, FILTER_VALIDATE_EMAIL) ||
+            !$validDomain ||
+            strlen($password) < 6 ||
+            $password !== $confirmPassword
+        ) {
+            flash('error', 'Use your official college email ending with @stmarysmchmcollege.ac.ke. Password must be at least 6 characters and match confirmation.');
             $this->redirect('portal/register');
         }
 
