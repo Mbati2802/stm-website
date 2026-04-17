@@ -15,9 +15,19 @@ $currentIntake = (string)($currentIntake ?? 'January');
     <?php if ($msg = flash('success')): ?><div class="alert alert-success"><?= nl2br(e($msg)) ?></div><?php endif; ?>
     <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= nl2br(e($msg)) ?></div><?php endif; ?>
 
+    <div id="applySendingOverlay" style="display:none; position:fixed; inset:0; background:rgba(255,255,255,.85); z-index:9999;">
+      <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:24px;">
+        <div class="text-center">
+          <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+          <div class="mt-3 fw-semibold">Sending, Please Wait...</div>
+          <div class="small text-muted mt-1">Submitting your application</div>
+        </div>
+      </div>
+    </div>
+
     <div class="row g-4">
       <div class="col-lg-8">
-        <form method="POST" action="<?= e(base_url('programmes/apply')) ?>" class="soft-card p-4 bg-white">
+        <form id="programmeApplyForm" method="POST" action="<?= e(base_url('programmes/apply')) ?>" class="soft-card p-4 bg-white">
       <h2 class="h6 text-uppercase text-muted mb-3">Personal Information</h2>
       <div class="row g-3">
         <div class="col-md-6"><label class="form-label">Name</label><input required name="name" class="form-control"></div>
@@ -77,7 +87,7 @@ $currentIntake = (string)($currentIntake ?? 'January');
         </div>
       </div>
       <div class="mt-4 d-flex gap-2">
-        <button class="btn btn-primary">Submit Application</button>
+        <button id="programmeApplySubmitBtn" class="btn btn-primary" type="submit">Submit Application</button>
         <a class="btn btn-outline-primary" href="<?= e(base_url('programmes')) ?>">Back to Programmes</a>
       </div>
     </form>
@@ -112,3 +122,18 @@ $currentIntake = (string)($currentIntake ?? 'January');
     </div>
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('programmeApplyForm');
+  const overlay = document.getElementById('applySendingOverlay');
+  const btn = document.getElementById('programmeApplySubmitBtn');
+  if (!form || !overlay || !btn) return;
+
+  form.addEventListener('submit', function () {
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+    overlay.style.display = 'block';
+  });
+});
+</script>

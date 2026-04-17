@@ -119,24 +119,41 @@ function send_notification_email(string $to, string $subject, string $message): 
     $subject = trim($subject) !== '' ? trim($subject) : 'Website Notification';
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $fromDomain = preg_replace('/^www\./i', '', (string)$host) ?: 'localhost';
-    $fromAddress = 'no-reply@' . $fromDomain;
-    if (!filter_var($fromAddress, FILTER_VALIDATE_EMAIL)) {
-        $fromAddress = 'no-reply@localhost.localdomain';
+    $fallbackFrom = 'no-reply@' . $fromDomain;
+    if (!filter_var($fallbackFrom, FILTER_VALIDATE_EMAIL)) {
+        $fallbackFrom = 'no-reply@localhost.localdomain';
     }
 
-    $headers = [
+    $smtpFrom = trim((string)($config['smtp_from_email'] ?? ''));
+    $smtpUser = trim((string)($config['smtp_username'] ?? ''));
+    $fromAddress = filter_var($smtpFrom, FILTER_VALIDATE_EMAIL)
+        ? $smtpFrom
+        : (filter_var($smtpUser, FILTER_VALIDATE_EMAIL) ? $smtpUser : $fallbackFrom);
+
+    $replyTo = trim((string)($config['notification_email'] ?? ''));
+    if (!filter_var($replyTo, FILTER_VALIDATE_EMAIL)) {
+        $replyTo = '';
+    }
+
+    // When SMTP is configured, smtp_send_email() will generate the From header.
+    // Including a second From header here can cause external providers to reject the message.
+    $baseHeaders = [
         'MIME-Version: 1.0',
         'Content-type: text/plain; charset=UTF-8',
-        'From: ' . $fromAddress,
     ];
+    if ($replyTo !== '') {
+        $baseHeaders[] = 'Reply-To: ' . $replyTo;
+    }
 
-    $smtpSent = smtp_send_email($to, $subject, $message, implode("\r\n", $headers), null, $config ?? []);
+    $smtpSent = smtp_send_email($to, $subject, $message, implode("\r\n", $baseHeaders), null, $config ?? []);
     if ($smtpSent !== null) {
         return $smtpSent;
     }
 
     try {
-        return @mail($to, $subject, $message, implode("\r\n", $headers));
+        $mailHeaders = $baseHeaders;
+        $mailHeaders[] = 'From: ' . $fromAddress;
+        return @mail($to, $subject, $message, implode("\r\n", $mailHeaders));
     } catch (Throwable) {
         return false;
     }
@@ -164,16 +181,29 @@ function send_notification_email_with_attachment(
     }
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $fromDomain = preg_replace('/^www\./i', '', (string)$host) ?: 'localhost';
-    $from = 'no-reply@' . $fromDomain;
-    if (!filter_var($from, FILTER_VALIDATE_EMAIL)) {
-        $from = 'no-reply@localhost.localdomain';
+    $fallbackFrom = 'no-reply@' . $fromDomain;
+    if (!filter_var($fallbackFrom, FILTER_VALIDATE_EMAIL)) {
+        $fallbackFrom = 'no-reply@localhost.localdomain';
+    }
+
+    $smtpFrom = trim((string)($config['smtp_from_email'] ?? ''));
+    $smtpUser = trim((string)($config['smtp_username'] ?? ''));
+    $from = filter_var($smtpFrom, FILTER_VALIDATE_EMAIL)
+        ? $smtpFrom
+        : (filter_var($smtpUser, FILTER_VALIDATE_EMAIL) ? $smtpUser : $fallbackFrom);
+
+    $replyTo = trim((string)($config['notification_email'] ?? ''));
+    if (!filter_var($replyTo, FILTER_VALIDATE_EMAIL)) {
+        $replyTo = '';
     }
 
     $headers = [
         'MIME-Version: 1.0',
-        'From: ' . $from,
         'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
     ];
+    if ($replyTo !== '') {
+        $headers[] = 'Reply-To: ' . $replyTo;
+    }
 
     $body = '';
     $body .= '--' . $boundary . "\r\n";
@@ -193,7 +223,9 @@ function send_notification_email_with_attachment(
     }
 
     try {
-        return @mail($to, $subject, $body, implode("\r\n", $headers));
+        $mailHeaders = $headers;
+        $mailHeaders[] = 'From: ' . $from;
+        return @mail($to, $subject, $body, implode("\r\n", $mailHeaders));
     } catch (Throwable) {
         return false;
     }
