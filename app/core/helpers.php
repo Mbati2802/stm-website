@@ -110,6 +110,7 @@ function safe_html(?string $html, array $allowedTags = ['p','br','strong','b','e
 
 function send_notification_email(string $to, string $subject, string $message): bool
 {
+    global $config;
     $to = trim($to);
     if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
         return false;
@@ -129,6 +130,11 @@ function send_notification_email(string $to, string $subject, string $message): 
         'From: ' . $fromAddress,
     ];
 
+    $smtpSent = smtp_send_email($to, $subject, $message, implode("\r\n", $headers), null, $config ?? []);
+    if ($smtpSent !== null) {
+        return $smtpSent;
+    }
+
     try {
         return @mail($to, $subject, $message, implode("\r\n", $headers));
     } catch (Throwable) {
@@ -144,6 +150,7 @@ function send_notification_email_with_attachment(
     string $attachmentContent,
     string $attachmentMime = 'application/octet-stream'
 ): bool {
+    global $config;
     $to = trim($to);
     if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
         return false;
@@ -180,11 +187,118 @@ function send_notification_email_with_attachment(
     $body .= chunk_split(base64_encode($attachmentContent)) . "\r\n";
     $body .= '--' . $boundary . "--\r\n";
 
+    $smtpSent = smtp_send_email($to, $subject, $body, implode("\r\n", $headers), $boundary, $config ?? []);
+    if ($smtpSent !== null) {
+        return $smtpSent;
+    }
+
     try {
         return @mail($to, $subject, $body, implode("\r\n", $headers));
     } catch (Throwable) {
         return false;
     }
+}
+
+function smtp_send_email(string $to, string $subject, string $body, string $headers, ?string $boundary, array $config): ?bool
+{
+    $smtpHost = trim((string)($config['smtp_host'] ?? ''));
+    if ($smtpHost === '') {
+        return null;
+    }
+
+    $smtpPort = (int)($config['smtp_port'] ?? 587);
+    $smtpUser = trim((string)($config['smtp_username'] ?? ''));
+    $smtpPass = (string)($config['smtp_password'] ?? '');
+    $smtpSecure = strtolower(trim((string)($config['smtp_encryption'] ?? 'tls')));
+    $smtpFrom = trim((string)($config['smtp_from_email'] ?? ''));
+    $smtpFromName = trim((string)($config['smtp_from_name'] ?? ($config['app_name'] ?? 'Website')));
+
+    if ($smtpFrom === '' || !filter_var($smtpFrom, FILTER_VALIDATE_EMAIL)) {
+        $smtpFrom = $smtpUser;
+    }
+    if ($smtpFrom === '' || !filter_var($smtpFrom, FILTER_VALIDATE_EMAIL)) {
+        return false;
+    }
+
+    $transport = $smtpHost;
+    if ($smtpSecure === 'ssl') {
+        $transport = 'ssl://' . $smtpHost;
+    }
+
+    $socket = @stream_socket_client($transport . ':' . $smtpPort, $errno, $errstr, 20);
+    if (!$socket) {
+        return false;
+    }
+    stream_set_timeout($socket, 20);
+
+    $ok = smtp_expect($socket, [220]);
+    $ok = $ok && smtp_command($socket, 'EHLO localhost', [250]);
+
+    if ($ok && $smtpSecure === 'tls') {
+        $ok = smtp_command($socket, 'STARTTLS', [220]) && @stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+        $ok = $ok && smtp_command($socket, 'EHLO localhost', [250]);
+    }
+
+    if ($ok && $smtpUser !== '') {
+        $ok = smtp_command($socket, 'AUTH LOGIN', [334]);
+        $ok = $ok && smtp_command($socket, base64_encode($smtpUser), [334]);
+        $ok = $ok && smtp_command($socket, base64_encode($smtpPass), [235]);
+    }
+
+    $ok = $ok && smtp_command($socket, 'MAIL FROM:<' . $smtpFrom . '>', [250]);
+    $ok = $ok && smtp_command($socket, 'RCPT TO:<' . $to . '>', [250, 251]);
+    $ok = $ok && smtp_command($socket, 'DATA', [354]);
+    if (!$ok) {
+        @fwrite($socket, "QUIT\r\n");
+        @fclose($socket);
+        return false;
+    }
+
+    $mailHeaders = [];
+    $mailHeaders[] = 'From: ' . ($smtpFromName !== '' ? ('"' . addslashes($smtpFromName) . '" <' . $smtpFrom . '>') : $smtpFrom);
+    $mailHeaders[] = 'To: <' . $to . '>';
+    $mailHeaders[] = 'Subject: ' . $subject;
+    $mailHeaders[] = $headers;
+    $mailHeaders[] = 'Date: ' . date('r');
+    $mailHeaders[] = 'Message-ID: <' . md5((string)microtime(true) . $to) . '@' . preg_replace('/^.*@/', '', $smtpFrom) . '>';
+    if ($boundary !== null) {
+        $mailHeaders[] = 'Content-Type: multipart/mixed; boundary="' . $boundary . '"';
+    }
+    $mailData = implode("\r\n", $mailHeaders) . "\r\n\r\n" . $body;
+    $mailData = str_replace(["\r\n.", "\n."], ["\r\n..", "\n.."], $mailData);
+    @fwrite($socket, $mailData . "\r\n.\r\n");
+
+    $ok = smtp_expect($socket, [250]);
+    @fwrite($socket, "QUIT\r\n");
+    @fclose($socket);
+    return $ok;
+}
+
+function smtp_command($socket, string $command, array $expectedCodes): bool
+{
+    @fwrite($socket, $command . "\r\n");
+    return smtp_expect($socket, $expectedCodes);
+}
+
+function smtp_expect($socket, array $expectedCodes): bool
+{
+    $line = '';
+    $code = 0;
+    while (!feof($socket)) {
+        $line = fgets($socket, 515) ?: '';
+        if ($line === '') {
+            break;
+        }
+        if (preg_match('/^(\d{3})([\s-])/', $line, $m)) {
+            $code = (int)$m[1];
+            if ($m[2] === ' ') {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+    return in_array($code, $expectedCodes, true);
 }
 
 function generate_simple_pdf(array $lines): string

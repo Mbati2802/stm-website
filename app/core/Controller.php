@@ -19,7 +19,12 @@ class Controller
             return;
         }
 
-        $layout = str_starts_with($view, 'admin/') ? 'admin.php' : 'app.php';
+        $layout = 'app.php';
+        if (str_starts_with($view, 'admin/')) {
+            $layout = 'admin.php';
+        } elseif (str_starts_with($view, 'pages/portal_')) {
+            $layout = 'portal.php';
+        }
         include __DIR__ . '/../views/layouts/' . $layout;
     }
 

@@ -16,4 +16,11 @@ return [
     'contact_notification_email' => 'contact@stmarysmchmcollege.ac.ke',
     'application_notification_email' => 'admission@stmarysmchmcollege.ac.ke',
     'registrar_email' => 'registrar@stmarysmchmcollege.ac.ke',
+    'smtp_host' => 'mail.stmarysmchmcollege.ac.ke',
+    'smtp_port' => 587,
+    'smtp_encryption' => 'tls', // tls or ssl
+    'smtp_username' => 'no-reply@stmarysmchmcollege.ac.ke',
+    'smtp_password' => 'your_smtp_password',
+    'smtp_from_email' => 'no-reply@stmarysmchmcollege.ac.ke',
+    'smtp_from_name' => 'St. Mary\'s College',
 ];

@@ -52,7 +52,7 @@
                 <li class="nav-item"><a class="nav-link <?= $path === 'events' ? 'active' : '' ?>" href="<?= e(base_url('events')) ?>">Events</a></li>
                 <li class="nav-item"><a class="nav-link <?= $path === 'library' ? 'active' : '' ?>" href="<?= e(base_url('library')) ?>">Library</a></li>
                 <li class="nav-item"><a class="nav-link <?= in_array($path, ['media', 'gallery']) ? 'active' : '' ?>" href="<?= e(base_url('media')) ?>">Media Desk</a></li>
-                <li class="nav-item"><a class="nav-link <?= str_starts_with($path, 'portal') ? 'active' : '' ?>" href="<?= e(base_url('portal/login')) ?>">Student Portal</a></li>
+                <li class="nav-item"><a class="nav-link <?= str_starts_with($path, 'portal') ? 'active' : '' ?>" href="<?= e(base_url('portal/login')) ?>" target="_blank" rel="noopener">Student Portal</a></li>
                 <li class="nav-item"><a class="btn btn-primary ms-lg-2" href="<?= e(base_url('contact')) ?>">Contact Us</a></li>
             </ul>
         </div>

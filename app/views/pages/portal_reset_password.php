@@ -1,8 +1,9 @@
-<section class="section-stack">
-    <div class="site-width boxed-section" style="max-width: 640px;">
-        <h1 class="split-title mb-3"><span class="title-primary">Reset</span> <span class="title-secondary">Password</span></h1>
+<section>
+    <div class="portal-card p-4 p-md-5 mx-auto" style="max-width: 640px;">
+        <h1 class="portal-title mb-1">Reset Password</h1>
+        <p class="portal-subtitle mb-3">Enter the reset code and choose a new password.</p>
         <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= e($msg) ?></div><?php endif; ?>
-        <form method="POST" action="<?= e(base_url('portal/reset-password')) ?>" class="soft-card p-4 bg-white">
+        <form method="POST" action="<?= e(base_url('portal/reset-password')) ?>">
             <div class="mb-3">
                 <label class="form-label">Email Address</label>
                 <input type="email" name="email" class="form-control" required>

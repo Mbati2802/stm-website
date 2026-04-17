@@ -1,8 +1,9 @@
-<section class="section-stack">
-    <div class="site-width boxed-section" style="max-width: 640px;">
-        <h1 class="split-title mb-3"><span class="title-primary">Create</span> <span class="title-secondary">Student Account</span></h1>
+<section>
+    <div class="portal-card p-4 p-md-5 mx-auto" style="max-width: 640px;">
+        <h1 class="portal-title mb-1">Create Student Account</h1>
+        <p class="portal-subtitle mb-3">Only official college email addresses are allowed.</p>
         <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= e($msg) ?></div><?php endif; ?>
-        <form method="POST" action="<?= e(base_url('portal/register')) ?>" class="soft-card p-4 bg-white">
+        <form method="POST" action="<?= e(base_url('portal/register')) ?>">
             <div class="mb-3">
                 <label class="form-label">Full Name</label>
                 <input name="name" class="form-control" required>

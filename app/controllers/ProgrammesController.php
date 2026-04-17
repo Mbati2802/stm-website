@@ -228,10 +228,10 @@ class ProgrammesController extends Controller
 
         if (!$sentApplicantEmail) {
             flash('error', 'Application received, but confirmation email could not be sent right now. Admissions will still contact you.');
-            $this->redirect('programmes/apply');
+            $this->redirect('programmes');
         }
 
         flash('success', 'Your application has been submitted successfully.');
-        $this->redirect('programmes/apply');
+        $this->redirect('programmes');
     }
 }

@@ -1,9 +1,10 @@
-<section class="section-stack">
-    <div class="site-width boxed-section" style="max-width: 560px;">
-        <h1 class="split-title mb-3"><span class="title-primary">Student</span> <span class="title-secondary">Portal Login</span></h1>
+<section>
+    <div class="portal-card p-4 p-md-5 mx-auto" style="max-width: 560px;">
+        <h1 class="portal-title mb-1">Student Portal Login</h1>
+        <p class="portal-subtitle mb-3">Use your admission number and password.</p>
         <?php if ($msg = flash('success')): ?><div class="alert alert-success"><?= e($msg) ?></div><?php endif; ?>
         <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= e($msg) ?></div><?php endif; ?>
-        <form method="POST" action="<?= e(base_url('portal/login')) ?>" class="soft-card p-4 bg-white">
+        <form method="POST" action="<?= e(base_url('portal/login')) ?>">
             <div class="mb-3">
                 <label class="form-label">Admission Number</label>
                 <input name="admission_number" class="form-control" required>

@@ -98,7 +98,7 @@ class AboutController extends Controller
         }
 
         flash('success', 'Message submitted successfully. Our admissions team will contact you.');
-        $this->redirect('contact');
+        $this->redirect('');
     }
 
     public function faqs(): void
