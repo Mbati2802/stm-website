@@ -33,6 +33,53 @@ class ContentModel
         return $this->filterHidden('programmes', $stmt->fetchAll());
     }
 
+    public function getTrendingProgrammes(int $limit = 6): array
+    {
+        $all = $this->getProgrammes();
+        if ($all === []) {
+            return [];
+        }
+
+        $metrics = $this->programmeMetricsMap();
+        $scored = [];
+        foreach ($all as $programme) {
+            $slug = (string)($programme['slug'] ?? '');
+            $views = (int)($metrics[$slug]['views'] ?? 0);
+            $applications = (int)($metrics[$slug]['applications'] ?? 0);
+            $baseScore = ($applications * 5) + $views;
+            // Keep top performers visible while rotating similar-score cards.
+            $dynamicScore = $baseScore + (mt_rand(0, 25) / 100);
+            $programme['_trend_score'] = $dynamicScore;
+            $scored[] = $programme;
+        }
+
+        usort($scored, static function (array $a, array $b): int {
+            return ($b['_trend_score'] <=> $a['_trend_score']);
+        });
+        $scored = array_slice($scored, 0, max(1, $limit));
+        return array_map(static function (array $row): array {
+            unset($row['_trend_score']);
+            return $row;
+        }, $scored);
+    }
+
+    public function incrementProgrammeMetric(string $programmeSlug, string $metric): void
+    {
+        $slug = trim($programmeSlug);
+        $metricName = strtolower(trim($metric));
+        if ($slug === '' || !in_array($metricName, ['views', 'applications'], true)) {
+            return;
+        }
+        $safeSlug = preg_replace('/[^a-z0-9\-_]/i', '', $slug);
+        if ($safeSlug === null || $safeSlug === '') {
+            return;
+        }
+
+        $key = 'programme_metric_' . $safeSlug . '_' . $metricName;
+        $current = (int)($this->getSettingValue($key) ?? '0');
+        $this->setSettingValue($key, (string)($current + 1));
+    }
+
     public function getProgrammes(?string $type = null, ?string $search = null): array
     {
         $sql = 'SELECT p.*, d.name department_name FROM programmes p LEFT JOIN departments d ON d.id = p.department_id WHERE 1=1';
@@ -445,5 +492,31 @@ class ContentModel
     private function encodeLines(string $value): string
     {
         return implode("\n", $this->decodeLines($value));
+    }
+
+    private function programmeMetricsMap(): array
+    {
+        try {
+            $stmt = $this->pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'programme_metric\\_%\\_views' ESCAPE '\\' OR setting_key LIKE 'programme_metric\\_%\\_applications' ESCAPE '\\'");
+            $rows = $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+
+        $map = [];
+        foreach ($rows as $row) {
+            $key = (string)($row['setting_key'] ?? '');
+            $value = (int)($row['setting_value'] ?? 0);
+            if (!preg_match('/^programme_metric_(.+)_(views|applications)$/', $key, $matches)) {
+                continue;
+            }
+            $slug = (string)($matches[1] ?? '');
+            $metric = (string)($matches[2] ?? '');
+            if ($slug === '' || $metric === '') {
+                continue;
+            }
+            $map[$slug][$metric] = $value;
+        }
+        return $map;
     }
 }

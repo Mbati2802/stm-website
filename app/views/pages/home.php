@@ -111,8 +111,8 @@ foreach ($bannerCandidates as $candidate) {
     <div class="site-width boxed-section">
         <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-up">
             <h2 class="h3 fw-bold mb-0 split-title">
-                <span class="title-primary">Courses</span> |
-                <span class="title-secondary">Programmes On Offer</span>
+                <span class="title-primary">Top Treding</span> |
+                <span class="title-secondary">Courses On Offer</span>
             </h2>
             <a href="<?= e(base_url('programmes')) ?>" class="btn btn-sm btn-outline-primary">Browse all</a>
         </div>

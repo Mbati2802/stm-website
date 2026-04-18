@@ -53,7 +53,7 @@ class HomeController extends Controller
             'settings' => $settings,
             'heroImages' => $heroImages,
             'heroCards' => $heroCards,
-            'featuredProgrammes' => $model->getFeaturedProgrammes(8),
+            'featuredProgrammes' => $model->getTrendingProgrammes(8),
             'news' => $model->latest('news', 3),
             'testimonials' => [
                 ['name' => 'Brenda W.', 'course' => 'Prospective Student', 'message' => 'The admissions team was responsive and helped me choose the right programme path.'],

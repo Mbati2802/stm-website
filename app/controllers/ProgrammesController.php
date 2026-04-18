@@ -56,6 +56,7 @@ class ProgrammesController extends Controller
         ));
         $settings = $model->getSettings();
         $programmeContent = $model->getProgrammeContentForView($programme);
+        $model->incrementProgrammeMetric((string)($programme['slug'] ?? ''), 'views');
 
         $this->view('pages/programme_details', [
             'metaTitle' => $programme['name'],
@@ -127,6 +128,7 @@ class ProgrammesController extends Controller
         $level = trim($_POST['level'] ?? '');
         $intake = trim($_POST['preferred_intake'] ?? '');
         $referral = trim($_POST['referral_source'] ?? '');
+        $courseSlug = slugify($course);
 
         if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $phone === '' || $course === '') {
             flash('error', 'Please complete all required application fields correctly.');
@@ -153,6 +155,7 @@ class ProgrammesController extends Controller
                 'subject' => 'Programme Application',
                 'message' => $message,
             ]);
+            $model->incrementProgrammeMetric($courseSlug, 'applications');
         } catch (Throwable) {
             flash('error', 'Application service is temporarily unavailable. Please try again shortly.');
             $this->redirect('programmes/apply');
