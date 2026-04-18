@@ -128,24 +128,45 @@ class StudentPortalController extends Controller
         $password = (string)($_POST['password'] ?? '');
         $confirm = (string)($_POST['confirm_password'] ?? '');
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $code === '' || strlen($password) < 6 || $password !== $confirm) {
-            flash('error', 'Please provide valid reset details. Password must be at least 6 characters and match confirmation.');
+        // Enhanced validation
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            flash('error', 'Please provide a valid email address.');
+            $this->redirect('portal/reset-password');
+        }
+        
+        if ($code === '' || strlen($code) < 4) {
+            flash('error', 'Please provide a valid reset code.');
+            $this->redirect('portal/reset-password');
+        }
+        
+        if (strlen($password) < 6) {
+            flash('error', 'Password must be at least 6 characters long.');
+            $this->redirect('portal/reset-password');
+        }
+        
+        if ($password !== $confirm) {
+            flash('error', 'Passwords do not match. Please try again.');
             $this->redirect('portal/reset-password');
         }
 
         $model = new StudentPortalModel($this->config);
         $reset = $model->findValidResetCode($email, $code);
+        
         if ($reset === null) {
-            flash('error', 'Invalid or expired reset code.');
+            flash('error', 'Invalid or expired reset code. Please request a new code.');
             $this->redirect('portal/reset-password');
         }
 
         $studentId = (int)$reset['student_id'];
-        $model->updateStudentPassword($studentId, password_hash($password, PASSWORD_DEFAULT));
-        $model->markResetCodeUsed((int)$reset['id']);
-
-        flash('success', 'Password reset successful. You can now log in.');
-        $this->redirect('portal/login');
+        try {
+            $model->updateStudentPassword($studentId, password_hash($password, PASSWORD_DEFAULT));
+            $model->markResetCodeUsed((int)$reset['id']);
+            flash('success', 'Password reset successful. You can now log in with your new password.');
+            $this->redirect('portal/login');
+        } catch (Exception $e) {
+            flash('error', 'An error occurred while resetting your password. Please try again.');
+            $this->redirect('portal/reset-password');
+        }
     }
 
     private function requireStudent(): array

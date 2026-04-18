@@ -329,6 +329,70 @@ class AdminContentController extends Controller
         $this->redirect('admin/students');
     }
 
+    public function resetStudentPassword(): void
+    {
+        Auth::requireAdmin();
+        $studentId = (int)($_POST['student_id'] ?? 0);
+        $newPassword = (string)($_POST['new_password'] ?? '');
+        $confirmPassword = (string)($_POST['confirm_password'] ?? '');
+
+        if ($studentId <= 0 || strlen($newPassword) < 6 || $newPassword !== $confirmPassword) {
+            flash('error', 'Invalid request. Password must be at least 6 characters and match confirmation.');
+            $this->redirect('admin/students');
+        }
+
+        $portalModel = new StudentPortalModel($this->config);
+        $student = $portalModel->findStudentById($studentId);
+        if ($student === null) {
+            flash('error', 'Student not found.');
+            $this->redirect('admin/students');
+        }
+
+        $portalModel->updateStudentPassword($studentId, password_hash($newPassword, PASSWORD_DEFAULT));
+        flash('success', 'Password reset successfully for ' . e($student['name']));
+        $this->redirect('admin/students');
+    }
+
+    public function assignAdmissionNumber(): void
+    {
+        Auth::requireAdmin();
+        $studentId = (int)($_POST['student_id'] ?? 0);
+        $admissionNumber = strtoupper(trim($_POST['admission_number'] ?? ''));
+
+        if ($studentId <= 0) {
+            flash('error', 'Invalid student ID.');
+            $this->redirect('admin/students');
+        }
+
+        $portalModel = new StudentPortalModel($this->config);
+        $student = $portalModel->findStudentById($studentId);
+        if ($student === null) {
+            flash('error', 'Student not found.');
+            $this->redirect('admin/students');
+        }
+
+        if ($admissionNumber === '') {
+            $contentModel = new ContentModel($this->config);
+            $format = (string)($contentModel->getSettings()['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}');
+            $admissionNumber = $this->buildAdmissionNumber($format, $studentId);
+        }
+
+        if (!preg_match('/^[A-Z0-9\/\-_]+$/', $admissionNumber)) {
+            flash('error', 'Admission number format is invalid. Use letters, numbers, /, -, _.');
+            $this->redirect('admin/students');
+        }
+
+        try {
+            $portalModel->assignAdmissionNumber($studentId, $admissionNumber);
+        } catch (PDOException) {
+            flash('error', 'Admission number already exists. Please choose another one.');
+            $this->redirect('admin/students');
+        }
+
+        flash('success', 'Admission number assigned successfully.');
+        $this->redirect('admin/students');
+    }
+
     public function saveSettings(): void
     {
         Auth::requireAdmin();

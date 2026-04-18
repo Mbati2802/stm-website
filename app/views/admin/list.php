@@ -8,8 +8,8 @@
             </div>
         </div>
         <?php if ($msg=flash('success')): ?><div class="alert alert-success"><?= e($msg) ?></div><?php endif; ?>
-        <div class="table-responsive soft-card p-3 admin-table-card">
-            <table class="table table-sm align-middle admin-table">
+        <div class="table-responsive admin-table-card">
+            <table class="table align-middle admin-table">
                 <thead>
                 <tr>
                     <?php if(!empty($rows)): foreach(array_keys($rows[0]) as $h): ?><th><?= e($h) ?></th><?php endforeach; endif; ?>
@@ -21,8 +21,13 @@
                 <?php foreach($rows as $row): ?>
                     <tr>
                         <?php foreach($row as $v): ?><td><?= e((string)$v) ?></td><?php endforeach; ?>
-                        <td><?php $hiddenIds = $hiddenIds ?? []; $isVisible = !in_array((int)$row['id'], $hiddenIds, true); ?><a class="btn btn-sm <?= $isVisible ? 'btn-outline-success' : 'btn-outline-warning' ?>" href="<?= e(base_url('admin/toggle/' . $entity . '/' . $row['id'])) ?>" title="<?= $isVisible ? 'Visible' : 'Hidden' ?>"><?= $isVisible ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>' ?></a></td>
-                        <td class="d-flex gap-1"><a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/edit/' . $entity . '/' . $row['id'])) ?>"><i class="bi bi-pencil-square me-1"></i>Edit</a><a class="btn btn-sm btn-outline-danger" href="<?= e(base_url('admin/delete/' . $entity . '/' . $row['id'])) ?>" onclick="return confirm('Delete item?')"><i class="bi bi-trash me-1"></i>Delete</a></td>
+                        <td><?php $hiddenIds = $hiddenIds ?? []; $isVisible = !in_array((int)$row['id'], $hiddenIds, true); ?><a class="btn btn-sm btn-action-toggle" href="<?= e(base_url('admin/toggle/' . $entity . '/' . $row['id'])) ?>" title="<?= $isVisible ? 'Visible' : 'Hidden' ?>"><?= $isVisible ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>' ?></a></td>
+                        <td>
+                            <div class="action-buttons">
+                                <a class="btn btn-sm btn-action-edit" href="<?= e(base_url('admin/edit/' . $entity . '/' . $row['id'])) ?>" title="Edit"><i class="bi bi-pencil-square"></i></a>
+                                <a class="btn btn-sm btn-action-delete" href="<?= e(base_url('admin/delete/' . $entity . '/' . $row['id'])) ?>" onclick="return confirm('Delete item?')" title="Delete"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

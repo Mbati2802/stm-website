@@ -26,15 +26,15 @@ $toggleItems = [
                 <h1 class="h4 fw-bold mb-1">Site Settings</h1>
                 <p class="text-muted mb-0">Manage global content, homepage sections, and page visibility.</p>
             </div>
-            <button form="settings-form" class="btn btn-primary">Save Settings</button>
+            <button form="settings-form" class="btn settings-save-button"><i class="bi bi-save me-2"></i>Save Settings</button>
         </div>
-        <div class="soft-card p-3 mb-3">
-            <div class="d-flex flex-wrap gap-2" id="settings-tabs">
-                <button type="button" class="btn btn-sm btn-primary" data-settings-tab="all">All Sections</button>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="general">General</button>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="home">Homepage</button>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="about">About Page</button>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="principal">Principal/Registrar</button>
+        <div class="settings-section-card">
+            <div class="settings-tabs" id="settings-tabs">
+                <button type="button" class="btn btn-sm btn-primary" data-settings-tab="all"><i class="bi bi-grid me-2"></i>All Sections</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="general"><i class="bi bi-gear me-2"></i>General</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="home"><i class="bi bi-house me-2"></i>Homepage</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="about"><i class="bi bi-info-circle me-2"></i>About Page</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="principal"><i class="bi bi-person-badge me-2"></i>Principal/Registrar</button>
             </div>
         </div>
 
@@ -45,8 +45,8 @@ $toggleItems = [
         <form id="settings-form" method="POST" enctype="multipart/form-data">
             <div class="row g-3">
                 <div class="col-lg-6 d-grid gap-3">
-                    <div class="soft-card p-4" data-settings-section="general home">
-                        <h2 class="h6 text-uppercase text-muted mb-3">General</h2>
+                    <div class="settings-section-card" data-settings-section="general home">
+                        <h6><i class="bi bi-sliders me-2"></i>General Settings</h6>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Phone</label>
@@ -85,15 +85,15 @@ $toggleItems = [
                         </div>
                     </div>
 
-                    <div class="soft-card p-4" data-settings-section="home">
-                        <h2 class="h6 text-uppercase text-muted mb-3">Homepage Vertical Cards</h2>
+                    <div class="settings-section-card" data-settings-section="home">
+                        <h6><i class="bi bi-layout-three-columns me-2"></i>Homepage Vertical Cards</h6>
                         <label class="form-label">Cards JSON</label>
                         <textarea name="home_value_cards" rows="12" class="form-control" placeholder='[{\"title_primary\":\"Flexibility\",\"title_secondary\":\"That Fits You\",\"text\":\"...\",\"icon\":\"bi-calendar-check\",\"cta_label\":\"Apply\",\"cta_link\":\"programmes\"}]'><?= e($settings['home_value_cards'] ?? '') ?></textarea>
                         <small class="text-muted">Use Bootstrap Icons classes like <code>bi-heart-pulse</code>, <code>bi-people</code>, <code>bi-award</code>.</small>
                     </div>
 
-                    <div class="soft-card p-4" data-settings-section="home">
-                        <h2 class="h6 text-uppercase text-muted mb-3">Visibility Controls</h2>
+                    <div class="settings-section-card" data-settings-section="home">
+                        <h6><i class="bi bi-eye me-2"></i>Visibility Controls</h6>
                         <div class="row g-2">
                             <?php foreach ($toggleItems as $k => $label): ?>
                                 <?php $checked = !isset($settings[$k]) || in_array(strtolower((string)$settings[$k]), ['1', 'true', 'yes', 'on'], true); ?>
@@ -108,8 +108,8 @@ $toggleItems = [
                     </div>
                 </div>
                 <div class="col-lg-6 d-grid gap-3">
-                    <div class="soft-card p-4" data-settings-section="home">
-                        <h2 class="h6 text-uppercase text-muted mb-3">Homepage Hero</h2>
+                    <div class="settings-section-card" data-settings-section="home">
+                        <h6><i class="bi bi-stars me-2"></i>Homepage Hero</h6>
                         <div class="mb-3">
                             <label class="form-label">Hero Title</label>
                             <input name="home_hero_title" class="form-control" value="<?= e($settings['home_hero_title'] ?? '') ?>">

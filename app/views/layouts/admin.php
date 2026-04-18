@@ -34,15 +34,36 @@ $adminPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
             <!-- Content Management -->
             <div class="admin-nav-group">
                 <div class="admin-nav-group-title">Content Management</div>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/list/programmes') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/programmes')) ?>"><i class="bi bi-journal-text"></i><span>Programmes</span></a>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/list/departments') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/departments')) ?>"><i class="bi bi-diagram-3"></i><span>Departments</span></a>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/list/news') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/news')) ?>"><i class="bi bi-newspaper"></i><span>News</span></a>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/list/careers') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/careers')) ?>"><i class="bi bi-briefcase"></i><span>Careers</span></a>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/list/tenders') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/tenders')) ?>"><i class="bi bi-file-earmark-check"></i><span>Tenders</span></a>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/list/library_resources') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/library_resources')) ?>"><i class="bi bi-book"></i><span>Library</span></a>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/list/gallery') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/gallery')) ?>"><i class="bi bi-images"></i><span>Gallery</span></a>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/list/faqs') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/faqs')) ?>"><i class="bi bi-question-circle"></i><span>FAQs</span></a>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/list/pages') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/pages')) ?>"><i class="bi bi-file-richtext"></i><span>Pages</span></a>
+                <div class="dropdown">
+                    <button class="nav-link dropdown-toggle <?= str_contains($adminPath, 'admin/list/programmes') || str_contains($adminPath, 'admin/list/departments') ? 'active' : '' ?>" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="bi bi-collection"></i><span>Academic Content</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/programmes') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/programmes')) ?>"><i class="bi bi-journal-text me-2"></i>Programmes</a></li>
+                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/departments') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/departments')) ?>"><i class="bi bi-diagram-3 me-2"></i>Departments</a></li>
+                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/library_resources') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/library_resources')) ?>"><i class="bi bi-book me-2"></i>Library</a></li>
+                    </ul>
+                </div>
+                <div class="dropdown">
+                    <button class="nav-link dropdown-toggle <?= str_contains($adminPath, 'admin/list/news') || str_contains($adminPath, 'admin/list/careers') || str_contains($adminPath, 'admin/list/tenders') ? 'active' : '' ?>" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="bi bi-broadcast"></i><span>News & Updates</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/news') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/news')) ?>"><i class="bi bi-newspaper me-2"></i>News</a></li>
+                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/careers') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/careers')) ?>"><i class="bi bi-briefcase me-2"></i>Careers</a></li>
+                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/tenders') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/tenders')) ?>"><i class="bi bi-file-earmark-check me-2"></i>Tenders</a></li>
+                    </ul>
+                </div>
+                <div class="dropdown">
+                    <button class="nav-link dropdown-toggle <?= str_contains($adminPath, 'admin/list/gallery') || str_contains($adminPath, 'admin/list/faqs') || str_contains($adminPath, 'admin/list/pages') ? 'active' : '' ?>" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="bi bi-layers"></i><span>Site Content</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/gallery') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/gallery')) ?>"><i class="bi bi-images me-2"></i>Gallery</a></li>
+                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/faqs') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/faqs')) ?>"><i class="bi bi-question-circle me-2"></i>FAQs</a></li>
+                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/pages') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/pages')) ?>"><i class="bi bi-file-richtext me-2"></i>Pages</a></li>
+                    </ul>
+                </div>
             </div>
             
             <!-- User Management -->
