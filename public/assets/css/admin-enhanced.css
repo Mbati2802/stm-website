@@ -9,6 +9,21 @@
     --admin-shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
 }
 
+/* Admin Content Wrapper */
+.admin-content-wrap {
+    margin-left: 250px;
+    padding: 1.5rem;
+    min-height: 100vh;
+    background: var(--admin-light);
+}
+
+@media (max-width: 991.98px) {
+    .admin-content-wrap {
+        margin-left: 0;
+        padding: 1rem;
+    }
+}
+
 /* Enhanced Sidebar */
 .admin-sidebar {
     background: linear-gradient(135deg, var(--admin-primary) 0%, #1a4d7a 100%);

@@ -333,64 +333,62 @@ $toggleItems = [
                     <input name="principal_name" class="form-control" value="<?= e($settings['principal_name'] ?? '') ?>">
                 </div>
                 <div class="mb-3">
-                        </div>
-                        <div class="mb-3">
                     <label class="form-label">Principal Title</label>
                     <input name="principal_title" class="form-control" value="<?= e($settings['principal_title'] ?? '') ?>">
-                        </div>
-                        <div class="mb-3">
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Principal Image Path/URL</label>
                     <input name="principal_image" class="form-control" value="<?= e($settings['principal_image'] ?? '') ?>" placeholder="https://...">
-                            <div class="mt-2">
-                                <label class="form-label">Upload Principal Image</label>
-                                <input type="file" name="principal_image_file" class="form-control" accept="image/png,image/jpeg,image/webp">
-                                <small class="text-muted">If you upload an image, it will be stored and this setting will be updated automatically.</small>
-                            </div>
-                        </div>
-                        <div class="mb-3">
+                    <div class="mt-2">
+                        <label class="form-label">Upload Principal Image</label>
+                        <input type="file" name="principal_image_file" class="form-control" accept="image/png,image/jpeg,image/webp">
+                        <small class="text-muted">If you upload an image, it will be stored and this setting will be updated automatically.</small>
+                    </div>
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Principal Message</label>
                     <textarea name="principal_message" rows="6" class="form-control rich-editor"><?= e($settings['principal_message'] ?? '') ?></textarea>
-                        </div>
-                        <div class="mb-3">
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Vision Priorities (use | between items)</label>
                     <textarea name="principal_vision_points" rows="3" class="form-control"><?= e($settings['principal_vision_points'] ?? '') ?></textarea>
-                        </div>
-                        <div class="mb-3">
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Current Focus Areas (use | between items)</label>
                     <textarea name="principal_focus_areas" rows="3" class="form-control"><?= e($settings['principal_focus_areas'] ?? '') ?></textarea>
-                        </div>
-                        <div class="mb-0">
-                            <label class="form-label">Closing Signature Line</label>
+                </div>
+                <div class="mb-0">
+                    <label class="form-label">Closing Signature Line</label>
                     <input name="principal_signature" class="form-control" value="<?= e($settings['principal_signature'] ?? '') ?>">
-                        </div>
-                        <div class="mt-3">
-                            <label class="form-label">Principal Email</label>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label">Principal Email</label>
                     <input name="principal_email" class="form-control" value="<?= e($settings['principal_email'] ?? 'principal@stmarysmchmcollege.ac.ke') ?>">
-                        </div>
-                        <div class="row g-3 mt-1">
-                            <div class="col-md-4">
-                                <label class="form-label">Facebook Link</label>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-4">
+                        <label class="form-label">Facebook Link</label>
                         <input name="principal_facebook" class="form-control" value="<?= e($settings['principal_facebook'] ?? '') ?>" placeholder="https://facebook.com/...">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">X (Twitter) Link</label>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">X (Twitter) Link</label>
                         <input name="principal_x" class="form-control" value="<?= e($settings['principal_x'] ?? '') ?>" placeholder="https://x.com/...">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">LinkedIn Link</label>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">LinkedIn Link</label>
                         <input name="principal_linkedin" class="form-control" value="<?= e($settings['principal_linkedin'] ?? '') ?>" placeholder="https://linkedin.com/in/...">
-                            </div>
-                        </div>
-                        <div class="row g-3 mt-1">
-                            <div class="col-md-6">
-                                <label class="form-label">Registrar Email</label>
+                    </div>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label">Registrar Email</label>
                         <input name="registrar_email" class="form-control" value="<?= e($settings['registrar_email'] ?? 'registrar@stmarysmchmcollege.ac.ke') ?>">
                     </div>
                     <div class="col-md-6">
-                                <label class="form-label">Registrar Image Path/URL</label>
+                        <label class="form-label">Registrar Image Path/URL</label>
                         <input name="registrar_image" class="form-control" value="<?= e($settings['registrar_image'] ?? '') ?>" placeholder="/uploads/settings/registrar.jpg or https://...">
-                            </div>
-                        </div>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
