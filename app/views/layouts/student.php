@@ -40,19 +40,19 @@ $studentPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '');
             <!-- Academic Section -->
             <div class="student-nav-group">
                 <div class="student-nav-group-title">Academic</div>
-                <a class="nav-link <?= str_contains($studentPath, 'student/dashboard') ? 'active' : '' ?>" href="<?= e(base_url('student/dashboard')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/dashboard') ? 'active' : '' ?>" href="<?= e(base_url('portal/dashboard')) ?>">
                     <i class="bi bi-speedometer2"></i><span>Dashboard</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/courses') ? 'active' : '' ?>" href="<?= e(base_url('student/courses')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/courses') ? 'active' : '' ?>" href="<?= e(base_url('portal/courses')) ?>">
                     <i class="bi bi-book"></i><span>My Courses</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/grades') ? 'active' : '' ?>" href="<?= e(base_url('student/grades')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/grades') ? 'active' : '' ?>" href="<?= e(base_url('portal/grades')) ?>">
                     <i class="bi bi-award"></i><span>Grades & Results</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/attendance') ? 'active' : '' ?>" href="<?= e(base_url('student/attendance')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/attendance') ? 'active' : '' ?>" href="<?= e(base_url('portal/attendance')) ?>">
                     <i class="bi bi-calendar-check"></i><span>Attendance</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/timetable') ? 'active' : '' ?>" href="<?= e(base_url('student/timetable')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/timetable') ? 'active' : '' ?>" href="<?= e(base_url('portal/timetable')) ?>">
                     <i class="bi bi-calendar-week"></i><span>Timetable</span>
                 </a>
             </div>
@@ -60,16 +60,16 @@ $studentPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '');
             <!-- Resources Section -->
             <div class="student-nav-group">
                 <div class="student-nav-group-title">Resources</div>
-                <a class="nav-link <?= str_contains($studentPath, 'student/library') ? 'active' : '' ?>" href="<?= e(base_url('student/library')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/library') ? 'active' : '' ?>" href="<?= e(base_url('portal/library')) ?>">
                     <i class="bi bi-journal-text"></i><span>Library</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/assignments') ? 'active' : '' ?>" href="<?= e(base_url('student/assignments')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/assignments') ? 'active' : '' ?>" href="<?= e(base_url('portal/assignments')) ?>">
                     <i class="bi bi-file-earmark-text"></i><span>Assignments</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/resources') ? 'active' : '' ?>" href="<?= e(base_url('student/resources')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/resources') ? 'active' : '' ?>" href="<?= e(base_url('portal/resources')) ?>">
                     <i class="bi bi-folder"></i><span>Study Materials</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/exams') ? 'active' : '' ?>" href="<?= e(base_url('student/exams')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/exams') ? 'active' : '' ?>" href="<?= e(base_url('portal/exams')) ?>">
                     <i class="bi bi-clipboard-check"></i><span>Exams</span>
                 </a>
             </div>
@@ -77,13 +77,13 @@ $studentPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '');
             <!-- Campus Life Section -->
             <div class="student-nav-group">
                 <div class="student-nav-group-title">Campus Life</div>
-                <a class="nav-link <?= str_contains($studentPath, 'student/events') ? 'active' : '' ?>" href="<?= e(base_url('student/events')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/events') ? 'active' : '' ?>" href="<?= e(base_url('portal/events')) ?>">
                     <i class="bi bi-calendar-event"></i><span>Events</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/clubs') ? 'active' : '' ?>" href="<?= e(base_url('student/clubs')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/clubs') ? 'active' : '' ?>" href="<?= e(base_url('portal/clubs')) ?>">
                     <i class="bi bi-people"></i><span>Clubs & Societies</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/announcements') ? 'active' : '' ?>" href="<?= e(base_url('student/announcements')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/announcements') ? 'active' : '' ?>" href="<?= e(base_url('portal/announcements')) ?>">
                     <i class="bi bi-megaphone"></i><span>Announcements</span>
                 </a>
             </div>
@@ -91,16 +91,16 @@ $studentPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '');
             <!-- Services Section -->
             <div class="student-nav-group">
                 <div class="student-nav-group-title">Services</div>
-                <a class="nav-link <?= str_contains($studentPath, 'student/fees') ? 'active' : '' ?>" href="<?= e(base_url('student/fees')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/fees') ? 'active' : '' ?>" href="<?= e(base_url('portal/fees')) ?>">
                     <i class="bi bi-credit-card"></i><span>Fee Statement</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/clearance') ? 'active' : '' ?>" href="<?= e(base_url('student/clearance')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/clearance') ? 'active' : '' ?>" href="<?= e(base_url('portal/clearance')) ?>">
                     <i class="bi bi-check-circle"></i><span>Clearance</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/certificates') ? 'active' : '' ?>" href="<?= e(base_url('student/certificates')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/certificates') ? 'active' : '' ?>" href="<?= e(base_url('portal/certificates')) ?>">
                     <i class="bi bi-patch-check"></i><span>Certificates</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/support') ? 'active' : '' ?>" href="<?= e(base_url('student/support')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/support') ? 'active' : '' ?>" href="<?= e(base_url('portal/support')) ?>">
                     <i class="bi bi-headset"></i><span>IT Support</span>
                 </a>
             </div>
@@ -108,13 +108,13 @@ $studentPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '');
             <!-- Account Section -->
             <div class="student-nav-group">
                 <div class="student-nav-group-title">Account</div>
-                <a class="nav-link <?= str_contains($studentPath, 'student/profile') ? 'active' : '' ?>" href="<?= e(base_url('student/profile')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/profile') ? 'active' : '' ?>" href="<?= e(base_url('portal/profile')) ?>">
                     <i class="bi bi-person"></i><span>My Profile</span>
                 </a>
-                <a class="nav-link <?= str_contains($studentPath, 'student/settings') ? 'active' : '' ?>" href="<?= e(base_url('student/settings')) ?>">
+                <a class="nav-link <?= str_contains($studentPath, 'portal/settings') ? 'active' : '' ?>" href="<?= e(base_url('portal/settings')) ?>">
                     <i class="bi bi-gear"></i><span>Settings</span>
                 </a>
-                <a class="nav-link text-danger" href="<?= e(base_url('student/logout')) ?>">
+                <a class="nav-link text-danger" href="<?= e(base_url('portal/logout')) ?>">
                     <i class="bi bi-box-arrow-right"></i><span>Logout</span>
                 </a>
             </div>

@@ -72,12 +72,12 @@ class StudentPortalController extends Controller
     {
         $student = $this->requireStudent();
         $model = new StudentPortalModel($this->config);
-        $this->view('pages/portal_dashboard', [
+        $this->view('student/dashboard', [
             'metaTitle' => 'Student Portal - Dashboard',
             'student' => $student,
             'timetables' => $model->latestTimetables(8),
             'announcements' => $model->latestAnnouncements(8),
-        ]);
+        ], 'student');
     }
 
     public function forgotPasswordForm(): void
@@ -185,5 +185,112 @@ class StudentPortalController extends Controller
             $this->redirect('portal/login');
         }
         return $student;
+    }
+
+    // Academic Section
+    public function courses(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/courses', ['metaTitle' => 'Student Portal - My Courses'], 'student');
+    }
+
+    public function grades(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/grades', ['metaTitle' => 'Student Portal - Grades'], 'student');
+    }
+
+    public function attendance(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/attendance', ['metaTitle' => 'Student Portal - Attendance'], 'student');
+    }
+
+    public function timetable(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/timetable', ['metaTitle' => 'Student Portal - Timetable'], 'student');
+    }
+
+    // Resources Section
+    public function library(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/library', ['metaTitle' => 'Student Portal - Digital Library'], 'student');
+    }
+
+    public function assignments(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/assignments', ['metaTitle' => 'Student Portal - Assignments'], 'student');
+    }
+
+    public function resources(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/resources', ['metaTitle' => 'Student Portal - Study Materials'], 'student');
+    }
+
+    public function exams(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/exams', ['metaTitle' => 'Student Portal - Exams'], 'student');
+    }
+
+    // Campus Life Section
+    public function events(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/events', ['metaTitle' => 'Student Portal - Campus Events'], 'student');
+    }
+
+    public function clubs(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/clubs', ['metaTitle' => 'Student Portal - Clubs & Societies'], 'student');
+    }
+
+    public function announcements(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/announcements', ['metaTitle' => 'Student Portal - Announcements'], 'student');
+    }
+
+    // Services Section
+    public function fees(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/fees', ['metaTitle' => 'Student Portal - Fee Statement'], 'student');
+    }
+
+    public function clearance(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/clearance', ['metaTitle' => 'Student Portal - Clearance Status'], 'student');
+    }
+
+    public function certificates(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/certificates', ['metaTitle' => 'Student Portal - Certificates'], 'student');
+    }
+
+    public function support(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/support', ['metaTitle' => 'Student Portal - IT Support'], 'student');
+    }
+
+    // Account Section
+    public function profile(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/profile', ['metaTitle' => 'Student Portal - Profile'], 'student');
+    }
+
+    public function settings(): void
+    {
+        $student = $this->requireStudent();
+        $this->view('student/settings', ['metaTitle' => 'Student Portal - Settings'], 'student');
     }
 }
