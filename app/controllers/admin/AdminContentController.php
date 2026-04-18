@@ -250,7 +250,13 @@ class AdminContentController extends Controller
     {
         Auth::requireAdmin();
         $model = new ContentModel($this->config);
-        $this->view('admin/settings', ['metaTitle' => 'Settings', 'settings' => $model->getSettings()]);
+        try {
+            $settings = $model->getSettings();
+        } catch (Throwable) {
+            $settings = [];
+            flash('error', 'Unable to load settings right now. Confirm the `settings` table exists and try again.');
+        }
+        $this->view('admin/settings', ['metaTitle' => 'Settings', 'settings' => $settings]);
     }
 
     public function students(): void
@@ -329,78 +335,18 @@ class AdminContentController extends Controller
         $this->redirect('admin/students');
     }
 
-    public function resetStudentPassword(): void
-    {
-        Auth::requireAdmin();
-        $studentId = (int)($_POST['student_id'] ?? 0);
-        $newPassword = (string)($_POST['new_password'] ?? '');
-        $confirmPassword = (string)($_POST['confirm_password'] ?? '');
-
-        if ($studentId <= 0 || strlen($newPassword) < 6 || $newPassword !== $confirmPassword) {
-            flash('error', 'Invalid request. Password must be at least 6 characters and match confirmation.');
-            $this->redirect('admin/students');
-        }
-
-        $portalModel = new StudentPortalModel($this->config);
-        $student = $portalModel->findStudentById($studentId);
-        if ($student === null) {
-            flash('error', 'Student not found.');
-            $this->redirect('admin/students');
-        }
-
-        $portalModel->updateStudentPassword($studentId, password_hash($newPassword, PASSWORD_DEFAULT));
-        flash('success', 'Password reset successfully for ' . e($student['name']));
-        $this->redirect('admin/students');
-    }
-
-    public function assignAdmissionNumber(): void
-    {
-        Auth::requireAdmin();
-        $studentId = (int)($_POST['student_id'] ?? 0);
-        $admissionNumber = strtoupper(trim($_POST['admission_number'] ?? ''));
-
-        if ($studentId <= 0) {
-            flash('error', 'Invalid student ID.');
-            $this->redirect('admin/students');
-        }
-
-        $portalModel = new StudentPortalModel($this->config);
-        $student = $portalModel->findStudentById($studentId);
-        if ($student === null) {
-            flash('error', 'Student not found.');
-            $this->redirect('admin/students');
-        }
-
-        if ($admissionNumber === '') {
-            $contentModel = new ContentModel($this->config);
-            $format = (string)($contentModel->getSettings()['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}');
-            $admissionNumber = $this->buildAdmissionNumber($format, $studentId);
-        }
-
-        if (!preg_match('/^[A-Z0-9\/\-_]+$/', $admissionNumber)) {
-            flash('error', 'Admission number format is invalid. Use letters, numbers, /, -, _.');
-            $this->redirect('admin/students');
-        }
-
-        try {
-            $portalModel->assignAdmissionNumber($studentId, $admissionNumber);
-        } catch (PDOException) {
-            flash('error', 'Admission number already exists. Please choose another one.');
-            $this->redirect('admin/students');
-        }
-
-        flash('success', 'Admission number assigned successfully.');
-        $this->redirect('admin/students');
-    }
-
     public function saveSettings(): void
     {
         Auth::requireAdmin();
         $model = new ContentModel($this->config);
-        $settings = $this->collectSettingsFromRequest();
-        $settings = $this->applySettingsImageUploads($settings, $model->getSettings());
-        $model->saveSettings($settings);
-        flash('success', 'Settings updated.');
+        try {
+            $settings = $this->collectSettingsFromRequest();
+            $settings = $this->applySettingsImageUploads($settings, $model->getSettings());
+            $model->saveSettings($settings);
+            flash('success', 'Settings updated.');
+        } catch (Throwable) {
+            flash('error', 'Settings could not be saved. Please verify database schema and try again.');
+        }
         $this->redirect('admin/settings');
     }
 
@@ -435,45 +381,27 @@ class AdminContentController extends Controller
             $settings['hero_images'] = $currentSettings['hero_images'];
         }
 
-        // Merge individual programme image fields into JSON
-        $programmeImages = [];
-        $individualFields = ['programme_image_diploma' => 'Diploma', 'programme_image_certificate' => 'Certificate', 'programme_image_short_course' => 'Short Course', 'programme_image_artisan' => 'Artisan'];
-        foreach ($individualFields as $field => $category) {
-            if (!empty($settings[$field])) {
-                $programmeImages[$category] = $settings[$field];
-            } elseif (!empty($currentSettings[$field])) {
-                $programmeImages[$category] = $currentSettings[$field];
-            }
-            // Remove individual field from settings array
-            unset($settings[$field]);
-        }
-        
-        // Merge with existing JSON if present
-        $existingJson = [];
-        if (!empty($settings['home_programme_images_json'])) {
-            $decoded = json_decode((string)$settings['home_programme_images_json'], true);
-            if (is_array($decoded)) {
-                $existingJson = $decoded;
-            }
-        } elseif (!empty($currentSettings['home_programme_images_json'])) {
-            $decoded = json_decode((string)$currentSettings['home_programme_images_json'], true);
-            if (is_array($decoded)) {
-                $existingJson = $decoded;
-            }
-        }
-        
-        // Merge individual fields with existing JSON (individual fields take precedence)
-        $mergedImages = array_merge($existingJson, $programmeImages);
-        
-        // Handle uploaded files
         $programmeCards = $this->uploadMultipleFiles('home_programme_image_files', ['image/jpeg', 'image/png', 'image/webp'], 'settings');
         if ($programmeCards !== []) {
-            foreach ($programmeCards as $index => $img) {
-                $mergedImages['uploaded_' . ($index + 1)] = $img;
+            $existing = [];
+            if (!empty($settings['home_programme_images_json'])) {
+                $decoded = json_decode((string)$settings['home_programme_images_json'], true);
+                if (is_array($decoded)) {
+                    $existing = $decoded;
+                }
+            } elseif (!empty($currentSettings['home_programme_images_json'])) {
+                $decoded = json_decode((string)$currentSettings['home_programme_images_json'], true);
+                if (is_array($decoded)) {
+                    $existing = $decoded;
+                }
             }
+            foreach ($programmeCards as $index => $img) {
+                $existing['uploaded_' . ($index + 1)] = $img;
+            }
+            $settings['home_programme_images_json'] = json_encode($existing, JSON_UNESCAPED_SLASHES);
+        } elseif (($settings['home_programme_images_json'] ?? '') === '' && isset($currentSettings['home_programme_images_json'])) {
+            $settings['home_programme_images_json'] = $currentSettings['home_programme_images_json'];
         }
-        
-        $settings['home_programme_images_json'] = json_encode($mergedImages, JSON_UNESCAPED_SLASHES);
 
         $programmeDetailImage = $this->uploadFile('programme_detail_image_file', ['image/jpeg', 'image/png', 'image/webp'], 'settings');
         if ($programmeDetailImage !== '') {

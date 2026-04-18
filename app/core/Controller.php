@@ -8,7 +8,7 @@ class Controller
         $this->config = $config;
     }
 
-    protected function view(string $view, array $data = []): void
+    protected function view(string $view, array $data = [], ?string $layoutOverride = null): void
     {
         extract($data);
         $viewPath = __DIR__ . '/../views/' . $view . '.php';
@@ -20,10 +20,17 @@ class Controller
         }
 
         $layout = 'app.php';
-        if (str_starts_with($view, 'admin/')) {
+        if ($layoutOverride !== null && $layoutOverride !== '') {
+            $candidate = trim($layoutOverride) . '.php';
+            if (file_exists(__DIR__ . '/../views/layouts/' . $candidate)) {
+                $layout = $candidate;
+            }
+        } elseif (str_starts_with($view, 'admin/')) {
             $layout = 'admin.php';
         } elseif (str_starts_with($view, 'pages/portal_')) {
             $layout = 'portal.php';
+        } elseif (str_starts_with($view, 'student/')) {
+            $layout = 'student.php';
         }
         include __DIR__ . '/../views/layouts/' . $layout;
     }

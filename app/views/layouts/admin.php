@@ -1,6 +1,7 @@
 <?php
 $appName = $this->config['app_name'];
 $adminPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
+$isAdminHome = $adminPath === 'admin';
 ?>
 <!doctype html>
 <html lang="en">
@@ -15,8 +16,6 @@ $adminPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="<?= e(base_url('assets/css/styles.css')) ?>" rel="stylesheet">
     <link href="<?= e(base_url('assets/css/admin.css')) ?>" rel="stylesheet">
-    <link href="<?= e(base_url('assets/css/admin-enhanced.css')) ?>" rel="stylesheet">
-    <link rel="icon" href="<?= e(base_url('assets/images/logo.png')) ?>" type="image/png">
 </head>
 <body class="admin-theme">
 <?php if (str_ends_with($viewPath, 'admin/login.php')): ?>
@@ -30,59 +29,36 @@ $adminPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
             <span class="admin-brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
             <span class="fw-bold">STM Admin</span>
         </div>
-        <nav class="nav flex-column gap-1 mt-3">
-            <!-- Content Management -->
+        <nav class="nav flex-column gap-2 mt-3">
+            <a class="nav-link <?= $isAdminHome ? 'active' : '' ?>" href="<?= e(base_url('admin')) ?>"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+
             <div class="admin-nav-group">
-                <div class="admin-nav-group-title">Content Management</div>
-                <div class="dropdown">
-                    <button class="nav-link dropdown-toggle <?= str_contains($adminPath, 'admin/list/programmes') || str_contains($adminPath, 'admin/list/departments') ? 'active' : '' ?>" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                        <i class="bi bi-collection"></i><span>Academic Content</span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/programmes') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/programmes')) ?>"><i class="bi bi-journal-text me-2"></i>Programmes</a></li>
-                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/departments') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/departments')) ?>"><i class="bi bi-diagram-3 me-2"></i>Departments</a></li>
-                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/library_resources') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/library_resources')) ?>"><i class="bi bi-book me-2"></i>Library</a></li>
-                    </ul>
-                </div>
-                <div class="dropdown">
-                    <button class="nav-link dropdown-toggle <?= str_contains($adminPath, 'admin/list/news') || str_contains($adminPath, 'admin/list/careers') || str_contains($adminPath, 'admin/list/tenders') ? 'active' : '' ?>" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                        <i class="bi bi-broadcast"></i><span>News & Updates</span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/news') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/news')) ?>"><i class="bi bi-newspaper me-2"></i>News</a></li>
-                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/careers') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/careers')) ?>"><i class="bi bi-briefcase me-2"></i>Careers</a></li>
-                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/tenders') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/tenders')) ?>"><i class="bi bi-file-earmark-check me-2"></i>Tenders</a></li>
-                    </ul>
-                </div>
-                <div class="dropdown">
-                    <button class="nav-link dropdown-toggle <?= str_contains($adminPath, 'admin/list/gallery') || str_contains($adminPath, 'admin/list/faqs') || str_contains($adminPath, 'admin/list/pages') ? 'active' : '' ?>" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                        <i class="bi bi-layers"></i><span>Site Content</span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/gallery') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/gallery')) ?>"><i class="bi bi-images me-2"></i>Gallery</a></li>
-                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/faqs') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/faqs')) ?>"><i class="bi bi-question-circle me-2"></i>FAQs</a></li>
-                        <li><a class="dropdown-item <?= str_contains($adminPath, 'admin/list/pages') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/pages')) ?>"><i class="bi bi-file-richtext me-2"></i>Pages</a></li>
-                    </ul>
-                </div>
+                <div class="admin-nav-group-title">Content</div>
+                <a class="nav-link <?= str_contains($adminPath, 'admin/list/programmes') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/programmes')) ?>"><i class="bi bi-journal-text"></i><span>Programmes</span></a>
+                <a class="nav-link <?= str_contains($adminPath, 'admin/list/departments') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/departments')) ?>"><i class="bi bi-diagram-3"></i><span>Departments</span></a>
+                <a class="nav-link <?= str_contains($adminPath, 'admin/list/news') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/news')) ?>"><i class="bi bi-newspaper"></i><span>News</span></a>
+                <a class="nav-link <?= str_contains($adminPath, 'admin/list/careers') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/careers')) ?>"><i class="bi bi-briefcase"></i><span>Careers</span></a>
+                <a class="nav-link <?= str_contains($adminPath, 'admin/list/tenders') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/tenders')) ?>"><i class="bi bi-file-earmark-check"></i><span>Tenders</span></a>
+                <a class="nav-link <?= str_contains($adminPath, 'admin/list/faqs') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/faqs')) ?>"><i class="bi bi-question-circle"></i><span>FAQs</span></a>
+                <a class="nav-link <?= str_contains($adminPath, 'admin/list/pages') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/pages')) ?>"><i class="bi bi-file-richtext"></i><span>Pages</span></a>
             </div>
-            
-            <!-- User Management -->
+
             <div class="admin-nav-group">
-                <div class="admin-nav-group-title">User Management</div>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/students') ? 'active' : '' ?>" href="<?= e(base_url('admin/students')) ?>"><i class="bi bi-people"></i><span>Student Accounts</span></a>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/messages') ? 'active' : '' ?>" href="<?= e(base_url('admin/messages')) ?>"><i class="bi bi-envelope"></i><span>Messages</span></a>
+                <div class="admin-nav-group-title">Media and Events</div>
+                <a class="nav-link <?= str_contains($adminPath, 'admin/list/gallery') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/gallery')) ?>"><i class="bi bi-images"></i><span>Gallery</span></a>
+                <a class="nav-link <?= str_contains($adminPath, 'admin/list/library_resources') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/library_resources')) ?>"><i class="bi bi-book"></i><span>Library</span></a>
+                <a class="nav-link <?= str_contains($adminPath, 'admin/media') ? 'active' : '' ?>" href="<?= e(base_url('admin/media')) ?>"><i class="bi bi-folder2-open"></i><span>Media Library</span></a>
                 <a class="nav-link <?= str_contains($adminPath, 'admin/event-registrations') ? 'active' : '' ?>" href="<?= e(base_url('admin/event-registrations')) ?>"><i class="bi bi-calendar2-week"></i><span>Event Registrations</span></a>
             </div>
-            
-            <!-- Media & Assets -->
+
             <div class="admin-nav-group">
-                <div class="admin-nav-group-title">Media & Assets</div>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/media') ? 'active' : '' ?>" href="<?= e(base_url('admin/media')) ?>"><i class="bi bi-folder2-open"></i><span>Media Library</span></a>
+                <div class="admin-nav-group-title">Communication and Users</div>
+                <a class="nav-link <?= str_contains($adminPath, 'admin/messages') ? 'active' : '' ?>" href="<?= e(base_url('admin/messages')) ?>"><i class="bi bi-envelope"></i><span>Messages</span></a>
+                <a class="nav-link <?= str_contains($adminPath, 'admin/students') ? 'active' : '' ?>" href="<?= e(base_url('admin/students')) ?>"><i class="bi bi-people"></i><span>Student Accounts</span></a>
             </div>
-            
-            <!-- System Administration -->
+
             <div class="admin-nav-group">
-                <div class="admin-nav-group-title">System Administration</div>
+                <div class="admin-nav-group-title">System</div>
                 <a class="nav-link <?= str_contains($adminPath, 'admin/settings') ? 'active' : '' ?>" href="<?= e(base_url('admin/settings')) ?>"><i class="bi bi-sliders"></i><span>UI Content Settings</span></a>
                 <a class="nav-link text-danger" href="<?= e(base_url('admin/logout')) ?>"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
             </div>
@@ -95,15 +71,11 @@ $adminPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
                 <strong><?= e($metaTitle ?? 'Admin') ?></strong>
                 <span class="text-muted">Content Management</span>
             </div>
-            <div class="d-flex gap-2 align-items-center">
-                <a class="btn btn-sm btn-outline-secondary" href="<?= e(base_url('/')) ?>" target="_blank"><i class="bi bi-eye me-1"></i>View Site</a>
-                <a class="btn btn-sm btn-primary" href="<?= e(base_url('admin/settings')) ?>"><i class="bi bi-gear me-1"></i>Settings</a>
-            </div>
+            <a class="btn btn-sm btn-primary" href="<?= e(base_url('admin/settings')) ?>"><i class="bi bi-gear me-1"></i>Settings</a>
         </header>
         <?php include $viewPath; ?>
     </main>
 </div>
-<div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
 <?php endif; ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
@@ -112,34 +84,11 @@ $adminPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
 document.addEventListener('DOMContentLoaded', function () {
     const sidebar = document.getElementById('adminSidebar');
     const toggle = document.getElementById('adminSidebarToggle');
-    const overlay = document.getElementById('adminSidebarOverlay');
-    
     if (sidebar && toggle) {
         toggle.addEventListener('click', function () {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('show');
-                overlay.classList.toggle('show');
-            } else {
-                document.body.classList.toggle('admin-sidebar-collapsed');
-            }
+            document.body.classList.toggle('admin-sidebar-collapsed');
         });
     }
-    
-    // Close sidebar when clicking overlay on mobile
-    if (overlay) {
-        overlay.addEventListener('click', function () {
-            sidebar.classList.remove('show');
-            overlay.classList.remove('show');
-        });
-    }
-    
-    // Handle window resize
-    window.addEventListener('resize', function () {
-        if (window.innerWidth > 768) {
-            sidebar.classList.remove('show');
-            overlay.classList.remove('show');
-        }
-    });
 
     const textareas = document.querySelectorAll('textarea.rich-editor');
     if (!textareas.length) return;

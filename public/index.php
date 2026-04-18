@@ -39,6 +39,33 @@ $router->add('POST', 'portal/forgot-password', [StudentPortalController::class, 
 $router->add('GET', 'portal/reset-password', [StudentPortalController::class, 'resetPasswordForm']);
 $router->add('POST', 'portal/reset-password', [StudentPortalController::class, 'resetPassword']);
 
+// Student Portal - Academic Section
+$router->add('GET', 'portal/courses', [StudentPortalController::class, 'courses']);
+$router->add('GET', 'portal/grades', [StudentPortalController::class, 'grades']);
+$router->add('GET', 'portal/attendance', [StudentPortalController::class, 'attendance']);
+$router->add('GET', 'portal/timetable', [StudentPortalController::class, 'timetable']);
+
+// Student Portal - Resources Section
+$router->add('GET', 'portal/library', [StudentPortalController::class, 'library']);
+$router->add('GET', 'portal/assignments', [StudentPortalController::class, 'assignments']);
+$router->add('GET', 'portal/resources', [StudentPortalController::class, 'resources']);
+$router->add('GET', 'portal/exams', [StudentPortalController::class, 'exams']);
+
+// Student Portal - Campus Life Section
+$router->add('GET', 'portal/events', [StudentPortalController::class, 'events']);
+$router->add('GET', 'portal/clubs', [StudentPortalController::class, 'clubs']);
+$router->add('GET', 'portal/announcements', [StudentPortalController::class, 'announcements']);
+
+// Student Portal - Services Section
+$router->add('GET', 'portal/fees', [StudentPortalController::class, 'fees']);
+$router->add('GET', 'portal/clearance', [StudentPortalController::class, 'clearance']);
+$router->add('GET', 'portal/certificates', [StudentPortalController::class, 'certificates']);
+$router->add('GET', 'portal/support', [StudentPortalController::class, 'support']);
+
+// Student Portal - Account Section
+$router->add('GET', 'portal/profile', [StudentPortalController::class, 'profile']);
+$router->add('GET', 'portal/settings', [StudentPortalController::class, 'settings']);
+
 $router->add('GET', 'admin/login', [AdminAuthController::class, 'login']);
 $router->add('POST', 'admin/login', [AdminAuthController::class, 'authenticate']);
 $router->add('GET', 'admin/logout', [AdminAuthController::class, 'logout']);

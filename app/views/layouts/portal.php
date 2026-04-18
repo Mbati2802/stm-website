@@ -13,7 +13,6 @@ $appName = $this->config['app_name'];
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="<?= e(base_url('assets/css/portal.css')) ?>" rel="stylesheet">
-    <link rel="icon" href="<?= e(base_url('assets/images/logo.png')) ?>" type="image/png">
 </head>
 <body class="portal-body">
     <header class="portal-topbar">
