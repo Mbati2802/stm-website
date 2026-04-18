@@ -1,6 +1,10 @@
 <?php
 class Auth
 {
+    private const ROLE_SUPER_ADMIN = 'super_admin';
+    private const ROLE_JUNIOR_ADMIN = 'junior_admin';
+    private const ROLE_TEACHER = 'teacher';
+
     public static function check(): bool
     {
         return isset($_SESSION['admin_id']);
@@ -8,13 +12,18 @@ class Auth
 
     public static function attempt(PDO $pdo, string $email, string $password): bool
     {
-        $stmt = $pdo->prepare('SELECT id, name, password FROM users WHERE email = :email LIMIT 1');
+        $stmt = $pdo->prepare('SELECT id, name, password, role, status FROM users WHERE email = :email LIMIT 1');
         $stmt->execute(['email' => $email]);
         $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password'])) {
+        if (
+            $user &&
+            ($user['status'] ?? 'active') === 'active' &&
+            password_verify($password, $user['password'])
+        ) {
             $_SESSION['admin_id'] = $user['id'];
             $_SESSION['admin_name'] = $user['name'];
+            $_SESSION['admin_role'] = (string)($user['role'] ?? self::ROLE_SUPER_ADMIN);
             return true;
         }
 
@@ -22,16 +31,20 @@ class Auth
         $defaultEmail = $GLOBALS['config']['admin_email'] ?? 'admin@stm.ac.ke';
         if ($email === $defaultEmail && $password === 'password123') {
             $insert = $pdo->prepare(
-                'INSERT INTO users(name, email, password, created_at)
-                 VALUES(:name, :email, :password, NOW())
+                'INSERT INTO users(name, email, password, role, status, created_at)
+                 VALUES(:name, :email, :password, :role, :status, NOW())
                  ON DUPLICATE KEY UPDATE
                  name = VALUES(name),
-                 password = VALUES(password)'
+                 password = VALUES(password),
+                 role = VALUES(role),
+                 status = VALUES(status)'
             );
             $insert->execute([
                 'name' => 'System Admin',
                 'email' => $defaultEmail,
                 'password' => password_hash('password123', PASSWORD_DEFAULT),
+                'role' => self::ROLE_SUPER_ADMIN,
+                'status' => 'active',
             ]);
 
             $stmt->execute(['email' => $email]);
@@ -39,6 +52,7 @@ class Auth
             if ($user && password_verify($password, $user['password'])) {
                 $_SESSION['admin_id'] = $user['id'];
                 $_SESSION['admin_name'] = $user['name'];
+                $_SESSION['admin_role'] = (string)($user['role'] ?? self::ROLE_SUPER_ADMIN);
                 return true;
             }
         }
@@ -50,6 +64,84 @@ class Auth
     {
         $_SESSION = [];
         session_destroy();
+    }
+
+    public static function role(): string
+    {
+        return (string)($_SESSION['admin_role'] ?? self::ROLE_SUPER_ADMIN);
+    }
+
+    public static function isSuperAdmin(): bool
+    {
+        return self::role() === self::ROLE_SUPER_ADMIN;
+    }
+
+    public static function isJuniorAdmin(): bool
+    {
+        return self::role() === self::ROLE_JUNIOR_ADMIN;
+    }
+
+    public static function isTeacher(): bool
+    {
+        return self::role() === self::ROLE_TEACHER;
+    }
+
+    public static function canManageRole(string $targetRole): bool
+    {
+        $target = strtolower(trim($targetRole));
+        if (self::isSuperAdmin()) {
+            return in_array($target, [self::ROLE_SUPER_ADMIN, self::ROLE_JUNIOR_ADMIN, self::ROLE_TEACHER], true);
+        }
+        if (self::isJuniorAdmin()) {
+            return $target === self::ROLE_TEACHER;
+        }
+        return false;
+    }
+
+    public static function canManageEntity(string $entity): bool
+    {
+        $entity = strtolower(trim($entity));
+        if (self::isSuperAdmin()) {
+            return true;
+        }
+
+        if (self::isJuniorAdmin()) {
+            return in_array($entity, [
+                'programmes',
+                'departments',
+                'news',
+                'careers',
+                'tenders',
+                'events',
+                'gallery',
+                'library_resources',
+                'faqs',
+                'pages',
+                'messages',
+                'media_assets',
+                'media',
+                'students',
+                'portal_courses',
+                'programme_timetables',
+                'course_grades',
+                'course_assignments',
+                'study_materials',
+                'users',
+            ], true);
+        }
+
+        if (self::isTeacher()) {
+            return in_array($entity, [
+                'portal_courses',
+                'programme_timetables',
+                'course_grades',
+                'course_assignments',
+                'study_materials',
+                'library_resources',
+            ], true);
+        }
+
+        return false;
     }
 
     public static function requireAdmin(): void

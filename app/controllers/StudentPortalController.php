@@ -190,14 +190,22 @@ class StudentPortalController extends Controller
     // Academic Section
     public function courses(): void
     {
-        $student = $this->requireStudent();
-        $this->view('student/courses', ['metaTitle' => 'Student Portal - My Courses'], 'student');
+        $this->requireStudent();
+        $model = new StudentPortalModel($this->config);
+        $this->view('student/courses', [
+            'metaTitle' => 'Student Portal - My Courses',
+            'courses' => $model->allPortalCourses(),
+        ], 'student');
     }
 
     public function grades(): void
     {
         $student = $this->requireStudent();
-        $this->view('student/grades', ['metaTitle' => 'Student Portal - Grades'], 'student');
+        $model = new StudentPortalModel($this->config);
+        $this->view('student/grades', [
+            'metaTitle' => 'Student Portal - Grades',
+            'grades' => array_values(array_filter($model->allCourseGrades(), fn($row) => (int)($row['student_id'] ?? 0) === (int)($student['id'] ?? 0))),
+        ], 'student');
     }
 
     public function attendance(): void
@@ -208,27 +216,43 @@ class StudentPortalController extends Controller
 
     public function timetable(): void
     {
-        $student = $this->requireStudent();
-        $this->view('student/timetable', ['metaTitle' => 'Student Portal - Timetable'], 'student');
+        $this->requireStudent();
+        $model = new StudentPortalModel($this->config);
+        $this->view('student/timetable', [
+            'metaTitle' => 'Student Portal - Timetable',
+            'timetables' => $model->allProgrammeTimetables(),
+        ], 'student');
     }
 
     // Resources Section
     public function library(): void
     {
-        $student = $this->requireStudent();
-        $this->view('student/library', ['metaTitle' => 'Student Portal - Digital Library'], 'student');
+        $this->requireStudent();
+        $model = new StudentPortalModel($this->config);
+        $this->view('student/library', [
+            'metaTitle' => 'Student Portal - Digital Library',
+            'libraryResources' => $model->allLibraryResources(),
+        ], 'student');
     }
 
     public function assignments(): void
     {
-        $student = $this->requireStudent();
-        $this->view('student/assignments', ['metaTitle' => 'Student Portal - Assignments'], 'student');
+        $this->requireStudent();
+        $model = new StudentPortalModel($this->config);
+        $this->view('student/assignments', [
+            'metaTitle' => 'Student Portal - Assignments',
+            'assignments' => $model->allAssignments(),
+        ], 'student');
     }
 
     public function resources(): void
     {
-        $student = $this->requireStudent();
-        $this->view('student/resources', ['metaTitle' => 'Student Portal - Study Materials'], 'student');
+        $this->requireStudent();
+        $model = new StudentPortalModel($this->config);
+        $this->view('student/resources', [
+            'metaTitle' => 'Student Portal - Study Materials',
+            'materials' => $model->allStudyMaterials(),
+        ], 'student');
     }
 
     public function exams(): void

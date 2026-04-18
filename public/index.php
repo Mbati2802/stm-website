@@ -14,7 +14,10 @@ $router->add('GET', 'principal', [AboutController::class, 'principal']);
 $router->add('GET', 'registrar', [AboutController::class, 'registrar']);
 $router->add('GET', 'contact', [AboutController::class, 'contact']);
 $router->add('POST', 'contact', [AboutController::class, 'submitContact']);
+$router->add('GET', 'contact-registrar', [AboutController::class, 'registrarContact']);
+$router->add('POST', 'contact-registrar', [AboutController::class, 'submitRegistrarContact']);
 $router->add('GET', 'faqs', [AboutController::class, 'faqs']);
+$router->add('GET', 'portals', [AboutController::class, 'portals']);
 $router->add('GET', 'programmes', [ProgrammesController::class, 'index']);
 $router->add('GET', 'programmes/how-to-apply', [ProgrammesController::class, 'howToApply']);
 $router->add('GET', 'programmes/apply', [ProgrammesController::class, 'applyForm']);
@@ -38,6 +41,8 @@ $router->add('GET', 'portal/forgot-password', [StudentPortalController::class, '
 $router->add('POST', 'portal/forgot-password', [StudentPortalController::class, 'sendResetCode']);
 $router->add('GET', 'portal/reset-password', [StudentPortalController::class, 'resetPasswordForm']);
 $router->add('POST', 'portal/reset-password', [StudentPortalController::class, 'resetPassword']);
+$router->add('GET', 'staff/login', [AdminAuthController::class, 'login']);
+$router->add('POST', 'staff/login', [AdminAuthController::class, 'authenticate']);
 
 // Student Portal - Academic Section
 $router->add('GET', 'portal/courses', [StudentPortalController::class, 'courses']);

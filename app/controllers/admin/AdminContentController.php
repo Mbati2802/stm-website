@@ -1,7 +1,11 @@
 <?php
 class AdminContentController extends Controller
 {
-    private array $entities = ['programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery', 'library_resources', 'faqs', 'pages'];
+    private array $entities = [
+        'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
+        'library_resources', 'faqs', 'pages', 'users',
+        'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials'
+    ];
     private const SETTINGS_TEXT_FIELDS = [
         'phone',
         'email',
@@ -80,7 +84,7 @@ class AdminContentController extends Controller
     public function list(string $entity): void
     {
         Auth::requireAdmin();
-        if (!in_array($entity, $this->entities, true)) {
+        if (!$this->canAccessEntity($entity)) {
             http_response_code(404);
             echo 'Invalid entity';
             return;
@@ -99,7 +103,7 @@ class AdminContentController extends Controller
     public function create(string $entity): void
     {
         Auth::requireAdmin();
-        if (!in_array($entity, $this->entities, true)) {
+        if (!$this->canAccessEntity($entity)) {
             http_response_code(404);
             echo 'Invalid entity';
             return;
@@ -115,7 +119,7 @@ class AdminContentController extends Controller
     public function store(string $entity): void
     {
         Auth::requireAdmin();
-        if (!in_array($entity, $this->entities, true)) {
+        if (!$this->canAccessEntity($entity)) {
             $this->redirect('admin');
         }
 
@@ -128,7 +132,7 @@ class AdminContentController extends Controller
     public function edit(string $entity, int $id): void
     {
         Auth::requireAdmin();
-        if (!in_array($entity, $this->entities, true)) {
+        if (!$this->canAccessEntity($entity)) {
             http_response_code(404);
             echo 'Invalid entity';
             return;
@@ -151,7 +155,7 @@ class AdminContentController extends Controller
     public function update(string $entity, int $id): void
     {
         Auth::requireAdmin();
-        if (!in_array($entity, $this->entities, true)) {
+        if (!$this->canAccessEntity($entity)) {
             $this->redirect('admin');
         }
         $this->persistEntity($entity, $id);
@@ -162,7 +166,21 @@ class AdminContentController extends Controller
     public function delete(string $entity, int $id): void
     {
         Auth::requireAdmin();
+        if (!$this->canAccessEntity($entity)) {
+            $this->redirect('admin');
+        }
         $model = new ContentModel($this->config);
+        if ($entity === 'users') {
+            $target = $model->findById('users', $id);
+            if ($target === null || !Auth::canManageRole((string)($target['role'] ?? 'teacher'))) {
+                flash('error', 'You do not have permission to delete this user.');
+                $this->redirect('admin/list/users');
+            }
+            if ((int)($target['id'] ?? 0) === (int)($_SESSION['admin_id'] ?? 0)) {
+                flash('error', 'You cannot delete your own account.');
+                $this->redirect('admin/list/users');
+            }
+        }
         $model->deleteById($entity, $id);
         flash('success', 'Item deleted.');
         $this->redirect('admin/list/' . $entity);
@@ -171,7 +189,7 @@ class AdminContentController extends Controller
     public function toggleVisibility(string $entity, int $id): void
     {
         Auth::requireAdmin();
-        if (!in_array($entity, $this->entities, true)) {
+        if (!$this->canAccessEntity($entity)) {
             $this->redirect('admin');
         }
         $model = new ContentModel($this->config);
@@ -190,6 +208,9 @@ class AdminContentController extends Controller
     public function messages(): void
     {
         Auth::requireAdmin();
+        if (!Auth::canManageEntity('messages')) {
+            $this->redirect('admin');
+        }
         $model = new ContentModel($this->config);
         $this->view('admin/messages', ['metaTitle' => 'Contact Messages', 'rows' => $model->all('messages')]);
     }
@@ -197,6 +218,9 @@ class AdminContentController extends Controller
     public function exportMessages(): void
     {
         Auth::requireAdmin();
+        if (!Auth::canManageEntity('messages')) {
+            $this->redirect('admin');
+        }
         $model = new ContentModel($this->config);
         $rows = $model->all('messages');
 
@@ -227,6 +251,9 @@ class AdminContentController extends Controller
     public function eventRegistrations(): void
     {
         Auth::requireAdmin();
+        if (!Auth::canManageEntity('events')) {
+            $this->redirect('admin');
+        }
         $pdo = Database::getInstance($this->config['db']);
         try {
             $rows = $pdo->query('
@@ -249,6 +276,10 @@ class AdminContentController extends Controller
     public function settings(): void
     {
         Auth::requireAdmin();
+        if (Auth::isTeacher()) {
+            flash('error', 'You do not have permission to access settings.');
+            $this->redirect('admin');
+        }
         $model = new ContentModel($this->config);
         try {
             $settings = $model->getSettings();
@@ -262,6 +293,9 @@ class AdminContentController extends Controller
     public function students(): void
     {
         Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+        }
         $portalModel = new StudentPortalModel($this->config);
         $contentModel = new ContentModel($this->config);
         $settings = $contentModel->getSettings();
@@ -275,6 +309,9 @@ class AdminContentController extends Controller
     public function assignStudentAdmissionNumber(int $id): void
     {
         Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+        }
         $portalModel = new StudentPortalModel($this->config);
         $student = $portalModel->findStudentById($id);
         if ($student === null) {
@@ -308,6 +345,9 @@ class AdminContentController extends Controller
     public function bulkAssignAdmissionNumbers(): void
     {
         Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+        }
         $portalModel = new StudentPortalModel($this->config);
         $contentModel = new ContentModel($this->config);
         $format = (string)($contentModel->getSettings()['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}');
@@ -338,6 +378,10 @@ class AdminContentController extends Controller
     public function saveSettings(): void
     {
         Auth::requireAdmin();
+        if (Auth::isTeacher()) {
+            flash('error', 'You do not have permission to update settings.');
+            $this->redirect('admin');
+        }
         $model = new ContentModel($this->config);
         try {
             $settings = $this->collectSettingsFromRequest();
@@ -578,6 +622,148 @@ class AdminContentController extends Controller
                     $this->redirect('admin/list/events');
                 }
                 break;
+            case 'users':
+                $name = trim($_POST['name'] ?? '');
+                $email = strtolower(trim($_POST['email'] ?? ''));
+                $role = strtolower(trim($_POST['role'] ?? 'teacher'));
+                $status = strtolower(trim($_POST['status'] ?? 'active'));
+                if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    flash('error', 'Provide valid user details.');
+                    $this->redirect('admin/list/users');
+                }
+                if (!in_array($role, ['super_admin', 'junior_admin', 'teacher'], true) || !Auth::canManageRole($role)) {
+                    flash('error', 'You do not have permission to assign this role.');
+                    $this->redirect('admin/list/users');
+                }
+                if (!in_array($status, ['active', 'disabled'], true)) {
+                    $status = 'active';
+                }
+                $password = (string)($_POST['password'] ?? '');
+                $passwordConfirm = (string)($_POST['password_confirm'] ?? '');
+                if (!$isUpdate && strlen($password) < 6) {
+                    flash('error', 'Password must be at least 6 characters.');
+                    $this->redirect('admin/list/users');
+                }
+                if ($password !== '' && $password !== $passwordConfirm) {
+                    flash('error', 'Password confirmation does not match.');
+                    $this->redirect('admin/list/users');
+                }
+
+                if ($isUpdate) {
+                    $existing = (new ContentModel($this->config))->findById('users', (int)$id);
+                    if ($existing === null) {
+                        flash('error', 'User not found.');
+                        $this->redirect('admin/list/users');
+                    }
+                    if (!Auth::canManageRole((string)($existing['role'] ?? 'teacher'))) {
+                        flash('error', 'You do not have permission to edit this user.');
+                        $this->redirect('admin/list/users');
+                    }
+                    $sql = 'UPDATE users SET name=:name, email=:email, role=:role, status=:status';
+                    $params = ['name' => $name, 'email' => $email, 'role' => $role, 'status' => $status, 'id' => $id];
+                    if ($password !== '') {
+                        $sql .= ', password=:password';
+                        $params['password'] = password_hash($password, PASSWORD_DEFAULT);
+                    }
+                    $sql .= ' WHERE id=:id';
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute($params);
+                } else {
+                    $stmt = $pdo->prepare('INSERT INTO users(name, email, password, role, status, created_by, created_at) VALUES(:name, :email, :password, :role, :status, :created_by, NOW())');
+                    $stmt->execute([
+                        'name' => $name,
+                        'email' => $email,
+                        'password' => password_hash($password, PASSWORD_DEFAULT),
+                        'role' => $role,
+                        'status' => $status,
+                        'created_by' => (int)($_SESSION['admin_id'] ?? 0),
+                    ]);
+                }
+                break;
+            case 'portal_courses':
+                $stmtData = [
+                    'programme_id' => (int)($_POST['programme_id'] ?? 0),
+                    'teacher_id' => (int)($_POST['teacher_id'] ?? 0),
+                    'code' => trim($_POST['code'] ?? ''),
+                    'title' => trim($_POST['title'] ?? ''),
+                    'description' => trim($_POST['description'] ?? ''),
+                ];
+                if ($isUpdate) {
+                    $stmt = $pdo->prepare('UPDATE portal_courses SET programme_id=:programme_id, teacher_id=:teacher_id, code=:code, title=:title, description=:description WHERE id=:id');
+                    $stmtData['id'] = $id;
+                } else {
+                    $stmt = $pdo->prepare('INSERT INTO portal_courses(programme_id, teacher_id, code, title, description, created_at) VALUES(:programme_id, :teacher_id, :code, :title, :description, NOW())');
+                }
+                $stmt->execute($stmtData);
+                break;
+            case 'programme_timetables':
+                $file = $this->uploadFile('file_path', ['application/pdf'], 'timetables');
+                $stmtData = [
+                    'programme_id' => (int)($_POST['programme_id'] ?? 0),
+                    'title' => trim($_POST['title'] ?? ''),
+                    'details' => trim($_POST['details'] ?? ''),
+                    'file_path' => $file !== '' ? $file : trim($_POST['file_path_existing'] ?? ''),
+                ];
+                if ($isUpdate) {
+                    if ($file === '' && isset($_POST['current_file_path'])) {
+                        $stmtData['file_path'] = trim((string)$_POST['current_file_path']);
+                    }
+                    $stmt = $pdo->prepare('UPDATE programme_timetables SET programme_id=:programme_id, title=:title, details=:details, file_path=:file_path WHERE id=:id');
+                    $stmtData['id'] = $id;
+                } else {
+                    $stmt = $pdo->prepare('INSERT INTO programme_timetables(programme_id, title, details, file_path, created_at) VALUES(:programme_id, :title, :details, :file_path, NOW())');
+                }
+                $stmt->execute($stmtData);
+                break;
+            case 'course_grades':
+                $stmtData = [
+                    'student_id' => (int)($_POST['student_id'] ?? 0),
+                    'course_id' => (int)($_POST['course_id'] ?? 0),
+                    'grade' => trim($_POST['grade'] ?? ''),
+                    'remarks' => trim($_POST['remarks'] ?? ''),
+                ];
+                if ($isUpdate) {
+                    $stmt = $pdo->prepare('UPDATE course_grades SET student_id=:student_id, course_id=:course_id, grade=:grade, remarks=:remarks WHERE id=:id');
+                    $stmtData['id'] = $id;
+                } else {
+                    $stmt = $pdo->prepare('INSERT INTO course_grades(student_id, course_id, grade, remarks, created_at) VALUES(:student_id, :course_id, :grade, :remarks, NOW())');
+                }
+                $stmt->execute($stmtData);
+                break;
+            case 'course_assignments':
+                $file = $this->uploadFile('file_path', ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'], 'assignments');
+                $dueRaw = trim($_POST['due_at'] ?? '');
+                $stmtData = [
+                    'course_id' => (int)($_POST['course_id'] ?? 0),
+                    'title' => trim($_POST['title'] ?? ''),
+                    'instructions' => trim($_POST['instructions'] ?? ''),
+                    'due_at' => $dueRaw !== '' ? date('Y-m-d H:i:s', strtotime($dueRaw)) : null,
+                    'file_path' => $file !== '' ? $file : trim((string)($_POST['current_file_path'] ?? '')),
+                ];
+                if ($isUpdate) {
+                    $stmt = $pdo->prepare('UPDATE course_assignments SET course_id=:course_id, title=:title, instructions=:instructions, due_at=:due_at, file_path=:file_path WHERE id=:id');
+                    $stmtData['id'] = $id;
+                } else {
+                    $stmt = $pdo->prepare('INSERT INTO course_assignments(course_id, title, instructions, due_at, file_path, created_at) VALUES(:course_id, :title, :instructions, :due_at, :file_path, NOW())');
+                }
+                $stmt->execute($stmtData);
+                break;
+            case 'study_materials':
+                $file = $this->uploadFile('file_path', ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'], 'study-materials');
+                $stmtData = [
+                    'course_id' => (int)($_POST['course_id'] ?? 0),
+                    'title' => trim($_POST['title'] ?? ''),
+                    'summary' => trim($_POST['summary'] ?? ''),
+                    'file_path' => $file !== '' ? $file : trim((string)($_POST['current_file_path'] ?? '')),
+                ];
+                if ($isUpdate) {
+                    $stmt = $pdo->prepare('UPDATE study_materials SET course_id=:course_id, title=:title, summary=:summary, file_path=:file_path WHERE id=:id');
+                    $stmtData['id'] = $id;
+                } else {
+                    $stmt = $pdo->prepare('INSERT INTO study_materials(course_id, title, summary, file_path, created_at) VALUES(:course_id, :title, :summary, :file_path, NOW())');
+                }
+                $stmt->execute($stmtData);
+                break;
             default:
                 $title = trim($_POST['title'] ?? '');
                 $uploadedImage = $this->uploadFile('image_file', ['image/jpeg', 'image/png', 'image/webp'], $entity);
@@ -602,6 +788,9 @@ class AdminContentController extends Controller
     public function mediaLibrary(): void
     {
         Auth::requireAdmin();
+        if (!Auth::canManageEntity('media')) {
+            $this->redirect('admin');
+        }
         $pdo = Database::getInstance($this->config['db']);
         try {
             $rows = $pdo->query('SELECT * FROM media_assets ORDER BY id DESC')->fetchAll();
@@ -615,6 +804,9 @@ class AdminContentController extends Controller
     public function uploadMedia(): void
     {
         Auth::requireAdmin();
+        if (!Auth::canManageEntity('media')) {
+            $this->redirect('admin');
+        }
         $pdo = Database::getInstance($this->config['db']);
         $title = trim($_POST['title'] ?? '');
         $category = trim($_POST['category'] ?? 'General');
@@ -642,6 +834,9 @@ class AdminContentController extends Controller
     public function deleteMedia(int $id): void
     {
         Auth::requireAdmin();
+        if (!Auth::canManageEntity('media')) {
+            $this->redirect('admin');
+        }
         $pdo = Database::getInstance($this->config['db']);
         try {
             $stmt = $pdo->prepare('SELECT file_path FROM media_assets WHERE id=:id LIMIT 1');
@@ -740,6 +935,14 @@ class AdminContentController extends Controller
         $value = str_replace(["\r\n", "\r"], "\n", $value);
         $value = str_replace("\t", ' ', $value);
         return '"' . str_replace('"', '""', $value) . '"';
+    }
+
+    private function canAccessEntity(string $entity): bool
+    {
+        if (!in_array($entity, $this->entities, true)) {
+            return false;
+        }
+        return Auth::canManageEntity($entity);
     }
 
     private function buildAdmissionNumber(string $format, int $studentId): string

@@ -256,7 +256,7 @@ foreach ($bannerCandidates as $candidate) {
                         <img src="<?= e($item['image_path'] ?: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800') ?>" class="card-img-top" alt="News">
                         <div class="card-body">
                             <h3 class="h6"><?= e($item['title']) ?></h3>
-                            <p class="small text-muted mb-3 line-clamp-3"><?= e($item['summary']) ?></p>
+                            <p class="small text-muted mb-3 line-clamp-3"><?= e(plain_text($item['summary'])) ?></p>
                             <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('media?type=news')) ?>">Read More</a>
                         </div>
                     </article>

@@ -101,6 +101,61 @@ class AboutController extends Controller
         $this->redirect('');
     }
 
+    public function registrarContact(): void
+    {
+        $settings = $this->model->getSettings();
+        $this->view('pages/contact_registrar', [
+            'metaTitle' => 'Contact Registrar',
+            'settings' => $settings,
+        ]);
+    }
+
+    public function submitRegistrarContact(): void
+    {
+        $settings = $this->model->getSettings();
+        $registrarEmail = trim((string)($settings['registrar_email'] ?? ($this->config['registrar_email'] ?? 'registrar@stmarysmchmcollege.ac.ke')));
+
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+        $subject = trim($_POST['subject'] ?? 'Registrar Enquiry');
+        $message = trim($_POST['message'] ?? '');
+
+        if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $message === '') {
+            flash('error', 'Please provide valid contact details and message.');
+            $this->redirect('contact-registrar');
+        }
+
+        try {
+            $this->model->saveMessage([
+                'name' => $name,
+                'email' => $email,
+                'phone' => $phone,
+                'subject' => '[Registrar] ' . $subject,
+                'message' => $message,
+            ]);
+        } catch (Throwable) {
+            flash('error', 'Contact service is temporarily unavailable. Please try again shortly.');
+            $this->redirect('contact-registrar');
+        }
+
+        if ($registrarEmail !== '') {
+            $mailBody = implode("\n", [
+                'A new registrar form message was submitted.',
+                'Name: ' . $name,
+                'Email: ' . $email,
+                'Phone: ' . $phone,
+                'Subject: ' . $subject,
+                'Message:',
+                $message,
+            ]);
+            send_notification_email($registrarEmail, 'Registrar Enquiry - ' . $subject, $mailBody);
+        }
+
+        flash('success', 'Message submitted successfully. The registrar office will contact you.');
+        $this->redirect('contact-registrar');
+    }
+
     public function faqs(): void
     {
         if (!$this->model->isEnabled('show_page_faqs')) {
@@ -109,5 +164,10 @@ class AboutController extends Controller
             return;
         }
         $this->view('pages/faqs', ['metaTitle' => 'FAQs', 'faqs' => $this->model->faqs()]);
+    }
+
+    public function portals(): void
+    {
+        $this->view('pages/portals', ['metaTitle' => 'Portals']);
     }
 }

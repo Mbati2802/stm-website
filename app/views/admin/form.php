@@ -40,6 +40,45 @@
 <div class="col-12"><label class="form-label">Body</label><textarea name="body" rows="8" class="form-control rich-editor"><?= e($row['body'] ?? '') ?></textarea></div>
 <div class="col-12"><label class="form-label">Event Image Upload (recommended)</label><input type="file" name="event_image_file" accept="image/*" class="form-control"></div>
 <div class="col-12"><label class="form-label">Featured Image URL (fallback)</label><input name="image_path" class="form-control" value="<?= e($row['image_path'] ?? '') ?>"></div>
+<?php elseif($entity==='users'): ?>
+<div class="col-md-6"><label class="form-label">Full Name</label><input name="name" class="form-control" value="<?= e($row['name'] ?? '') ?>" required></div>
+<div class="col-md-6"><label class="form-label">Email Address</label><input name="email" type="email" class="form-control" value="<?= e($row['email'] ?? '') ?>" required></div>
+<div class="col-md-4"><label class="form-label">Role</label><select name="role" class="form-select"><?php foreach(['super_admin' => 'Super Admin', 'junior_admin' => 'Junior Admin', 'teacher' => 'Teacher'] as $roleValue => $roleLabel): ?><option value="<?= e($roleValue) ?>" <?= (($row['role'] ?? 'teacher') === $roleValue) ? 'selected' : '' ?>><?= e($roleLabel) ?></option><?php endforeach; ?></select></div>
+<div class="col-md-4"><label class="form-label">Status</label><select name="status" class="form-select"><?php foreach(['active' => 'Active', 'disabled' => 'Disabled'] as $statusValue => $statusLabel): ?><option value="<?= e($statusValue) ?>" <?= (($row['status'] ?? 'active') === $statusValue) ? 'selected' : '' ?>><?= e($statusLabel) ?></option><?php endforeach; ?></select></div>
+<div class="col-md-4"><label class="form-label">Created</label><input class="form-control" value="<?= e((string)($row['created_at'] ?? 'Auto')) ?>" readonly></div>
+<div class="col-md-6"><label class="form-label">Password <?= $isEdit ? '(leave blank to keep current)' : '' ?></label><input name="password" type="password" class="form-control" <?= $isEdit ? '' : 'required' ?> minlength="6"></div>
+<div class="col-md-6"><label class="form-label">Confirm Password</label><input name="password_confirm" type="password" class="form-control" <?= $isEdit ? '' : 'required' ?> minlength="6"></div>
+<?php elseif($entity==='portal_courses'): ?>
+<div class="col-md-4"><label class="form-label">Programme ID</label><input name="programme_id" type="number" class="form-control" value="<?= e((string)($row['programme_id'] ?? '')) ?>" required></div>
+<div class="col-md-4"><label class="form-label">Teacher User ID</label><input name="teacher_id" type="number" class="form-control" value="<?= e((string)($row['teacher_id'] ?? '')) ?>"></div>
+<div class="col-md-4"><label class="form-label">Course Code</label><input name="code" class="form-control" value="<?= e($row['code'] ?? '') ?>" placeholder="MCH-101"></div>
+<div class="col-12"><label class="form-label">Course Title</label><input name="title" class="form-control" value="<?= e($row['title'] ?? '') ?>" required></div>
+<div class="col-12"><label class="form-label">Description</label><textarea name="description" class="form-control rich-editor"><?= e($row['description'] ?? '') ?></textarea></div>
+<?php elseif($entity==='programme_timetables'): ?>
+<div class="col-md-4"><label class="form-label">Programme ID</label><input name="programme_id" type="number" class="form-control" value="<?= e((string)($row['programme_id'] ?? '')) ?>" required></div>
+<div class="col-md-8"><label class="form-label">Title</label><input name="title" class="form-control" value="<?= e($row['title'] ?? '') ?>" required></div>
+<div class="col-12"><label class="form-label">Details</label><textarea name="details" rows="4" class="form-control rich-editor"><?= e($row['details'] ?? '') ?></textarea></div>
+<div class="col-12"><label class="form-label">PDF File <?= $isEdit ? '(optional to replace)' : '' ?></label><input type="file" name="file_path" accept="application/pdf" class="form-control"></div>
+<input type="hidden" name="current_file_path" value="<?= e((string)($row['file_path'] ?? '')) ?>">
+<?php elseif($entity==='course_grades'): ?>
+<div class="col-md-4"><label class="form-label">Student ID</label><input name="student_id" type="number" class="form-control" value="<?= e((string)($row['student_id'] ?? '')) ?>" required></div>
+<div class="col-md-4"><label class="form-label">Course ID</label><input name="course_id" type="number" class="form-control" value="<?= e((string)($row['course_id'] ?? '')) ?>" required></div>
+<div class="col-md-4"><label class="form-label">Grade</label><input name="grade" class="form-control" value="<?= e($row['grade'] ?? '') ?>" placeholder="A, B+, 78%" required></div>
+<div class="col-12"><label class="form-label">Remarks</label><input name="remarks" class="form-control" value="<?= e($row['remarks'] ?? '') ?>" placeholder="Optional notes"></div>
+<?php elseif($entity==='course_assignments'): ?>
+<?php $dueAt = ($row['due_at'] ?? '') !== '' ? date('Y-m-d\\TH:i', strtotime((string)$row['due_at'])) : ''; ?>
+<div class="col-md-4"><label class="form-label">Course ID</label><input name="course_id" type="number" class="form-control" value="<?= e((string)($row['course_id'] ?? '')) ?>" required></div>
+<div class="col-md-8"><label class="form-label">Title</label><input name="title" class="form-control" value="<?= e($row['title'] ?? '') ?>" required></div>
+<div class="col-md-6"><label class="form-label">Due Date</label><input name="due_at" type="datetime-local" class="form-control" value="<?= e($dueAt) ?>"></div>
+<div class="col-md-6"><label class="form-label">File Attachment</label><input type="file" name="file_path" class="form-control"></div>
+<div class="col-12"><label class="form-label">Instructions</label><textarea name="instructions" rows="5" class="form-control rich-editor"><?= e($row['instructions'] ?? '') ?></textarea></div>
+<input type="hidden" name="current_file_path" value="<?= e((string)($row['file_path'] ?? '')) ?>">
+<?php elseif($entity==='study_materials'): ?>
+<div class="col-md-4"><label class="form-label">Course ID</label><input name="course_id" type="number" class="form-control" value="<?= e((string)($row['course_id'] ?? '')) ?>" required></div>
+<div class="col-md-8"><label class="form-label">Title</label><input name="title" class="form-control" value="<?= e($row['title'] ?? '') ?>" required></div>
+<div class="col-12"><label class="form-label">Summary</label><textarea name="summary" rows="4" class="form-control rich-editor"><?= e($row['summary'] ?? '') ?></textarea></div>
+<div class="col-12"><label class="form-label">File Upload</label><input type="file" name="file_path" class="form-control"></div>
+<input type="hidden" name="current_file_path" value="<?= e((string)($row['file_path'] ?? '')) ?>">
 <?php else: ?>
 <div class="col-md-6"><label class="form-label">Title</label><input name="title" class="form-control" value="<?= e($row['title'] ?? '') ?>" required></div><div class="col-12"><label class="form-label">Summary</label><textarea name="summary" class="form-control rich-editor"><?= e($row['summary'] ?? '') ?></textarea></div><div class="col-12"><label class="form-label">Body</label><textarea name="body" rows="6" class="form-control rich-editor"><?= e($row['body'] ?? '') ?></textarea></div><div class="col-12"><label class="form-label">Featured Image URL (optional)</label><input name="image_path" class="form-control" value="<?= e($row['image_path'] ?? '') ?>"></div>
 <div class="col-12"><label class="form-label">Upload Image (optional)</label><input type="file" name="image_file" accept="image/png,image/jpeg,image/webp" class="form-control"></div>

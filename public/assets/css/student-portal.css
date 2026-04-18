@@ -26,8 +26,8 @@ body.student-portal {
 
 /* Student Sidebar */
 .student-sidebar {
-    width: 280px;
-    background: linear-gradient(135deg, var(--student-primary) 0%, #1a4d7a 100%);
+    width: 250px;
+    background: linear-gradient(160deg, var(--student-primary) 0%, #1a4d7a 65%, var(--student-secondary) 120%);
     box-shadow: var(--student-shadow-lg);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-y: auto;
@@ -39,7 +39,7 @@ body.student-portal {
 }
 
 .student-sidebar-brand {
-    padding: 1.5rem 1rem;
+    padding: 1rem .8rem;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     display: flex;
     align-items: center;
@@ -58,39 +58,70 @@ body.student-portal {
 }
 
 .student-user-info {
-    margin-top: 0.25rem;
+    margin-top: 0.1rem;
 }
 
-.student-user-info small {
-    color: rgba(255,255,255,0.7);
-    font-size: 0.75rem;
+.student-user-name {
+    color: #ffbf00;
+    font-size: 0.74rem;
+    font-weight: 700;
 }
 
 /* Student Navigation Groups */
 .student-nav-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: .45rem;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 0.55rem;
+    padding: .2rem;
+    background: rgba(255,255,255,0.03);
 }
 
 .student-nav-group-title {
-    color: rgba(255,255,255,0.7);
-    font-size: 0.75rem;
+    color: rgba(255,255,255,0.84);
+    font-size: 0.69rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 0.5rem 1rem;
-    margin-bottom: 0.5rem;
+    padding: 0.35rem 0.45rem;
+    margin-bottom: 0.1rem;
+}
+
+.student-nav-group-toggle {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.student-nav-group-links {
+    display: block;
+}
+
+.student-nav-group.collapsed .student-nav-group-links {
+    display: none;
+}
+
+.student-nav-group-toggle i {
+    transition: transform .2s ease;
+}
+
+.student-nav-group.collapsed .student-nav-group-toggle i {
+    transform: rotate(-90deg);
 }
 
 .student-sidebar .nav-link {
     color: rgba(255,255,255,0.9);
-    padding: 0.75rem 1rem;
+    padding: 0.4rem .5rem;
     border-radius: 0.5rem;
-    margin: 0.25rem 0.5rem;
+    margin: 0.12rem 0.1rem;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    font-size: 0.9rem;
+    gap: 0.5rem;
+    font-size: 0.8rem;
 }
 
 .student-sidebar .nav-link:hover {
@@ -106,15 +137,15 @@ body.student-portal {
 }
 
 .student-sidebar .nav-link i {
-    font-size: 1.1rem;
-    width: 20px;
+    font-size: .9rem;
+    width: 16px;
     text-align: center;
 }
 
 /* Student Main Content */
 .student-main {
     flex: 1;
-    margin-left: 280px;
+    margin-left: 250px;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -311,8 +342,8 @@ body.student-portal {
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .student-sidebar {
-        left: -280px;
-        width: 280px;
+        left: -250px;
+        width: 250px;
     }
     
     .student-sidebar.show {
@@ -583,7 +614,7 @@ body.student-portal {
 /* Responsive Collapsed Sidebar */
 @media (min-width: 769px) {
     body.student-sidebar-collapsed .student-sidebar {
-        width: 80px;
+        width: 72px;
     }
     
     body.student-sidebar-collapsed .student-sidebar .fw-bold,
@@ -594,7 +625,7 @@ body.student-portal {
     }
     
     body.student-sidebar-collapsed .student-main {
-        margin-left: 80px;
+        margin-left: 72px;
     }
     
     body.student-sidebar-collapsed .student-sidebar .nav-link {

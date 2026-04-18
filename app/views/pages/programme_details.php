@@ -38,10 +38,10 @@ if (($programmeContent['duration_override'] ?? '') !== '') {
 if (($programmeContent['entry_requirement_override'] ?? '') !== '') {
     $entryRequirement = trim((string)$programmeContent['entry_requirement_override']);
 }
-$overviewDisplay = $programmeDescription !== ''
-    ? $programmeDescription
-    : ($overviewText !== ''
-        ? $overviewText
+$overviewDisplay = $overviewText !== ''
+    ? $overviewText
+    : ($programmeDescription !== ''
+        ? $programmeDescription
         : ($programmeName . ' is a people-centered course designed to equip students with the skills and knowledge needed to support individuals facing emotional, psychological, and social challenges. This programme focuses on understanding human behavior, effective communication, and practical counselling techniques that can be applied in real-life situations.'));
 $overviewNormalized = plain_text_multiline($overviewDisplay);
 $overviewParagraphs = array_values(array_filter(array_map('trim', preg_split('/\n+/', $overviewNormalized) ?: [])));

@@ -4,6 +4,9 @@ CREATE TABLE users (
     name VARCHAR(120) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
+    role VARCHAR(30) NOT NULL DEFAULT 'super_admin',
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    created_by INT NULL,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -180,8 +183,69 @@ CREATE TABLE student_timetables (
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO users(name, email, password) VALUES
-('System Admin', 'admin@stm.ac.ke', '$2y$10$A0QHJ7MFHAnYpLEB.E7Tc.63GiGi7wZe5YCG8VvI7YsV7e59ri.BS');
+CREATE TABLE portal_courses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    programme_id INT NULL,
+    teacher_id INT NULL,
+    code VARCHAR(80) NULL,
+    title VARCHAR(190) NOT NULL,
+    description TEXT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_portal_courses_programme (programme_id),
+    INDEX idx_portal_courses_teacher (teacher_id),
+    CONSTRAINT fk_portal_courses_programme FOREIGN KEY (programme_id) REFERENCES programmes(id) ON DELETE SET NULL,
+    CONSTRAINT fk_portal_courses_teacher FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE programme_timetables (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    programme_id INT NULL,
+    title VARCHAR(190) NOT NULL,
+    details TEXT NULL,
+    file_path VARCHAR(255) NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_programme_timetables_programme (programme_id),
+    CONSTRAINT fk_programme_timetables_programme FOREIGN KEY (programme_id) REFERENCES programmes(id) ON DELETE SET NULL
+);
+
+CREATE TABLE course_grades (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NULL,
+    course_id INT NULL,
+    grade VARCHAR(20) NOT NULL,
+    remarks VARCHAR(255) NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_course_grades_student (student_id),
+    INDEX idx_course_grades_course (course_id),
+    CONSTRAINT fk_course_grades_student FOREIGN KEY (student_id) REFERENCES student_accounts(id) ON DELETE SET NULL,
+    CONSTRAINT fk_course_grades_course FOREIGN KEY (course_id) REFERENCES portal_courses(id) ON DELETE SET NULL
+);
+
+CREATE TABLE course_assignments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NULL,
+    title VARCHAR(190) NOT NULL,
+    instructions TEXT NULL,
+    due_at DATETIME NULL,
+    file_path VARCHAR(255) NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_course_assignments_course (course_id),
+    CONSTRAINT fk_course_assignments_course FOREIGN KEY (course_id) REFERENCES portal_courses(id) ON DELETE SET NULL
+);
+
+CREATE TABLE study_materials (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NULL,
+    title VARCHAR(190) NOT NULL,
+    summary TEXT NULL,
+    file_path VARCHAR(255) NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_study_materials_course (course_id),
+    CONSTRAINT fk_study_materials_course FOREIGN KEY (course_id) REFERENCES portal_courses(id) ON DELETE SET NULL
+);
+
+INSERT INTO users(name, email, password, role) VALUES
+('System Admin', 'admin@stm.ac.ke', '$2y$10$A0QHJ7MFHAnYpLEB.E7Tc.63GiGi7wZe5YCG8VvI7YsV7e59ri.BS', 'super_admin');
 
 INSERT INTO departments(name, slug, description) VALUES
 ('Health Sciences', 'health-sciences', 'Training students for practical health sector roles.'),

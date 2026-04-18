@@ -5,7 +5,7 @@ $heroTitlePrimary = 'Office of the';
 $heroTitleSecondary = 'Registrar';
 $heroTagline = 'Supporting your academic journey from admission to graduation.';
 $heroPrimaryLabel = 'Contact Registrar';
-$heroPrimaryLink = 'contact';
+$heroPrimaryLink = 'contact-registrar';
 $heroSecondaryLabel = '';
 $heroSecondaryLink = '';
 include __DIR__ . '/../partials/page_hero.php';
@@ -108,7 +108,7 @@ include __DIR__ . '/../partials/page_hero.php';
         <div class="cta-banner p-5 text-center text-white">
             <h2 class="fw-bold mb-2">Need assistance with your academic records or application?</h2>
             <p class="mb-3 text-white-50">Visit the Registrar&rsquo;s Office or contact us today&mdash;we are here to help you every step of the way.</p>
-            <a class="btn btn-light" href="<?= e(base_url('contact')) ?>">Contact Registrar Office</a>
+            <a class="btn btn-light" href="<?= e(base_url('contact-registrar')) ?>">Contact Registrar Office</a>
         </div>
     </div>
 </section>

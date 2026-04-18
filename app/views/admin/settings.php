@@ -17,6 +17,21 @@ $toggleItems = [
     'show_home_news' => 'Show Latest News',
     'show_home_cta' => 'Show Final CTA Block',
 ];
+$ctaPageOptions = [
+    '' => 'Select a page',
+    'programmes' => 'Programmes',
+    'programmes/how-to-apply' => 'How To Apply',
+    'programmes/apply' => 'Apply Online',
+    'about' => 'About',
+    'contact' => 'Contact',
+    'contact-registrar' => 'Contact Registrar',
+    'events' => 'Events',
+    'library' => 'Library',
+    'media' => 'Media Desk',
+    'portals' => 'Portals',
+    'portal/login' => 'Student Portal',
+    'staff/login' => 'Staff Portal',
+];
 ?>
 
 <section class="py-4">
@@ -128,7 +143,15 @@ $toggleItems = [
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Primary CTA Link (relative)</label>
-                                <input name="home_hero_primary_cta_link" class="form-control" value="<?= e($settings['home_hero_primary_cta_link'] ?? 'programmes') ?>">
+                                <?php $primaryLink = (string)($settings['home_hero_primary_cta_link'] ?? 'programmes'); ?>
+                                <select name="home_hero_primary_cta_link" class="form-select">
+                                    <?php if (!array_key_exists($primaryLink, $ctaPageOptions)): ?>
+                                        <option value="<?= e($primaryLink) ?>" selected><?= e($primaryLink) ?> (Current)</option>
+                                    <?php endif; ?>
+                                    <?php foreach ($ctaPageOptions as $value => $label): ?>
+                                        <option value="<?= e($value) ?>" <?= $primaryLink === $value ? 'selected' : '' ?>><?= e($label) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Secondary CTA Label</label>
@@ -136,7 +159,15 @@ $toggleItems = [
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Secondary CTA Link (relative)</label>
-                                <input name="home_hero_secondary_cta_link" class="form-control" value="<?= e($settings['home_hero_secondary_cta_link'] ?? 'about') ?>">
+                                <?php $secondaryLink = (string)($settings['home_hero_secondary_cta_link'] ?? 'about'); ?>
+                                <select name="home_hero_secondary_cta_link" class="form-select">
+                                    <?php if (!array_key_exists($secondaryLink, $ctaPageOptions)): ?>
+                                        <option value="<?= e($secondaryLink) ?>" selected><?= e($secondaryLink) ?> (Current)</option>
+                                    <?php endif; ?>
+                                    <?php foreach ($ctaPageOptions as $value => $label): ?>
+                                        <option value="<?= e($value) ?>" <?= $secondaryLink === $value ? 'selected' : '' ?>><?= e($label) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                         </div>
                         <div class="mt-3">

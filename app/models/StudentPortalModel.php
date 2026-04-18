@@ -119,4 +119,85 @@ class StudentPortalModel
             return [];
         }
     }
+
+    public function allPortalCourses(): array
+    {
+        try {
+            return $this->pdo->query('
+                SELECT pc.*, p.name AS programme_name, u.name AS teacher_name
+                FROM portal_courses pc
+                LEFT JOIN programmes p ON p.id = pc.programme_id
+                LEFT JOIN users u ON u.id = pc.teacher_id
+                ORDER BY pc.created_at DESC
+            ')->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function allProgrammeTimetables(): array
+    {
+        try {
+            return $this->pdo->query('
+                SELECT pt.*, p.name AS programme_name
+                FROM programme_timetables pt
+                LEFT JOIN programmes p ON p.id = pt.programme_id
+                ORDER BY pt.created_at DESC
+            ')->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function allCourseGrades(): array
+    {
+        try {
+            return $this->pdo->query('
+                SELECT cg.*, sa.name AS student_name, pc.title AS course_title, pc.code AS course_code
+                FROM course_grades cg
+                LEFT JOIN student_accounts sa ON sa.id = cg.student_id
+                LEFT JOIN portal_courses pc ON pc.id = cg.course_id
+                ORDER BY cg.created_at DESC
+            ')->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function allAssignments(): array
+    {
+        try {
+            return $this->pdo->query('
+                SELECT ca.*, pc.title AS course_title, pc.code AS course_code
+                FROM course_assignments ca
+                LEFT JOIN portal_courses pc ON pc.id = ca.course_id
+                ORDER BY ca.created_at DESC
+            ')->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function allStudyMaterials(): array
+    {
+        try {
+            return $this->pdo->query('
+                SELECT sm.*, pc.title AS course_title, pc.code AS course_code
+                FROM study_materials sm
+                LEFT JOIN portal_courses pc ON pc.id = sm.course_id
+                ORDER BY sm.created_at DESC
+            ')->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function allLibraryResources(): array
+    {
+        try {
+            return $this->pdo->query('SELECT * FROM library_resources ORDER BY created_at DESC')->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
 }

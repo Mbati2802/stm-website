@@ -303,7 +303,11 @@ class ContentModel
 
     public function all(string $table): array
     {
-        $allowed = ['programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery', 'library_resources', 'faqs', 'messages', 'pages'];
+        $allowed = [
+            'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
+            'library_resources', 'faqs', 'messages', 'pages', 'users',
+            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials'
+        ];
         if (!in_array($table, $allowed, true)) {
             return [];
         }
@@ -316,7 +320,11 @@ class ContentModel
 
     public function deleteById(string $table, int $id): bool
     {
-        $allowed = ['programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery', 'library_resources', 'faqs', 'pages'];
+        $allowed = [
+            'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
+            'library_resources', 'faqs', 'pages', 'users',
+            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials'
+        ];
         if (!in_array($table, $allowed, true)) {
             return false;
         }
@@ -326,7 +334,11 @@ class ContentModel
 
     public function findById(string $table, int $id): ?array
     {
-        $allowed = ['programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery', 'library_resources', 'faqs', 'pages'];
+        $allowed = [
+            'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
+            'library_resources', 'faqs', 'pages', 'users',
+            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials'
+        ];
         if (!in_array($table, $allowed, true)) {
             return null;
         }

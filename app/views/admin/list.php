@@ -20,7 +20,15 @@
                 <tbody>
                 <?php foreach($rows as $row): ?>
                     <tr>
-                        <?php foreach($row as $v): ?><td><?= e((string)$v) ?></td><?php endforeach; ?>
+                    <?php foreach($row as $k => $v): ?>
+                        <td>
+                            <?php if ((string)$k === 'password'): ?>
+                                ••••••••
+                            <?php else: ?>
+                                <?= e((string)$v) ?>
+                            <?php endif; ?>
+                        </td>
+                    <?php endforeach; ?>
                         <td><?php $hiddenIds = $hiddenIds ?? []; $isVisible = !in_array((int)$row['id'], $hiddenIds, true); ?><a class="btn btn-sm btn-action-toggle" href="<?= e(base_url('admin/toggle/' . $entity . '/' . $row['id'])) ?>" title="<?= $isVisible ? 'Visible' : 'Hidden' ?>"><?= $isVisible ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>' ?></a></td>
                         <td>
                             <div class="action-buttons">
