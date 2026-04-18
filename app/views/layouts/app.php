@@ -18,7 +18,7 @@ $path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
     <link href="<?= e(base_url('assets/css/styles.css')) ?>" rel="stylesheet">
-    <link rel="icon" href="<?= e(base_url('assets/images/favicon.svg')) ?>" type="image/svg+xml">
+    <link rel="icon" href="<?= e(base_url('assets/images/logo.png')) ?>" type="image/png">
 </head>
 <body>
     <?php include __DIR__ . '/../partials/topbar.php'; ?>

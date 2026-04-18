@@ -16,7 +16,7 @@ $adminPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
     <link href="<?= e(base_url('assets/css/styles.css')) ?>" rel="stylesheet">
     <link href="<?= e(base_url('assets/css/admin.css')) ?>" rel="stylesheet">
     <link href="<?= e(base_url('assets/css/admin-enhanced.css')) ?>" rel="stylesheet">
-    <link rel="icon" href="<?= e(base_url('assets/images/favicon.svg')) ?>" type="image/svg+xml">
+    <link rel="icon" href="<?= e(base_url('assets/images/logo.png')) ?>" type="image/png">
 </head>
 <body class="admin-theme">
 <?php if (str_ends_with($viewPath, 'admin/login.php')): ?>

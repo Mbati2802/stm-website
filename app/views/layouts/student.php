@@ -15,7 +15,7 @@ $studentPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '');
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="<?= e(base_url('assets/css/styles.css')) ?>" rel="stylesheet">
     <link href="<?= e(base_url('assets/css/student-portal.css')) ?>" rel="stylesheet">
-    <link rel="icon" href="<?= e(base_url('assets/images/favicon.svg')) ?>" type="image/svg+xml">
+    <link rel="icon" href="<?= e(base_url('assets/images/logo.png')) ?>" type="image/png">
 </head>
 <body class="student-portal">
 <?php if (str_ends_with($viewPath, 'student/login.php') || str_ends_with($viewPath, 'student/register.php')): ?>
