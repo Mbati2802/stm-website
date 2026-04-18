@@ -141,29 +141,19 @@
                         </h4>
                     </div>
                     
-                    <div class="alert-student alert-info">
-                        <i class="bi bi-info-circle"></i>
-                        <div>
-                            <strong>Schedule Update</strong>
-                            <p class="mb-0 small">Tomorrow's CS301 lecture moved to Room 205</p>
-                        </div>
-                    </div>
-
-                    <div class="alert-student alert-warning">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <div>
-                            <strong>Library Maintenance</strong>
-                            <p class="mb-0 small">Digital library will be unavailable this weekend</p>
-                        </div>
-                    </div>
-
-                    <div class="alert-student alert-success">
-                        <i class="bi bi-trophy"></i>
-                        <div>
-                            <strong>Congratulations!</strong>
-                            <p class="mb-0 small">You've been selected for the Dean's List</p>
-                        </div>
-                    </div>
+                    <?php if (!empty($announcements ?? [])): ?>
+                        <?php foreach (array_slice($announcements, 0, 3) as $announce): ?>
+                            <div class="alert-student alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                <div>
+                                    <strong><?= e((string)($announce['title'] ?? 'Announcement')) ?></strong>
+                                    <p class="mb-0 small"><?= e(plain_text((string)($announce['body'] ?? ''))) ?></p>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="alert alert-light mb-0">No announcements right now.</div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

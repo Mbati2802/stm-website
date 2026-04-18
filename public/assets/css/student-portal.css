@@ -160,6 +160,9 @@ body.student-portal {
     display: flex;
     align-items: center;
     gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
 }
 
 .student-topbar-title {

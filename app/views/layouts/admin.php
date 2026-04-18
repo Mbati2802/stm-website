@@ -3,6 +3,12 @@ $appName = $this->config['app_name'];
 $adminPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
 $isAdminHome = $adminPath === 'admin';
 $adminRole = Auth::role();
+$roleLabels = [
+    'super_admin' => 'Super Admin',
+    'junior_admin' => 'Senior Admin',
+    'teacher' => 'Teacher',
+];
+$adminRoleLabel = $roleLabels[$adminRole] ?? ucwords(str_replace('_', ' ', $adminRole));
 ?>
 <!doctype html>
 <html lang="en">
@@ -18,7 +24,7 @@ $adminRole = Auth::role();
     <link href="<?= e(base_url('assets/css/styles.css')) ?>" rel="stylesheet">
     <link href="<?= e(base_url('assets/css/admin.css')) ?>" rel="stylesheet">
 </head>
-<body class="admin-theme">
+<body class="admin-theme role-<?= e($adminRole) ?>">
 <?php if (str_ends_with($viewPath, 'admin/login.php')): ?>
 <main class="admin-main">
     <?php include $viewPath; ?>
@@ -30,7 +36,7 @@ $adminRole = Auth::role();
             <span class="admin-brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
             <div class="d-flex flex-column">
                 <span class="fw-bold">STM Admin</span>
-                <small class="text-white-50 text-uppercase"><?= e(str_replace('_', ' ', $adminRole)) ?></small>
+                <small class="text-white-50 text-uppercase"><?= e($adminRoleLabel) ?></small>
             </div>
         </div>
         <nav class="nav flex-column gap-2 mt-3">
@@ -52,6 +58,7 @@ $adminRole = Auth::role();
                 <?php if (Auth::canManageEntity('portal_courses')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/portal_courses') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/portal_courses')) ?>"><i class="bi bi-journal-code"></i><span>Portal Courses</span></a><?php endif; ?>
                 <?php if (Auth::canManageEntity('programme_timetables')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/programme_timetables') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/programme_timetables')) ?>"><i class="bi bi-calendar3"></i><span>Programme Timetables</span></a><?php endif; ?>
                 <?php if (Auth::canManageEntity('course_grades')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/course_grades') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/course_grades')) ?>"><i class="bi bi-award"></i><span>Course Grades</span></a><?php endif; ?>
+                <?php if (Auth::canManageEntity('grading_schemes')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/grading_schemes') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/grading_schemes')) ?>"><i class="bi bi-sliders2"></i><span>Grading Schemes</span></a><?php endif; ?>
                 <?php if (Auth::canManageEntity('course_assignments')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/course_assignments') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/course_assignments')) ?>"><i class="bi bi-file-earmark-text"></i><span>Assignments</span></a><?php endif; ?>
                 <?php if (Auth::canManageEntity('study_materials')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/study_materials') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/study_materials')) ?>"><i class="bi bi-folder"></i><span>Study Materials</span></a><?php endif; ?>
             </div>
@@ -81,7 +88,7 @@ $adminRole = Auth::role();
                 <strong><?= e($metaTitle ?? 'Admin') ?></strong>
                 <span class="text-muted">Content Management</span>
             </div>
-            <a class="btn btn-sm btn-primary" href="<?= e(base_url('admin/settings')) ?>"><i class="bi bi-gear me-1"></i>Settings</a>
+            <?php if (!Auth::isTeacher()): ?><a class="btn btn-sm btn-primary" href="<?= e(base_url('admin/settings')) ?>"><i class="bi bi-gear me-1"></i>Settings</a><?php endif; ?>
         </header>
         <?php include $viewPath; ?>
     </main>

@@ -111,7 +111,22 @@ class StudentPortalModel
     public function latestAnnouncements(int $limit = 10): array
     {
         try {
-            $stmt = $this->pdo->prepare('SELECT * FROM student_announcements ORDER BY created_at DESC LIMIT :lim');
+            $stmt = $this->pdo->prepare('
+                SELECT id, title, body, created_at FROM (
+                    SELECT sa.id, sa.title, sa.body, sa.created_at
+                    FROM student_announcements sa
+                    UNION ALL
+                    SELECT
+                        (1000000 + e.id) AS id,
+                        CONCAT("Event: ", e.title) AS title,
+                        COALESCE(NULLIF(TRIM(e.portal_announcement_text), ""), e.summary, e.body, "New event update is available.") AS body,
+                        e.created_at
+                    FROM events e
+                    WHERE COALESCE(e.publish_to_portal, 0) = 1
+                ) AS announcements
+                ORDER BY created_at DESC
+                LIMIT :lim
+            ');
             $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetchAll();

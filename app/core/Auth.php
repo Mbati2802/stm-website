@@ -24,6 +24,7 @@ class Auth
             $_SESSION['admin_id'] = $user['id'];
             $_SESSION['admin_name'] = $user['name'];
             $_SESSION['admin_role'] = (string)($user['role'] ?? self::ROLE_SUPER_ADMIN);
+            self::loadRolePermissions($pdo);
             return true;
         }
 
@@ -53,6 +54,7 @@ class Auth
                 $_SESSION['admin_id'] = $user['id'];
                 $_SESSION['admin_name'] = $user['name'];
                 $_SESSION['admin_role'] = (string)($user['role'] ?? self::ROLE_SUPER_ADMIN);
+                self::loadRolePermissions($pdo);
                 return true;
             }
         }
@@ -106,7 +108,7 @@ class Auth
         }
 
         if (self::isJuniorAdmin()) {
-            return in_array($entity, [
+            $defaults = [
                 'programmes',
                 'departments',
                 'news',
@@ -127,18 +129,21 @@ class Auth
                 'course_assignments',
                 'study_materials',
                 'users',
-            ], true);
+                'grading_schemes',
+            ];
+            return in_array($entity, self::configuredPermissions('junior_admin_permissions', $defaults), true);
         }
 
         if (self::isTeacher()) {
-            return in_array($entity, [
+            $defaults = [
                 'portal_courses',
                 'programme_timetables',
                 'course_grades',
                 'course_assignments',
                 'study_materials',
                 'library_resources',
-            ], true);
+            ];
+            return in_array($entity, self::configuredPermissions('teacher_permissions', $defaults), true);
         }
 
         return false;
@@ -150,5 +155,35 @@ class Auth
             header('Location: ' . base_url('admin/login'));
             exit;
         }
+    }
+
+    private static function loadRolePermissions(PDO $pdo): void
+    {
+        try {
+            $stmt = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('junior_admin_permissions','teacher_permissions')");
+            $rows = $stmt->fetchAll();
+            foreach ($rows as $row) {
+                $key = (string)($row['setting_key'] ?? '');
+                $value = (string)($row['setting_value'] ?? '');
+                if ($key !== '') {
+                    $_SESSION[$key] = $value;
+                }
+            }
+        } catch (PDOException) {
+            // Ignore if settings table is not ready yet.
+        }
+    }
+
+    private static function configuredPermissions(string $sessionKey, array $defaults): array
+    {
+        $raw = trim((string)($_SESSION[$sessionKey] ?? ''));
+        if ($raw === '') {
+            return $defaults;
+        }
+        $parsed = array_values(array_filter(array_map(
+            static fn($entity) => strtolower(trim((string)$entity)),
+            explode(',', $raw)
+        )));
+        return $parsed === [] ? $defaults : $parsed;
     }
 }

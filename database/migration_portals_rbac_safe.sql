@@ -163,6 +163,32 @@ PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 SET @sql := IF(
     EXISTS(
         SELECT 1
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'course_grades'
+          AND COLUMN_NAME = 'marks'
+    ),
+    'SELECT "course_grades.marks exists" AS info',
+    'ALTER TABLE course_grades ADD COLUMN marks DECIMAL(5,2) NULL AFTER grade'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'course_grades'
+          AND COLUMN_NAME = 'grading_scheme_id'
+    ),
+    'SELECT "course_grades.grading_scheme_id exists" AS info',
+    'ALTER TABLE course_grades ADD COLUMN grading_scheme_id INT NULL AFTER marks'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
         FROM information_schema.STATISTICS
         WHERE TABLE_SCHEMA = @db
           AND TABLE_NAME = 'course_grades'
@@ -186,6 +212,42 @@ SET @sql := IF(
 );
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'course_grades'
+          AND INDEX_NAME = 'idx_course_grades_scheme'
+    ),
+    'SELECT "idx_course_grades_scheme exists" AS info',
+    'CREATE INDEX idx_course_grades_scheme ON course_grades(grading_scheme_id)'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ---------------------------------------------------------------------
+-- grading_schemes
+-- ---------------------------------------------------------------------
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'grading_schemes'
+    ),
+    'SELECT "grading_schemes exists" AS info',
+    'CREATE TABLE grading_schemes (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(120) NOT NULL,
+        grade_label VARCHAR(20) NOT NULL,
+        min_score DECIMAL(5,2) NOT NULL DEFAULT 0,
+        max_score DECIMAL(5,2) NOT NULL DEFAULT 100,
+        remarks VARCHAR(190) NULL,
+        created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 -- ---------------------------------------------------------------------
 -- course_assignments
 -- ---------------------------------------------------------------------
@@ -206,6 +268,35 @@ SET @sql := IF(
         file_path VARCHAR(255) NULL,
         created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ---------------------------------------------------------------------
+-- events portal publishing
+-- ---------------------------------------------------------------------
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'events'
+          AND COLUMN_NAME = 'publish_to_portal'
+    ),
+    'SELECT "events.publish_to_portal exists" AS info',
+    'ALTER TABLE events ADD COLUMN publish_to_portal TINYINT(1) NOT NULL DEFAULT 0 AFTER is_featured'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'events'
+          AND COLUMN_NAME = 'portal_announcement_text'
+    ),
+    'SELECT "events.portal_announcement_text exists" AS info',
+    'ALTER TABLE events ADD COLUMN portal_announcement_text TEXT NULL AFTER publish_to_portal'
 );
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
@@ -326,6 +417,20 @@ SET @sql := IF(
     'ALTER TABLE course_grades
         ADD CONSTRAINT fk_course_grades_course
         FOREIGN KEY (course_id) REFERENCES portal_courses(id)
+        ON DELETE SET NULL'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS
+        WHERE CONSTRAINT_SCHEMA = @db
+          AND CONSTRAINT_NAME = 'fk_course_grades_scheme'
+    ),
+    'SELECT "fk_course_grades_scheme exists" AS info',
+    'ALTER TABLE course_grades
+        ADD CONSTRAINT fk_course_grades_scheme
+        FOREIGN KEY (grading_scheme_id) REFERENCES grading_schemes(id)
         ON DELETE SET NULL'
 );
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;

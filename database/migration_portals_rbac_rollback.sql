@@ -33,6 +33,17 @@ SET @sql := IF(
     EXISTS(
         SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS
         WHERE CONSTRAINT_SCHEMA = @db
+          AND CONSTRAINT_NAME = 'fk_course_grades_scheme'
+    ),
+    'ALTER TABLE course_grades DROP FOREIGN KEY fk_course_grades_scheme',
+    'SELECT "fk_course_grades_scheme not found" AS info'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS
+        WHERE CONSTRAINT_SCHEMA = @db
           AND CONSTRAINT_NAME = 'fk_course_grades_course'
     ),
     'ALTER TABLE course_grades DROP FOREIGN KEY fk_course_grades_course',
@@ -90,8 +101,38 @@ PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 DROP TABLE IF EXISTS study_materials;
 DROP TABLE IF EXISTS course_assignments;
 DROP TABLE IF EXISTS course_grades;
+DROP TABLE IF EXISTS grading_schemes;
 DROP TABLE IF EXISTS programme_timetables;
 DROP TABLE IF EXISTS portal_courses;
+
+-- ---------------------------------------------------------------------
+-- Remove events portal publishing columns
+-- ---------------------------------------------------------------------
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'events'
+          AND COLUMN_NAME = 'portal_announcement_text'
+    ),
+    'ALTER TABLE events DROP COLUMN portal_announcement_text',
+    'SELECT "events.portal_announcement_text not found" AS info'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'events'
+          AND COLUMN_NAME = 'publish_to_portal'
+    ),
+    'ALTER TABLE events DROP COLUMN publish_to_portal',
+    'SELECT "events.publish_to_portal not found" AS info'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- ---------------------------------------------------------------------
 -- Remove RBAC columns from users (if present)

@@ -13,6 +13,7 @@
                             <tr>
                                 <th>Course Code</th>
                                 <th>Course Name</th>
+                                <th>Marks</th>
                                 <th>Grade</th>
                                 <th>Remarks</th>
                                 <th>Date</th>
@@ -23,6 +24,7 @@
                                 <tr>
                                     <td><?= e((string)($grade['course_code'] ?? 'N/A')) ?></td>
                                     <td><?= e((string)($grade['course_title'] ?? '')) ?></td>
+                                    <td><?= e((string)($grade['marks'] ?? '')) ?></td>
                                     <td><span class="badge bg-primary"><?= e((string)($grade['grade'] ?? '')) ?></span></td>
                                     <td><?= e((string)($grade['remarks'] ?? '')) ?></td>
                                     <td><?= e((string)($grade['created_at'] ?? '')) ?></td>

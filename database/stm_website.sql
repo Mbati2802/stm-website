@@ -70,6 +70,8 @@ CREATE TABLE events (
     body LONGTEXT NULL,
     image_path VARCHAR(255) NULL,
     is_featured TINYINT(1) NOT NULL DEFAULT 0,
+    publish_to_portal TINYINT(1) NOT NULL DEFAULT 0,
+    portal_announcement_text TEXT NULL,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_events_slug (slug),
     INDEX idx_events_starts_at (starts_at)
@@ -213,13 +215,28 @@ CREATE TABLE course_grades (
     student_id INT NULL,
     course_id INT NULL,
     grade VARCHAR(20) NOT NULL,
+    marks DECIMAL(5,2) NULL,
+    grading_scheme_id INT NULL,
     remarks VARCHAR(255) NULL,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_course_grades_student (student_id),
     INDEX idx_course_grades_course (course_id),
+    INDEX idx_course_grades_scheme (grading_scheme_id),
     CONSTRAINT fk_course_grades_student FOREIGN KEY (student_id) REFERENCES student_accounts(id) ON DELETE SET NULL,
     CONSTRAINT fk_course_grades_course FOREIGN KEY (course_id) REFERENCES portal_courses(id) ON DELETE SET NULL
 );
+
+CREATE TABLE grading_schemes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    grade_label VARCHAR(20) NOT NULL,
+    min_score DECIMAL(5,2) NOT NULL DEFAULT 0,
+    max_score DECIMAL(5,2) NOT NULL DEFAULT 100,
+    remarks VARCHAR(190) NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE course_grades
+    ADD CONSTRAINT fk_course_grades_scheme FOREIGN KEY (grading_scheme_id) REFERENCES grading_schemes(id) ON DELETE SET NULL;
 
 CREATE TABLE course_assignments (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -309,7 +326,9 @@ INSERT INTO settings(setting_key, setting_value) VALUES
 ('location', 'Amani House, along Biashara Street, Kiambu Town'),
 ('top_message', 'Admissions Open - Apply Today'),
 ('registrar_email', 'registrar@stmarysmchmcollege.ac.ke'),
-('admission_number_format', 'STM/{YEAR}/{SEQ4}');
+('admission_number_format', 'STM/{YEAR}/{SEQ4}'),
+('junior_admin_permissions', 'programmes,departments,news,careers,tenders,events,gallery,library_resources,faqs,pages,messages,media_assets,media,students,portal_courses,programme_timetables,course_grades,course_assignments,study_materials,users,grading_schemes'),
+('teacher_permissions', 'portal_courses,programme_timetables,course_grades,course_assignments,study_materials,library_resources');
 
 INSERT INTO student_announcements(title, body) VALUES
 ('Welcome to Student Portal', 'This portal helps you access announcements, timetables, and key academic updates.'),

@@ -32,22 +32,45 @@ $ctaPageOptions = [
     'portal/login' => 'Student Portal',
     'staff/login' => 'Staff Portal',
 ];
+$manageableEntities = [
+    'programmes' => 'Programmes',
+    'departments' => 'Departments',
+    'news' => 'News',
+    'careers' => 'Careers',
+    'tenders' => 'Tenders',
+    'events' => 'Events',
+    'gallery' => 'Gallery',
+    'library_resources' => 'Library Resources',
+    'faqs' => 'FAQs',
+    'pages' => 'Pages',
+    'messages' => 'Messages',
+    'students' => 'Students',
+    'portal_courses' => 'Portal Courses',
+    'programme_timetables' => 'Programme Timetables',
+    'course_grades' => 'Course Grades',
+    'grading_schemes' => 'Grading Schemes',
+    'course_assignments' => 'Assignments',
+    'study_materials' => 'Study Materials',
+    'users' => 'Staff Users',
+    'media' => 'Media Library',
+];
+$selectedSeniorPermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['junior_admin_permissions'] ?? '')))));
+$selectedTeacherPermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['teacher_permissions'] ?? '')))));
 ?>
 
 <section class="py-4">
     <div class="admin-content-wrap">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div class="settings-hero mb-3">
             <div>
-                <h1 class="h4 fw-bold mb-1">Site Settings</h1>
-                <p class="text-muted mb-0">Manage global content, homepage sections, and page visibility.</p>
+                <h1 class="h4 fw-bold mb-1">UI Content Settings</h1>
+                <p class="text-muted mb-0">Configure your public website content and role-based content governance from one place.</p>
             </div>
             <button form="settings-form" class="btn btn-primary">Save Settings</button>
         </div>
         <div class="soft-card p-3 mb-3">
             <div class="d-flex flex-wrap gap-2" id="settings-tabs">
-                <button type="button" class="btn btn-sm btn-primary" data-settings-tab="all">All Sections</button>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="general">General</button>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="home">Homepage</button>
+                <button type="button" class="btn btn-sm btn-primary" data-settings-tab="general">General</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="home">Home</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="about">About Page</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="principal">Principal/Registrar</button>
             </div>
@@ -63,7 +86,7 @@ $ctaPageOptions = [
         <form id="settings-form" method="POST" enctype="multipart/form-data">
             <div class="row g-3">
                 <div class="col-lg-6 d-grid gap-3">
-                    <div class="soft-card p-4" data-settings-section="general home">
+                    <div class="soft-card p-4 settings-card" data-settings-section="general">
                         <h2 class="h6 text-uppercase text-muted mb-3">General</h2>
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -100,17 +123,45 @@ $ctaPageOptions = [
                                 <input name="admission_number_format" class="form-control" value="<?= e($settings['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}') ?>">
                                 <small class="text-muted">Available placeholders: {YEAR}, {YY}, {MM}, {DD}, {SEQ4}, {SEQ5}, {SEQ6}, {ID}</small>
                             </div>
+                            <?php if (Auth::isSuperAdmin()): ?>
+                            <div class="col-12">
+                                <label class="form-label">Senior Admin Permissions</label>
+                                <input id="senior_permissions_input" name="junior_admin_permissions" class="form-control" value="<?= e($settings['junior_admin_permissions'] ?? '') ?>" placeholder="programmes,events,portal_courses,users,grading_schemes">
+                                <div class="permission-grid mt-2">
+                                    <?php foreach ($manageableEntities as $entityKey => $entityLabel): ?>
+                                        <label class="form-check permission-item">
+                                            <input class="form-check-input permission-checkbox" data-target-input="senior_permissions_input" type="checkbox" value="<?= e($entityKey) ?>" <?= in_array($entityKey, $selectedSeniorPermissions, true) ? 'checked' : '' ?>>
+                                            <span class="form-check-label"><?= e($entityLabel) ?></span>
+                                        </label>
+                                    <?php endforeach; ?>
+                                </div>
+                                <small class="text-muted">Super Admin controls what Senior Admin can access/manage.</small>
+                            </div>
+                            <?php endif; ?>
+                            <div class="col-12">
+                                <label class="form-label">Teacher Permissions</label>
+                                <input id="teacher_permissions_input" name="teacher_permissions" class="form-control" value="<?= e($settings['teacher_permissions'] ?? '') ?>" placeholder="portal_courses,course_grades,course_assignments,study_materials">
+                                <div class="permission-grid mt-2">
+                                    <?php foreach ($manageableEntities as $entityKey => $entityLabel): ?>
+                                        <label class="form-check permission-item">
+                                            <input class="form-check-input permission-checkbox" data-target-input="teacher_permissions_input" type="checkbox" value="<?= e($entityKey) ?>" <?= in_array($entityKey, $selectedTeacherPermissions, true) ? 'checked' : '' ?>>
+                                            <span class="form-check-label"><?= e($entityLabel) ?></span>
+                                        </label>
+                                    <?php endforeach; ?>
+                                </div>
+                                <small class="text-muted">Senior Admin and Super Admin can control what teachers manage.</small>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="soft-card p-4" data-settings-section="home">
+                    <div class="soft-card p-4 settings-card" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Homepage Vertical Cards</h2>
                         <label class="form-label">Cards JSON</label>
                         <textarea name="home_value_cards" rows="12" class="form-control" placeholder='[{\"title_primary\":\"Flexibility\",\"title_secondary\":\"That Fits You\",\"text\":\"...\",\"icon\":\"bi-calendar-check\",\"cta_label\":\"Apply\",\"cta_link\":\"programmes\"}]'><?= e($settings['home_value_cards'] ?? '') ?></textarea>
                         <small class="text-muted">Use Bootstrap Icons classes like <code>bi-heart-pulse</code>, <code>bi-people</code>, <code>bi-award</code>.</small>
                     </div>
 
-                    <div class="soft-card p-4" data-settings-section="home">
+                    <div class="soft-card p-4 settings-card" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Visibility Controls</h2>
                         <div class="row g-2">
                             <?php foreach ($toggleItems as $k => $label): ?>
@@ -126,7 +177,7 @@ $ctaPageOptions = [
                     </div>
                 </div>
                 <div class="col-lg-6 d-grid gap-3">
-                    <div class="soft-card p-4" data-settings-section="home">
+                    <div class="soft-card p-4 settings-card" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Homepage Hero</h2>
                         <div class="mb-3">
                             <label class="form-label">Hero Title</label>
@@ -181,7 +232,7 @@ $ctaPageOptions = [
                         </div>
                     </div>
 
-                    <div class="soft-card p-4" data-settings-section="home">
+                    <div class="soft-card p-4 settings-card" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Programme & Banner Images</h2>
                         <div class="mb-3">
                             <label class="form-label">Home Programme Images JSON (key: category/name, value: image URL/path)</label>
@@ -225,7 +276,7 @@ $ctaPageOptions = [
                         </div>
                     </div>
 
-                    <div class="soft-card p-4" data-settings-section="about">
+                    <div class="soft-card p-4 settings-card" data-settings-section="about">
                         <h2 class="h6 text-uppercase text-muted mb-3">About Page Content</h2>
                         <div class="mb-3">
                             <label class="form-label">About Title</label>
@@ -291,7 +342,7 @@ $ctaPageOptions = [
                         </div>
                     </div>
 
-                    <div class="soft-card p-4" data-settings-section="principal">
+                    <div class="soft-card p-4 settings-card" data-settings-section="principal">
                         <h2 class="h6 text-uppercase text-muted mb-3">Principal Page Content</h2>
                         <div class="mb-3">
                             <label class="form-label">Principal Name</label>
@@ -371,7 +422,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!tabs.length || !cards.length) return;
     tabs.forEach((tab) => {
         tab.addEventListener('click', function () {
-            const target = tab.getAttribute('data-settings-tab') || 'all';
+            const target = tab.getAttribute('data-settings-tab') || 'general';
             tabs.forEach((btn) => {
                 btn.classList.remove('btn-primary');
                 btn.classList.add('btn-outline-primary');
@@ -380,10 +431,27 @@ document.addEventListener('DOMContentLoaded', function () {
             tab.classList.add('btn-primary');
             cards.forEach((card) => {
                 const groups = (card.getAttribute('data-settings-section') || '').split(/\s+/);
-                const visible = target === 'all' || groups.includes(target);
+                const visible = groups.includes(target);
                 card.style.display = visible ? '' : 'none';
             });
         });
     });
+    const syncPermissionInput = function(inputId){
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const checked = Array.from(document.querySelectorAll('.permission-checkbox[data-target-input="' + inputId + '"]:checked'))
+            .map((el) => (el.value || '').trim())
+            .filter(Boolean);
+        input.value = checked.join(',');
+    };
+    document.querySelectorAll('.permission-checkbox').forEach((checkbox) => {
+        checkbox.addEventListener('change', function(){
+            const inputId = checkbox.getAttribute('data-target-input');
+            if (inputId) syncPermissionInput(inputId);
+        });
+    });
+    if (tabs[0]) {
+        tabs[0].click();
+    }
 });
 </script>

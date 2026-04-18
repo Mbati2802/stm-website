@@ -306,7 +306,7 @@ class ContentModel
         $allowed = [
             'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
             'library_resources', 'faqs', 'messages', 'pages', 'users',
-            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials'
+            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials', 'grading_schemes'
         ];
         if (!in_array($table, $allowed, true)) {
             return [];
@@ -323,7 +323,7 @@ class ContentModel
         $allowed = [
             'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
             'library_resources', 'faqs', 'pages', 'users',
-            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials'
+            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials', 'grading_schemes'
         ];
         if (!in_array($table, $allowed, true)) {
             return false;
@@ -337,7 +337,7 @@ class ContentModel
         $allowed = [
             'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
             'library_resources', 'faqs', 'pages', 'users',
-            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials'
+            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials', 'grading_schemes'
         ];
         if (!in_array($table, $allowed, true)) {
             return null;

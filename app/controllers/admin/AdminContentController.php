@@ -4,7 +4,7 @@ class AdminContentController extends Controller
     private array $entities = [
         'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
         'library_resources', 'faqs', 'pages', 'users',
-        'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials'
+        'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials', 'grading_schemes'
     ];
     private const SETTINGS_TEXT_FIELDS = [
         'phone',
@@ -61,6 +61,8 @@ class AdminContentController extends Controller
         'banner_library',
         'banner_media',
         'banner_default_height',
+        'junior_admin_permissions',
+        'teacher_permissions',
     ];
     private const SETTINGS_TOGGLE_FIELDS = [
         'show_page_about',
@@ -92,10 +94,14 @@ class AdminContentController extends Controller
 
         $model = new ContentModel($this->config);
         $hiddenIds = $model->getHiddenIds($entity);
+        $rows = $model->all($entity);
+        if ($entity === 'users' && Auth::isJuniorAdmin()) {
+            $rows = array_values(array_filter($rows, static fn($user) => (string)($user['role'] ?? '') !== 'super_admin'));
+        }
         $this->view('admin/list', [
             'metaTitle' => 'Manage ' . ucfirst(str_replace('_', ' ', $entity)),
             'entity' => $entity,
-            'rows' => $model->all($entity),
+            'rows' => $rows,
             'hiddenIds' => $hiddenIds,
         ]);
     }
@@ -110,6 +116,7 @@ class AdminContentController extends Controller
         }
 
         $viewData = ['metaTitle' => 'Create ' . ucfirst($entity), 'entity' => $entity, 'isEdit' => false, 'row' => []];
+        $viewData = array_merge($viewData, $this->buildFormRelations());
         if ($entity === 'programmes') {
             $viewData['programmeContent'] = (new ContentModel($this->config))->getProgrammeContentForEditor(['name' => '', 'slug' => '']);
         }
@@ -149,7 +156,7 @@ class AdminContentController extends Controller
             'isEdit' => true,
             'row' => $row,
             'programmeContent' => $entity === 'programmes' ? $model->getProgrammeContentForEditor($row) : null,
-        ]);
+        ] + $this->buildFormRelations());
     }
 
     public function update(string $entity, int $id): void
@@ -385,8 +392,13 @@ class AdminContentController extends Controller
         $model = new ContentModel($this->config);
         try {
             $settings = $this->collectSettingsFromRequest();
+            if (Auth::isJuniorAdmin() && !Auth::isSuperAdmin()) {
+                $settings['junior_admin_permissions'] = (string)($model->getSettingValue('junior_admin_permissions') ?? '');
+            }
             $settings = $this->applySettingsImageUploads($settings, $model->getSettings());
             $model->saveSettings($settings);
+            $_SESSION['junior_admin_permissions'] = (string)($settings['junior_admin_permissions'] ?? '');
+            $_SESSION['teacher_permissions'] = (string)($settings['teacher_permissions'] ?? '');
             flash('success', 'Settings updated.');
         } catch (Throwable) {
             flash('error', 'Settings could not be saved. Please verify database schema and try again.');
@@ -606,15 +618,17 @@ class AdminContentController extends Controller
                     'summary' => trim($_POST['summary'] ?? ''),
                     'body' => trim($_POST['body'] ?? ''),
                     'image_path' => $uploadedImage !== '' ? $uploadedImage : trim($_POST['image_path'] ?? ''),
+                    'publish_to_portal' => isset($_POST['publish_to_portal']) ? 1 : 0,
+                    'portal_announcement_text' => trim($_POST['portal_announcement_text'] ?? ''),
                 ];
 
                 try {
                     if ($isUpdate) {
-                        $stmt = $pdo->prepare('UPDATE events SET title=:title, slug=:slug, starts_at=:starts_at, ends_at=:ends_at, category=:category, time_label=:time_label, location=:location, venue_type=:venue_type, registration_status=:registration_status, registration_url=:registration_url, is_featured=:is_featured, summary=:summary, body=:body, image_path=:image_path WHERE id=:id');
+                        $stmt = $pdo->prepare('UPDATE events SET title=:title, slug=:slug, starts_at=:starts_at, ends_at=:ends_at, category=:category, time_label=:time_label, location=:location, venue_type=:venue_type, registration_status=:registration_status, registration_url=:registration_url, is_featured=:is_featured, summary=:summary, body=:body, image_path=:image_path, publish_to_portal=:publish_to_portal, portal_announcement_text=:portal_announcement_text WHERE id=:id');
                         $params['id'] = $id;
                         $stmt->execute($params);
                     } else {
-                        $stmt = $pdo->prepare('INSERT INTO events(title, slug, starts_at, ends_at, category, time_label, location, venue_type, registration_status, registration_url, is_featured, summary, body, image_path, created_at) VALUES(:title, :slug, :starts_at, :ends_at, :category, :time_label, :location, :venue_type, :registration_status, :registration_url, :is_featured, :summary, :body, :image_path, NOW())');
+                        $stmt = $pdo->prepare('INSERT INTO events(title, slug, starts_at, ends_at, category, time_label, location, venue_type, registration_status, registration_url, is_featured, summary, body, image_path, publish_to_portal, portal_announcement_text, created_at) VALUES(:title, :slug, :starts_at, :ends_at, :category, :time_label, :location, :venue_type, :registration_status, :registration_url, :is_featured, :summary, :body, :image_path, :publish_to_portal, :portal_announcement_text, NOW())');
                         $stmt->execute($params);
                     }
                 } catch (PDOException) {
@@ -688,6 +702,10 @@ class AdminContentController extends Controller
                     'title' => trim($_POST['title'] ?? ''),
                     'description' => trim($_POST['description'] ?? ''),
                 ];
+                if ($stmtData['programme_id'] <= 0) {
+                    flash('error', 'Please select a valid programme.');
+                    $this->redirect('admin/list/portal_courses');
+                }
                 if ($isUpdate) {
                     $stmt = $pdo->prepare('UPDATE portal_courses SET programme_id=:programme_id, teacher_id=:teacher_id, code=:code, title=:title, description=:description WHERE id=:id');
                     $stmtData['id'] = $id;
@@ -704,6 +722,10 @@ class AdminContentController extends Controller
                     'details' => trim($_POST['details'] ?? ''),
                     'file_path' => $file !== '' ? $file : trim($_POST['file_path_existing'] ?? ''),
                 ];
+                if ($stmtData['programme_id'] <= 0) {
+                    flash('error', 'Please select a valid programme.');
+                    $this->redirect('admin/list/programme_timetables');
+                }
                 if ($isUpdate) {
                     if ($file === '' && isset($_POST['current_file_path'])) {
                         $stmtData['file_path'] = trim((string)$_POST['current_file_path']);
@@ -720,13 +742,28 @@ class AdminContentController extends Controller
                     'student_id' => (int)($_POST['student_id'] ?? 0),
                     'course_id' => (int)($_POST['course_id'] ?? 0),
                     'grade' => trim($_POST['grade'] ?? ''),
+                    'marks' => (($_POST['marks'] ?? '') !== '') ? (float)$_POST['marks'] : null,
+                    'grading_scheme_id' => (int)($_POST['grading_scheme_id'] ?? 0),
                     'remarks' => trim($_POST['remarks'] ?? ''),
                 ];
+                if ($stmtData['marks'] !== null) {
+                    if ($stmtData['grading_scheme_id'] > 0) {
+                        $gradeLookup = $pdo->prepare('SELECT grade_label FROM grading_schemes WHERE id = :id AND :marks BETWEEN min_score AND max_score LIMIT 1');
+                        $gradeLookup->execute(['id' => $stmtData['grading_scheme_id'], 'marks' => $stmtData['marks']]);
+                    } else {
+                        $gradeLookup = $pdo->prepare('SELECT grade_label FROM grading_schemes WHERE :marks BETWEEN min_score AND max_score ORDER BY min_score DESC LIMIT 1');
+                        $gradeLookup->execute(['marks' => $stmtData['marks']]);
+                    }
+                    $derivedGrade = trim((string)($gradeLookup->fetch()['grade_label'] ?? ''));
+                    if ($derivedGrade !== '') {
+                        $stmtData['grade'] = $derivedGrade;
+                    }
+                }
                 if ($isUpdate) {
-                    $stmt = $pdo->prepare('UPDATE course_grades SET student_id=:student_id, course_id=:course_id, grade=:grade, remarks=:remarks WHERE id=:id');
+                    $stmt = $pdo->prepare('UPDATE course_grades SET student_id=:student_id, course_id=:course_id, grade=:grade, marks=:marks, grading_scheme_id=:grading_scheme_id, remarks=:remarks WHERE id=:id');
                     $stmtData['id'] = $id;
                 } else {
-                    $stmt = $pdo->prepare('INSERT INTO course_grades(student_id, course_id, grade, remarks, created_at) VALUES(:student_id, :course_id, :grade, :remarks, NOW())');
+                    $stmt = $pdo->prepare('INSERT INTO course_grades(student_id, course_id, grade, marks, grading_scheme_id, remarks, created_at) VALUES(:student_id, :course_id, :grade, :marks, :grading_scheme_id, :remarks, NOW())');
                 }
                 $stmt->execute($stmtData);
                 break;
@@ -740,6 +777,10 @@ class AdminContentController extends Controller
                     'due_at' => $dueRaw !== '' ? date('Y-m-d H:i:s', strtotime($dueRaw)) : null,
                     'file_path' => $file !== '' ? $file : trim((string)($_POST['current_file_path'] ?? '')),
                 ];
+                if ($stmtData['course_id'] <= 0) {
+                    flash('error', 'Please select a valid course.');
+                    $this->redirect('admin/list/course_assignments');
+                }
                 if ($isUpdate) {
                     $stmt = $pdo->prepare('UPDATE course_assignments SET course_id=:course_id, title=:title, instructions=:instructions, due_at=:due_at, file_path=:file_path WHERE id=:id');
                     $stmtData['id'] = $id;
@@ -756,11 +797,35 @@ class AdminContentController extends Controller
                     'summary' => trim($_POST['summary'] ?? ''),
                     'file_path' => $file !== '' ? $file : trim((string)($_POST['current_file_path'] ?? '')),
                 ];
+                if ($stmtData['course_id'] <= 0) {
+                    flash('error', 'Please select a valid course.');
+                    $this->redirect('admin/list/study_materials');
+                }
                 if ($isUpdate) {
                     $stmt = $pdo->prepare('UPDATE study_materials SET course_id=:course_id, title=:title, summary=:summary, file_path=:file_path WHERE id=:id');
                     $stmtData['id'] = $id;
                 } else {
                     $stmt = $pdo->prepare('INSERT INTO study_materials(course_id, title, summary, file_path, created_at) VALUES(:course_id, :title, :summary, :file_path, NOW())');
+                }
+                $stmt->execute($stmtData);
+                break;
+            case 'grading_schemes':
+                $stmtData = [
+                    'name' => trim($_POST['name'] ?? ''),
+                    'grade_label' => strtoupper(trim($_POST['grade_label'] ?? '')),
+                    'min_score' => (float)($_POST['min_score'] ?? 0),
+                    'max_score' => (float)($_POST['max_score'] ?? 0),
+                    'remarks' => trim($_POST['remarks'] ?? ''),
+                ];
+                if ($stmtData['name'] === '' || $stmtData['grade_label'] === '') {
+                    flash('error', 'Please provide scheme name and grade label.');
+                    $this->redirect('admin/list/grading_schemes');
+                }
+                if ($isUpdate) {
+                    $stmt = $pdo->prepare('UPDATE grading_schemes SET name=:name, grade_label=:grade_label, min_score=:min_score, max_score=:max_score, remarks=:remarks WHERE id=:id');
+                    $stmtData['id'] = $id;
+                } else {
+                    $stmt = $pdo->prepare('INSERT INTO grading_schemes(name, grade_label, min_score, max_score, remarks, created_at) VALUES(:name, :grade_label, :min_score, :max_score, :remarks, NOW())');
                 }
                 $stmt->execute($stmtData);
                 break;
@@ -943,6 +1008,25 @@ class AdminContentController extends Controller
             return false;
         }
         return Auth::canManageEntity($entity);
+    }
+
+    private function buildFormRelations(): array
+    {
+        $model = new ContentModel($this->config);
+        $programmes = $model->all('programmes');
+        $courses = $model->all('portal_courses');
+        $students = (new StudentPortalModel($this->config))->allStudents();
+        $users = $model->all('users');
+        $teachers = array_values(array_filter($users, static fn($user) => (string)($user['role'] ?? '') === 'teacher'));
+        $gradingSchemes = $model->all('grading_schemes');
+
+        return [
+            'programmes' => $programmes,
+            'courses' => $courses,
+            'students' => $students,
+            'teachers' => $teachers,
+            'gradingSchemes' => $gradingSchemes,
+        ];
     }
 
     private function buildAdmissionNumber(string $format, int $studentId): string
