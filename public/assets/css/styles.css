@@ -153,6 +153,22 @@ a{text-decoration:none}
 .programme-detail-layout h2{color:var(--primary);font-size:1.45rem}
 .programme-detail-layout ul{padding-left:1.1rem}
 .programme-detail-layout .soft-card{background:#fff}
+.course-overview-content p{margin-bottom:.9rem}
+.course-overview-content h2,.course-overview-content h3,.course-overview-content h4{margin-top:.75rem;margin-bottom:.5rem;color:var(--primary)}
+.programme-mosaic-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:.75rem;
+}
+.programme-mosaic-item img{
+    width:100%;
+    height:160px;
+    object-fit:cover;
+    border-radius:0;
+    box-shadow:0 10px 20px rgba(15,23,42,.1);
+}
+.programme-mosaic-item:nth-child(6n+1) img,
+.programme-mosaic-item:nth-child(6n+4) img{height:220px}
 .entry-requirements-card{background:rgba(0,170,232,.10)!important}
 .entry-card-divider{
     border-top:1px solid rgba(15,23,42,.14);
@@ -282,6 +298,7 @@ a{text-decoration:none}
         width:100%;
         margin:0 0 1rem 0;
     }
+    .programme-mosaic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     .testimonials-box{padding-left:1rem;padding-right:1rem;min-height:auto}
     .testimonials-section .carousel-control-prev,
     .testimonials-section .carousel-control-next{opacity:1}

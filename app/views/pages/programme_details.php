@@ -43,12 +43,19 @@ $overviewDisplay = $overviewText !== ''
     : ($programmeDescription !== ''
         ? $programmeDescription
         : ($programmeName . ' is a people-centered course designed to equip students with the skills and knowledge needed to support individuals facing emotional, psychological, and social challenges. This programme focuses on understanding human behavior, effective communication, and practical counselling techniques that can be applied in real-life situations.'));
-$overviewNormalized = plain_text_multiline($overviewDisplay);
-$overviewParagraphs = array_values(array_filter(array_map('trim', preg_split('/\n+/', $overviewNormalized) ?: [])));
-if ($overviewParagraphs === []) {
-    $overviewParagraphs = [$overviewNormalized];
-}
+$overviewHtml = safe_html($overviewDisplay);
 $programmeMainImage = trim((string)($settings['programme_detail_image'] ?? 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=900'));
+$programmeSidebarTitle = trim((string)($settings['programme_sidebar_title'] ?? 'Need Guidance?'));
+$programmeSidebarText = trim((string)($settings['programme_sidebar_text'] ?? 'Kindly ask for a return call from our proficient consultants to have your inquiries addressed.'));
+$programmeSidebarPrimaryLabel = trim((string)($settings['programme_sidebar_primary_label'] ?? 'Apply Now'));
+$programmeSidebarPrimaryLink = trim((string)($settings['programme_sidebar_primary_link'] ?? 'programmes/apply'));
+$programmeSidebarSecondaryLabel = trim((string)($settings['programme_sidebar_secondary_label'] ?? 'Contact Registrar'));
+$programmeSidebarSecondaryLink = trim((string)($settings['programme_sidebar_secondary_link'] ?? 'contact-registrar'));
+$programmeSidebarOtherTitle = trim((string)($settings['programme_sidebar_other_title'] ?? 'Other Programmes Offered'));
+$mosaicImages = json_decode((string)($settings['programme_mosaic_images_json'] ?? '[]'), true);
+if (!is_array($mosaicImages)) {
+    $mosaicImages = [];
+}
 ?>
 
 <section class="section-stack">
@@ -56,13 +63,16 @@ $programmeMainImage = trim((string)($settings['programme_detail_image'] ?? 'http
     <aside class="programme-floating-sidebar">
       <div class="soft-card p-3 mb-3">
         <img class="img-fluid mb-3" src="<?= e($programmeMainImage) ?>" alt="<?= e($programmeName) ?>">
-        <h3 class="h4 fw-bold text-primary mb-2">Need Guidance?</h3>
-        <p class="small text-muted">Kindly ask for a return call from our proficient consultants to have your inquiries addressed.</p>
-        <a class="btn btn-sm btn-primary" href="<?= e(base_url('programmes/apply?course=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>">Apply Now</a>
+        <h3 class="h4 fw-bold text-primary mb-2"><?= e($programmeSidebarTitle) ?></h3>
+        <p class="small text-muted"><?= e($programmeSidebarText) ?></p>
+        <div class="d-grid gap-2">
+          <a class="btn btn-sm btn-primary" href="<?= e(base_url($programmeSidebarPrimaryLink . '?course=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>"><?= e($programmeSidebarPrimaryLabel) ?></a>
+          <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url($programmeSidebarSecondaryLink)) ?>"><?= e($programmeSidebarSecondaryLabel) ?></a>
+        </div>
       </div>
 
       <div class="soft-card p-3">
-        <h3 class="h5 fw-bold mb-3">Other Programmes Offered</h3>
+        <h3 class="h5 fw-bold mb-3"><?= e($programmeSidebarOtherTitle) ?></h3>
         <ul class="small mb-0 ps-3">
           <?php foreach ($otherProgrammes as $item): ?>
             <li class="mb-2">
@@ -87,11 +97,7 @@ $programmeMainImage = trim((string)($settings['programme_detail_image'] ?? 'http
     </div>
 
     <h2 class="h4 fw-bold mt-4">Course Overview</h2>
-    <div class="mb-3">
-      <?php foreach ($overviewParagraphs as $paragraph): ?>
-        <p class="mb-3"><?= e($paragraph) ?></p>
-      <?php endforeach; ?>
-    </div>
+    <div class="mb-3 course-overview-content"><?= $overviewHtml ?></div>
 
     <h2 class="h4 fw-bold mt-4">Course Objectives</h2>
     <p>By the end of this course, students will be able to:</p>
@@ -167,6 +173,15 @@ $programmeMainImage = trim((string)($settings['programme_detail_image'] ?? 'http
         </div>
       </div>
     </div>
+    <?php if ($mosaicImages !== []): ?>
+      <div class="programme-mosaic-grid mt-4">
+        <?php foreach ($mosaicImages as $mosaicImg): ?>
+          <figure class="programme-mosaic-item mb-0">
+            <img src="<?= e((string)$mosaicImg) ?>" alt="Programme gallery image">
+          </figure>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
     <div class="clearfix"></div>
   </div>
 </section>

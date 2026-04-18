@@ -6,6 +6,8 @@ $heroPrimaryLabel = 'Student Portal';
 $heroPrimaryLink = 'portal/login';
 $heroSecondaryLabel = 'Staff Portal';
 $heroSecondaryLink = 'staff/login';
+$heroPrimaryTargetBlank = true;
+$heroSecondaryTargetBlank = true;
 include __DIR__ . '/../partials/page_hero.php';
 ?>
 
@@ -16,14 +18,14 @@ include __DIR__ . '/../partials/page_hero.php';
                 <div class="soft-card p-4 h-100 bg-white">
                     <h2 class="h5 mb-2">Student Portal</h2>
                     <p class="text-muted mb-3">For enrolled students to view courses, timetables, grades, assignments, and study resources.</p>
-                    <a class="btn btn-primary" href="<?= e(base_url('portal/login')) ?>">Open Student Portal</a>
+                    <a class="btn btn-primary" href="<?= e(base_url('portal/login')) ?>" target="_blank" rel="noopener noreferrer">Open Student Portal</a>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="soft-card p-4 h-100 bg-white">
                     <h2 class="h5 mb-2">Staff Portal</h2>
                     <p class="text-muted mb-3">For administrators and teachers to manage programmes, academic content, and portal data.</p>
-                    <a class="btn btn-outline-primary" href="<?= e(base_url('staff/login')) ?>">Open Staff Portal</a>
+                    <a class="btn btn-outline-primary" href="<?= e(base_url('staff/login')) ?>" target="_blank" rel="noopener noreferrer">Open Staff Portal</a>
                 </div>
             </div>
         </div>

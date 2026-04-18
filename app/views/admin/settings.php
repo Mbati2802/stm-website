@@ -84,7 +84,7 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
         <?php endif; ?>
 
         <form id="settings-form" method="POST" enctype="multipart/form-data">
-            <div class="row g-3">
+            <div class="row g-3 settings-layout">
                 <div class="col-lg-6 d-grid gap-3">
                     <div class="soft-card p-4 settings-card" data-settings-section="general">
                         <h2 class="h6 text-uppercase text-muted mb-3">General</h2>
@@ -250,6 +250,35 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                                 <label class="form-label">Upload Programme Details Image</label>
                                 <input type="file" name="programme_detail_image_file" class="form-control" accept="image/png,image/jpeg,image/webp">
                             </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Programme Detail Sidebar Title</label>
+                            <input name="programme_sidebar_title" class="form-control" value="<?= e($settings['programme_sidebar_title'] ?? 'Need Guidance?') ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Programme Detail Sidebar Text</label>
+                            <textarea name="programme_sidebar_text" rows="3" class="form-control"><?= e($settings['programme_sidebar_text'] ?? 'Kindly ask for a return call from our proficient consultants to have your inquiries addressed.') ?></textarea>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label">Sidebar Primary Button Label</label><input name="programme_sidebar_primary_label" class="form-control" value="<?= e($settings['programme_sidebar_primary_label'] ?? 'Apply Now') ?>"></div>
+                            <div class="col-md-6"><label class="form-label">Sidebar Primary Button Link</label><input name="programme_sidebar_primary_link" class="form-control" value="<?= e($settings['programme_sidebar_primary_link'] ?? 'programmes/apply') ?>"></div>
+                            <div class="col-md-6"><label class="form-label">Sidebar Secondary Button Label</label><input name="programme_sidebar_secondary_label" class="form-control" value="<?= e($settings['programme_sidebar_secondary_label'] ?? 'Contact Registrar') ?>"></div>
+                            <div class="col-md-6"><label class="form-label">Sidebar Secondary Button Link</label><input name="programme_sidebar_secondary_link" class="form-control" value="<?= e($settings['programme_sidebar_secondary_link'] ?? 'contact-registrar') ?>"></div>
+                        </div>
+                        <div class="mb-3 mt-3">
+                            <label class="form-label">Programme Detail Sidebar "Other Programmes" Title</label>
+                            <input name="programme_sidebar_other_title" class="form-control" value="<?= e($settings['programme_sidebar_other_title'] ?? 'Other Programmes Offered') ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Programme Detail Mosaic Images JSON</label>
+                            <textarea name="programme_mosaic_images_json" rows="4" class="form-control" placeholder='["/uploads/settings/mosaic1.jpg","/uploads/settings/mosaic2.jpg"]'><?= e($settings['programme_mosaic_images_json'] ?? '') ?></textarea>
+                            <div class="mt-2">
+                                <label class="form-label">Upload Programme Detail Mosaic Images</label>
+                                <input type="file" name="programme_mosaic_image_files[]" class="form-control" accept="image/png,image/jpeg,image/webp" multiple>
+                            </div>
+                        </div>
+                        <div class="alert alert-info small mb-3">
+                            Manage "Courses | Programmes On Offer" card images using <strong>Home Programme Images JSON</strong> or <strong>Upload Programme Card Images</strong>. These are separate from the details page image above.
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Home Extra Sections JSON</label>

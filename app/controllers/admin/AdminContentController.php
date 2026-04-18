@@ -52,6 +52,14 @@ class AdminContentController extends Controller
         'registrar_image',
         'home_programme_images_json',
         'programme_detail_image',
+        'programme_sidebar_title',
+        'programme_sidebar_text',
+        'programme_sidebar_primary_label',
+        'programme_sidebar_primary_link',
+        'programme_sidebar_secondary_label',
+        'programme_sidebar_secondary_link',
+        'programme_sidebar_other_title',
+        'programme_mosaic_images_json',
         'home_extra_sections_json',
         'banner_home',
         'banner_programmes',
@@ -119,6 +127,7 @@ class AdminContentController extends Controller
         $viewData = array_merge($viewData, $this->buildFormRelations());
         if ($entity === 'programmes') {
             $viewData['programmeContent'] = (new ContentModel($this->config))->getProgrammeContentForEditor(['name' => '', 'slug' => '']);
+            $viewData['programmeHomeCardImage'] = '';
         }
         $this->view('admin/form', $viewData);
     }
@@ -156,6 +165,7 @@ class AdminContentController extends Controller
             'isEdit' => true,
             'row' => $row,
             'programmeContent' => $entity === 'programmes' ? $model->getProgrammeContentForEditor($row) : null,
+            'programmeHomeCardImage' => $entity === 'programmes' ? $this->programmeHomeCardImage((string)($row['name'] ?? '')) : '',
         ] + $this->buildFormRelations());
     }
 
@@ -466,6 +476,25 @@ class AdminContentController extends Controller
             $settings['programme_detail_image'] = $currentSettings['programme_detail_image'];
         }
 
+        $mosaicImages = $this->uploadMultipleFiles('programme_mosaic_image_files', ['image/jpeg', 'image/png', 'image/webp'], 'settings');
+        if ($mosaicImages !== []) {
+            $existingMosaic = [];
+            if (!empty($settings['programme_mosaic_images_json'])) {
+                $decoded = json_decode((string)$settings['programme_mosaic_images_json'], true);
+                if (is_array($decoded)) {
+                    $existingMosaic = array_values(array_filter(array_map('strval', $decoded)));
+                }
+            } elseif (!empty($currentSettings['programme_mosaic_images_json'])) {
+                $decoded = json_decode((string)$currentSettings['programme_mosaic_images_json'], true);
+                if (is_array($decoded)) {
+                    $existingMosaic = array_values(array_filter(array_map('strval', $decoded)));
+                }
+            }
+            $settings['programme_mosaic_images_json'] = json_encode(array_values(array_unique(array_merge($existingMosaic, $mosaicImages))), JSON_UNESCAPED_SLASHES);
+        } elseif (($settings['programme_mosaic_images_json'] ?? '') === '' && isset($currentSettings['programme_mosaic_images_json'])) {
+            $settings['programme_mosaic_images_json'] = $currentSettings['programme_mosaic_images_json'];
+        }
+
         $bannerFields = [
             'banner_home_file' => 'banner_home',
             'banner_programmes_file' => 'banner_programmes',
@@ -540,6 +569,15 @@ class AdminContentController extends Controller
                 ]);
                 if ($isUpdate && $oldSlug !== '' && $oldSlug !== $slug) {
                     $model->deleteSetting('programme_override_' . $oldSlug);
+                }
+                $homeCardImage = $this->uploadFile('programme_home_card_image_file', ['image/jpeg', 'image/png', 'image/webp'], 'settings');
+                if ($homeCardImage !== '') {
+                    $existingHomeImages = json_decode((string)($model->getSettingValue('home_programme_images_json') ?? '[]'), true);
+                    if (!is_array($existingHomeImages)) {
+                        $existingHomeImages = [];
+                    }
+                    $existingHomeImages[$name] = $homeCardImage;
+                    $model->setSettingValue('home_programme_images_json', json_encode($existingHomeImages, JSON_UNESCAPED_SLASHES));
                 }
                 break;
             case 'faqs':
@@ -1048,5 +1086,18 @@ class AdminContentController extends Controller
             '{ID}' => (string)$studentId,
         ];
         return strtr($format, $replacements);
+    }
+
+    private function programmeHomeCardImage(string $programmeName): string
+    {
+        if ($programmeName === '') {
+            return '';
+        }
+        $raw = (new ContentModel($this->config))->getSettingValue('home_programme_images_json') ?? '';
+        $decoded = json_decode($raw, true);
+        if (!is_array($decoded)) {
+            return '';
+        }
+        return (string)($decoded[$programmeName] ?? '');
     }
 }

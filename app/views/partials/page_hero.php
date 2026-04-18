@@ -6,6 +6,8 @@ $heroPrimaryLabel = (string)($heroPrimaryLabel ?? '');
 $heroPrimaryLink = (string)($heroPrimaryLink ?? '');
 $heroSecondaryLabel = (string)($heroSecondaryLabel ?? '');
 $heroSecondaryLink = (string)($heroSecondaryLink ?? '');
+$heroPrimaryTargetBlank = !empty($heroPrimaryTargetBlank);
+$heroSecondaryTargetBlank = !empty($heroSecondaryTargetBlank);
 ?>
 <section class="hero-ou-wrap">
   <div class="site-width hero-boxed">
@@ -20,10 +22,10 @@ $heroSecondaryLink = (string)($heroSecondaryLink ?? '');
         </div>
         <div class="d-flex gap-2 flex-wrap">
           <?php if ($heroPrimaryLabel !== '' && $heroPrimaryLink !== ''): ?>
-            <a class="btn btn-primary hero-apply-btn" href="<?= e(base_url($heroPrimaryLink)) ?>"><?= e($heroPrimaryLabel) ?></a>
+            <a class="btn btn-primary hero-apply-btn" href="<?= e(base_url($heroPrimaryLink)) ?>" <?= $heroPrimaryTargetBlank ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= e($heroPrimaryLabel) ?></a>
           <?php endif; ?>
           <?php if ($heroSecondaryLabel !== '' && $heroSecondaryLink !== ''): ?>
-            <a class="btn btn-outline-light" href="<?= e(base_url($heroSecondaryLink)) ?>"><?= e($heroSecondaryLabel) ?></a>
+            <a class="btn btn-outline-light" href="<?= e(base_url($heroSecondaryLink)) ?>" <?= $heroSecondaryTargetBlank ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= e($heroSecondaryLabel) ?></a>
           <?php endif; ?>
         </div>
       </div>
