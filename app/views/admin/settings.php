@@ -137,16 +137,43 @@ $toggleItems = [
             </div>
 
             <div class="settings-section-card">
-                <h6><i class="bi bi-images me-2"></i>Programme & Banner Images</h6>
-                <div class="mb-3">
-                    <label class="form-label">Home Programme Images JSON (key: category/name, value: image URL/path)</label>
-                    <textarea name="home_programme_images_json" rows="5" class="form-control" placeholder='{"Diploma":"/uploads/settings/diploma.jpg","Certificate":"/uploads/settings/certificate.jpg"}'><?= e($settings['home_programme_images_json'] ?? '') ?></textarea>
-                    <div class="mt-2">
-                        <label class="form-label">Upload Programme Card Images</label>
-                        <input type="file" name="home_programme_image_files[]" class="form-control" accept="image/png,image/jpeg,image/webp" multiple>
-                        <small class="text-muted">Uploaded images are appended into the JSON as uploaded_1, uploaded_2...</small>
+                <h6><i class="bi bi-images me-2"></i>Programme Card Images</h6>
+                <div class="alert alert-info mb-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <small>Images for course cards on homepage. Map categories or specific programme names to image URLs.</small>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Diploma Category Image</label>
+                        <input type="text" name="programme_image_diploma" class="form-control" value="<?= e($settings['home_programme_images_json']['Diploma'] ?? '') ?>" placeholder="/uploads/settings/diploma.jpg">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Certificate Category Image</label>
+                        <input type="text" name="programme_image_certificate" class="form-control" value="<?= e($settings['home_programme_images_json']['Certificate'] ?? '') ?>" placeholder="/uploads/settings/certificate.jpg">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Short Course Category Image</label>
+                        <input type="text" name="programme_image_short_course" class="form-control" value="<?= e($settings['home_programme_images_json']['Short Course'] ?? '') ?>" placeholder="/uploads/settings/short-course.jpg">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Artisan Category Image</label>
+                        <input type="text" name="programme_image_artisan" class="form-control" value="<?= e($settings['home_programme_images_json']['Artisan'] ?? '') ?>" placeholder="/uploads/settings/artisan.jpg">
                     </div>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Custom Programme Images (JSON for specific programmes)</label>
+                    <textarea name="home_programme_images_json" rows="4" class="form-control" placeholder='{"Nursing":"/uploads/settings/nursing.jpg","Clinical Medicine":"/uploads/settings/clinical.jpg"}'><?= e($settings['home_programme_images_json'] ?? '') ?></textarea>
+                    <small class="text-muted">Override category images for specific programmes by name.</small>
+                </div>
+                <div class="mt-2">
+                    <label class="form-label">Upload Programme Card Images</label>
+                    <input type="file" name="home_programme_image_files[]" class="form-control" accept="image/png,image/jpeg,image/webp" multiple>
+                    <small class="text-muted">Uploaded images are appended as uploaded_1, uploaded_2...</small>
+                </div>
+            </div>
+
+            <div class="settings-section-card">
+                <h6><i class="bi bi-file-earmark-image me-2"></i>Programme Details Page</h6>
                 <div class="mb-3">
                     <label class="form-label">Programme Details Page Main Image Path/URL</label>
                     <input name="programme_detail_image" class="form-control" value="<?= e($settings['programme_detail_image'] ?? '') ?>" placeholder="/uploads/settings/programme-detail.jpg">
@@ -155,10 +182,18 @@ $toggleItems = [
                         <input type="file" name="programme_detail_image_file" class="form-control" accept="image/png,image/jpeg,image/webp">
                     </div>
                 </div>
+            </div>
+
+            <div class="settings-section-card">
+                <h6><i class="bi bi-layers me-2"></i>Home Extra Sections</h6>
                 <div class="mb-3">
                     <label class="form-label">Home Extra Sections JSON</label>
                     <textarea name="home_extra_sections_json" rows="5" class="form-control" placeholder='[{"title":"Scholarships","text":"Apply for support.","button_label":"Learn More","button_link":"contact","image":"/uploads/settings/section.jpg"}]'><?= e($settings['home_extra_sections_json'] ?? '') ?></textarea>
                 </div>
+            </div>
+
+            <div class="settings-section-card">
+                <h6><i class="bi bi-image me-2"></i>Page Banner Images</h6>
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Banner Height (px)</label>

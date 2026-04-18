@@ -435,27 +435,45 @@ class AdminContentController extends Controller
             $settings['hero_images'] = $currentSettings['hero_images'];
         }
 
+        // Merge individual programme image fields into JSON
+        $programmeImages = [];
+        $individualFields = ['programme_image_diploma' => 'Diploma', 'programme_image_certificate' => 'Certificate', 'programme_image_short_course' => 'Short Course', 'programme_image_artisan' => 'Artisan'];
+        foreach ($individualFields as $field => $category) {
+            if (!empty($settings[$field])) {
+                $programmeImages[$category] = $settings[$field];
+            } elseif (!empty($currentSettings[$field])) {
+                $programmeImages[$category] = $currentSettings[$field];
+            }
+            // Remove individual field from settings array
+            unset($settings[$field]);
+        }
+        
+        // Merge with existing JSON if present
+        $existingJson = [];
+        if (!empty($settings['home_programme_images_json'])) {
+            $decoded = json_decode((string)$settings['home_programme_images_json'], true);
+            if (is_array($decoded)) {
+                $existingJson = $decoded;
+            }
+        } elseif (!empty($currentSettings['home_programme_images_json'])) {
+            $decoded = json_decode((string)$currentSettings['home_programme_images_json'], true);
+            if (is_array($decoded)) {
+                $existingJson = $decoded;
+            }
+        }
+        
+        // Merge individual fields with existing JSON (individual fields take precedence)
+        $mergedImages = array_merge($existingJson, $programmeImages);
+        
+        // Handle uploaded files
         $programmeCards = $this->uploadMultipleFiles('home_programme_image_files', ['image/jpeg', 'image/png', 'image/webp'], 'settings');
         if ($programmeCards !== []) {
-            $existing = [];
-            if (!empty($settings['home_programme_images_json'])) {
-                $decoded = json_decode((string)$settings['home_programme_images_json'], true);
-                if (is_array($decoded)) {
-                    $existing = $decoded;
-                }
-            } elseif (!empty($currentSettings['home_programme_images_json'])) {
-                $decoded = json_decode((string)$currentSettings['home_programme_images_json'], true);
-                if (is_array($decoded)) {
-                    $existing = $decoded;
-                }
-            }
             foreach ($programmeCards as $index => $img) {
-                $existing['uploaded_' . ($index + 1)] = $img;
+                $mergedImages['uploaded_' . ($index + 1)] = $img;
             }
-            $settings['home_programme_images_json'] = json_encode($existing, JSON_UNESCAPED_SLASHES);
-        } elseif (($settings['home_programme_images_json'] ?? '') === '' && isset($currentSettings['home_programme_images_json'])) {
-            $settings['home_programme_images_json'] = $currentSettings['home_programme_images_json'];
         }
+        
+        $settings['home_programme_images_json'] = json_encode($mergedImages, JSON_UNESCAPED_SLASHES);
 
         $programmeDetailImage = $this->uploadFile('programme_detail_image_file', ['image/jpeg', 'image/png', 'image/webp'], 'settings');
         if ($programmeDetailImage !== '') {
