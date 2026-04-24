@@ -8,23 +8,23 @@
             <table class="table align-middle admin-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Subject</th>
-                        <th>Message</th>
-                        <th>Date</th>
-                        <th>Action</th>
+                        <th class="col-md">Name</th>
+                        <th class="col-lg">Email</th>
+                        <th class="col-lg">Subject</th>
+                        <th class="col-xl">Message</th>
+                        <th class="col-sm">Date</th>
+                        <th class="col-actions">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php foreach ($rows as $row): ?>
                     <tr>
-                        <td><?= e((string)$row['name']) ?></td>
-                        <td><?= e((string)$row['email']) ?></td>
-                        <td><?= e((string)$row['subject']) ?></td>
-                        <td><?= e(substr((string)$row['message'], 0, 80)) ?>...</td>
-                        <td><?= e((string)$row['created_at']) ?></td>
-                        <td>
+                        <td class="col-md" title="<?= e((string)$row['name']) ?>"><?= e((string)$row['name']) ?></td>
+                        <td class="col-lg" title="<?= e((string)$row['email']) ?>"><?= e((string)$row['email']) ?></td>
+                        <td class="col-lg" title="<?= e((string)$row['subject']) ?>"><?= e((string)$row['subject']) ?></td>
+                        <td class="col-xl" title="<?= e((string)$row['message']) ?>"><?= e((string)$row['message']) ?></td>
+                        <td class="col-sm" title="<?= e((string)$row['created_at']) ?>"><?= e((string)$row['created_at']) ?></td>
+                        <td class="col-actions">
                             <a class="btn btn-sm btn-action-view" href="mailto:<?= e((string)$row['email']) ?>"><i class="bi bi-envelope"></i></a>
                         </td>
                     </tr>

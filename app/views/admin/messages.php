@@ -12,24 +12,24 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Subject</th>
-                        <th>Message</th>
-                        <th>Date</th>
-                        <th>Actions</th>
+                        <th class="col-lg">Email</th>
+                        <th class="col-sm">Phone</th>
+                        <th class="col-md">Subject</th>
+                        <th class="col-xl">Message</th>
+                        <th class="col-sm">Date</th>
+                        <th class="col-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php foreach ($rows as $row): ?>
                     <tr>
-                        <td><?= e($row['name']) ?></td>
-                        <td><?= e($row['email']) ?></td>
-                        <td><?= e($row['phone']) ?></td>
-                        <td><?= e($row['subject']) ?></td>
-                        <td><?= e(substr($row['message'], 0, 50)) ?>...</td>
-                        <td><?= e($row['created_at']) ?></td>
-                        <td>
+                        <td class="col-md" title="<?= e((string)$row['name']) ?>"><?= e($row['name']) ?></td>
+                        <td class="col-lg" title="<?= e((string)$row['email']) ?>"><?= e($row['email']) ?></td>
+                        <td class="col-sm" title="<?= e((string)$row['phone']) ?>"><?= e($row['phone']) ?></td>
+                        <td class="col-md" title="<?= e((string)$row['subject']) ?>"><?= e($row['subject']) ?></td>
+                        <td class="col-xl" title="<?= e((string)$row['message']) ?>"><?= e((string)$row['message']) ?></td>
+                        <td class="col-sm" title="<?= e((string)$row['created_at']) ?>"><?= e($row['created_at']) ?></td>
+                        <td class="col-actions">
                             <div class="action-buttons">
                                 <a class="btn btn-sm btn-action-view" href="mailto:<?= e($row['email']) ?>" title="Send Email"><i class="bi bi-envelope"></i></a>
                                 <a class="btn btn-sm btn-action-delete" href="<?= e(base_url('admin/messages/delete/' . $row['id'])) ?>" onclick="return confirm('Delete message?')" title="Delete"><i class="bi bi-trash"></i></a>

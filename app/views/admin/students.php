@@ -22,21 +22,21 @@
             <table class="table align-middle admin-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Admission Number</th>
-                        <th>Actions</th>
+                        <th class="col-xs">ID</th>
+                        <th class="col-md">Name</th>
+                        <th class="col-lg">Email</th>
+                        <th class="col-md">Admission Number</th>
+                        <th class="col-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($rows as $row): ?>
                         <tr>
-                            <td><?= (int)$row['id'] ?></td>
-                            <td><?= e((string)$row['name']) ?></td>
-                            <td><?= e((string)$row['email']) ?></td>
-                            <td><strong><?= e((string)($row['admission_number'] ?? 'Not assigned')) ?></strong></td>
-                            <td>
+                            <td class="col-xs"><?= (int)$row['id'] ?></td>
+                            <td class="col-md" title="<?= e((string)$row['name']) ?>"><?= e((string)$row['name']) ?></td>
+                            <td class="col-lg" title="<?= e((string)$row['email']) ?>"><?= e((string)$row['email']) ?></td>
+                            <td class="col-md" title="<?= e((string)($row['admission_number'] ?? 'Not assigned')) ?>"><strong><?= e((string)($row['admission_number'] ?? 'Not assigned')) ?></strong></td>
+                            <td class="col-actions">
                                 <div class="action-buttons">
                                     <button class="btn btn-sm btn-action-reset" data-bs-toggle="modal" data-bs-target="#resetPasswordModal" data-student-id="<?= (int)$row['id'] ?>" data-student-name="<?= e((string)$row['name']) ?>" data-student-email="<?= e((string)$row['email']) ?>" title="Reset Password">
                                         <i class="bi bi-key"></i>
