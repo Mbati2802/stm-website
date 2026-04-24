@@ -204,7 +204,7 @@ function build_structured_notification_email(string $headline, array $rows, stri
             . '<td style="padding:10px 12px;border:1px solid #d9e3f2;">' . nl2br(e((string)$value)) . '</td>'
             . '</tr>';
     }
-    return '<!doctype html><html><body style="margin:0;padding:0;background:#6f7584;">'
+    return '<!doctype html><html><body style="margin:0;padding:0;background:#ffffff;">'
         . '<div style="max-width:760px;margin:20px auto;padding:0 12px;">'
         . '<div style="background:#f5f6fb;border-top:4px solid #5fc7e7;border-bottom:4px solid #5fc7e7;">'
         . '<div style="padding:24px 32px 14px;text-align:center;">'

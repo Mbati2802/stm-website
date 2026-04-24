@@ -17,6 +17,7 @@ class EventsController extends Controller
             'upcoming' => $upcoming,
             'pastGallery' => $pastGallery,
             'announcementsHtml' => (string)($settings['events_announcements'] ?? ''),
+            'socialUpdatesHtml' => (string)($settings['events_social_updates_html'] ?? ''),
         ]);
     }
 

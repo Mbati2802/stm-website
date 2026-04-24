@@ -307,7 +307,7 @@ class AdminContentController extends Controller
         $heading = trim((string)($settings['admin_reply_email_heading'] ?? 'Thank you for your email'));
         $subheading = trim((string)($settings['admin_reply_email_subheading'] ?? ('Here is our response from ' . $appName)));
         $footerText = trim((string)($settings['admin_reply_email_footer_text'] ?? 'We value your message and are always ready to assist.'));
-        $bgColor = $this->sanitizeHexColor((string)($settings['admin_reply_email_bg_color'] ?? ''), '#6f7584');
+        $bgColor = $this->sanitizeHexColor((string)($settings['admin_reply_email_bg_color'] ?? ''), '#ffffff');
         $cardColor = $this->sanitizeHexColor((string)($settings['admin_reply_email_card_color'] ?? ''), '#f5f6fb');
         $accentColor = $this->sanitizeHexColor((string)($settings['admin_reply_email_accent_color'] ?? ''), '#5fc7e7');
         $footerBgColor = $this->sanitizeHexColor((string)($settings['admin_reply_email_footer_bg_color'] ?? ''), '#2c3653');
@@ -932,6 +932,7 @@ class AdminContentController extends Controller
                     'publish_to_portal' => isset($_POST['publish_to_portal']) ? 1 : 0,
                     'portal_announcement_text' => trim($_POST['portal_announcement_text'] ?? ''),
                 ];
+                $socialUpdatesEmbed = trim((string)($_POST['social_updates_embed'] ?? ''));
 
                 try {
                     if ($isUpdate) {
@@ -946,6 +947,7 @@ class AdminContentController extends Controller
                     flash('error', 'Events table is missing or outdated. Run the latest SQL schema for `events` in MySQL, then try again.');
                     $this->redirect('admin/list/events');
                 }
+                (new ContentModel($this->config))->setSettingValue('events_social_updates_html', $socialUpdatesEmbed);
                 break;
             case 'users':
                 $name = trim($_POST['name'] ?? '');
@@ -1337,6 +1339,7 @@ class AdminContentController extends Controller
         $users = $model->all('users');
         $teachers = array_values(array_filter($users, static fn($user) => (string)($user['role'] ?? '') === 'teacher'));
         $gradingSchemes = $model->all('grading_schemes');
+        $settings = $model->getSettings();
 
         return [
             'programmes' => $programmes,
@@ -1344,6 +1347,7 @@ class AdminContentController extends Controller
             'students' => $students,
             'teachers' => $teachers,
             'gradingSchemes' => $gradingSchemes,
+            'siteSettings' => $settings,
         ];
     }
 

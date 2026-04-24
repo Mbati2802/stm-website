@@ -197,6 +197,28 @@
     border:1px solid #dce6f5!important;
     box-shadow:0 10px 28px rgba(15,23,42,.05)!important;
 }
+.settings-card-home{
+    border-left:4px solid var(--primary)!important;
+}
+.settings-card-home-hero{
+    background:linear-gradient(180deg,#ffffff 0%, #f5f9ff 100%);
+}
+.settings-card-home-vertical{
+    background:linear-gradient(180deg,#ffffff 0%, #f7fcff 100%);
+    border-left-color:#0aaae8!important;
+}
+.settings-card-home-testimonials{
+    background:linear-gradient(180deg,#ffffff 0%, #fffaf0 100%);
+    border-left-color:#d4a017!important;
+}
+.settings-card-images{
+    background:linear-gradient(180deg,#ffffff 0%, #f5f7ff 100%);
+    border-left:4px solid #5b6bf7!important;
+}
+.settings-card-visibility{
+    background:linear-gradient(180deg,#ffffff 0%, #f0fbf7 100%);
+    border-left:4px solid #1f7a41!important;
+}
 .settings-card-header{
     border-bottom:2px solid rgba(24,84,144,.18);
     padding-bottom:.45rem;

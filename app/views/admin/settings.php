@@ -71,6 +71,8 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
             <div class="d-flex flex-wrap gap-2" id="settings-tabs">
                 <button type="button" class="btn btn-sm btn-primary" data-settings-tab="general">General</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="home">Home</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="images">Programme & Banner Images</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="visibility">Visibility Controls</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="about">About Page</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="principal">Principal/Registrar</button>
             </div>
@@ -227,7 +229,7 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Background Color</label>
-                                <input name="admin_reply_email_bg_color" class="form-control" value="<?= e($settings['admin_reply_email_bg_color'] ?? '#6f7584') ?>" placeholder="#6f7584">
+                                <input name="admin_reply_email_bg_color" class="form-control" value="<?= e($settings['admin_reply_email_bg_color'] ?? '#ffffff') ?>" placeholder="#ffffff">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Card Color</label>
@@ -287,21 +289,21 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                         </div>
                     </div>
 
-                    <div class="soft-card p-4 settings-card" data-settings-section="home">
+                    <div class="soft-card p-4 settings-card settings-card-home settings-card-home-vertical" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Homepage Vertical Cards</h2>
                         <label class="form-label">Cards JSON</label>
                         <textarea name="home_value_cards" rows="12" class="form-control" placeholder='[{\"title_primary\":\"Flexibility\",\"title_secondary\":\"That Fits You\",\"text\":\"...\",\"icon\":\"bi-calendar-check\",\"cta_label\":\"Apply\",\"cta_link\":\"programmes\"}]'><?= e($settings['home_value_cards'] ?? '') ?></textarea>
                         <small class="text-muted">Use Bootstrap Icons classes like <code>bi-heart-pulse</code>, <code>bi-people</code>, <code>bi-award</code>.</small>
                     </div>
 
-                    <div class="soft-card p-4 settings-card" data-settings-section="home">
+                    <div class="soft-card p-4 settings-card settings-card-home settings-card-home-testimonials" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Homepage Testimonials</h2>
                         <label class="form-label">Testimonials JSON</label>
                         <textarea name="home_testimonials_json" rows="10" class="form-control" placeholder='[{"name":"Jane D.","course":"Diploma in Nursing","message":"Great college experience","image":"https://..."}]'><?= e($settings['home_testimonials_json'] ?? '') ?></textarea>
                         <small class="text-muted">Each item: <code>name</code>, <code>course</code>, <code>message</code>, <code>image</code>.</small>
                     </div>
 
-                    <div class="soft-card p-4 settings-card" data-settings-section="home">
+                    <div class="soft-card p-4 settings-card settings-card-visibility" data-settings-section="visibility">
                         <h2 class="h6 text-uppercase text-muted mb-3">Visibility Controls</h2>
                         <div class="row g-2">
                             <?php foreach ($toggleItems as $k => $label): ?>
@@ -317,7 +319,7 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                     </div>
                 </div>
                 <div class="col-lg-6 d-grid gap-3">
-                    <div class="soft-card p-4 settings-card" data-settings-section="home">
+                    <div class="soft-card p-4 settings-card settings-card-home settings-card-home-hero" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Homepage Hero</h2>
                         <div class="mb-3">
                             <label class="form-label">Hero Title</label>
@@ -372,7 +374,7 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                         </div>
                     </div>
 
-                    <div class="soft-card p-4 settings-card" data-settings-section="home">
+                    <div class="soft-card p-4 settings-card settings-card-images" data-settings-section="images">
                         <h2 class="h6 text-uppercase text-muted mb-3">Programme & Banner Images</h2>
                         <div class="mb-3">
                             <label class="form-label">Home Programme Images JSON (key: category/name, value: image URL/path)</label>
@@ -662,7 +664,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const contactEmail = getVal('email', 'contact@stmarysmchmcollege.ac.ke');
         const contactPhone = getVal('phone', '+254 791 309011');
         const contactPhone2 = '0101 711 499';
-        const bgColor = sanitizeHex(getVal('admin_reply_email_bg_color', '#6f7584'), '#6f7584');
+        const bgColor = sanitizeHex(getVal('admin_reply_email_bg_color', '#ffffff'), '#ffffff');
         const cardColor = sanitizeHex(getVal('admin_reply_email_card_color', '#f5f6fb'), '#f5f6fb');
         const accentColor = sanitizeHex(getVal('admin_reply_email_accent_color', '#5fc7e7'), '#5fc7e7');
         const footerBgColor = sanitizeHex(getVal('admin_reply_email_footer_bg_color', '#2c3653'), '#2c3653');

@@ -3,6 +3,7 @@ $featured = $featured ?? null;
 $upcoming = is_array($upcoming ?? null) ? $upcoming : [];
 $pastGallery = is_array($pastGallery ?? null) ? $pastGallery : [];
 $announcementsHtml = (string)($announcementsHtml ?? '');
+$socialUpdatesHtml = (string)($socialUpdatesHtml ?? '');
 
 function event_category(string $raw): string {
     $v = trim($raw);
@@ -66,6 +67,17 @@ include __DIR__ . '/../partials/page_hero.php';
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="section-stack">
+  <div class="site-width boxed-section" data-aos="fade-up">
+    <h2 class="split-title mb-3"><span class="title-primary">Social</span> | <span class="title-secondary">Updates Feed</span></h2>
+    <?php if (trim($socialUpdatesHtml) !== ''): ?>
+      <div class="soft-card bg-white p-4"><?= safe_html($socialUpdatesHtml, ['div','iframe','a','p','br','strong','b','em','i','span','blockquote']) ?></div>
+    <?php else: ?>
+      <p class="text-muted mb-0">No social feed embed configured yet.</p>
+    <?php endif; ?>
   </div>
 </section>
 <?php endif; ?>

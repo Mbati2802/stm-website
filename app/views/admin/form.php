@@ -8,6 +8,11 @@
 <div class="col-12"><h2 class="h6 text-uppercase text-muted mb-2">Programme Detail Content</h2></div>
 <div class="col-md-6"><label class="form-label">Course Family</label><input class="form-control" value="<?= e($programmeContent['family_name'] ?? '') ?>" readonly></div>
 <div class="col-md-6"><label class="form-label">Content Scope</label><select name="programme_content_scope" class="form-select"><option value="shared" <?= (($programmeContent['content_scope'] ?? 'shared') === 'shared') ? 'selected' : '' ?>>Shared across all levels in this family</option><option value="level" <?= (($programmeContent['content_scope'] ?? '') === 'level') ? 'selected' : '' ?>>This level only (override)</option></select></div>
+<div class="col-12">
+  <div class="alert alert-info small mb-0">
+    <strong>Editing tip:</strong> choose <strong>Shared</strong> to update all levels in this course family (e.g. Diploma/Certificate/Artisan together). Choose <strong>This level only</strong> to override just this specific programme.
+  </div>
+</div>
 <div class="col-12"><label class="form-label">Course Overview</label><textarea name="programme_overview" rows="4" class="form-control rich-editor"><?= e($programmeContent['overview'] ?? '') ?></textarea></div>
 <div class="col-md-6"><label class="form-label">Course Objectives (one per line)</label><textarea name="programme_objectives" rows="6" class="form-control"><?= e($programmeContent['objectives'] ?? '') ?></textarea></div>
 <div class="col-md-6"><label class="form-label">Course Content Areas (one per line)</label><textarea name="programme_content_areas" rows="6" class="form-control"><?= e($programmeContent['content_areas'] ?? '') ?></textarea></div>
@@ -44,6 +49,11 @@
 <div class="col-12"><label class="form-label">Featured Image URL (fallback)</label><input name="image_path" class="form-control" value="<?= e($row['image_path'] ?? '') ?>"></div>
 <div class="col-md-4"><label class="form-label">Publish to Student Portal</label><div class="form-check mt-2"><input class="form-check-input" type="checkbox" name="publish_to_portal" value="1" <?= !empty($row['publish_to_portal']) ? 'checked' : '' ?>><label class="form-check-label">Show as student announcement</label></div></div>
 <div class="col-md-8"><label class="form-label">Portal Announcement Text (optional)</label><textarea name="portal_announcement_text" rows="3" class="form-control" placeholder="This message appears in the student portal announcements list."><?= e($row['portal_announcement_text'] ?? '') ?></textarea></div>
+<div class="col-12">
+  <label class="form-label">Social Updates Feed Embed (Events page)</label>
+  <textarea name="social_updates_embed" rows="5" class="form-control" placeholder="Paste social feed embed iframe/html snippet"><?= e((string)($siteSettings['events_social_updates_html'] ?? '')) ?></textarea>
+  <small class="text-muted">This appears on the public Events page under "Social Updates Feed".</small>
+</div>
 <?php elseif($entity==='users'): ?>
 <div class="col-md-6"><label class="form-label">Full Name</label><input name="name" class="form-control" value="<?= e($row['name'] ?? '') ?>" required></div>
 <div class="col-md-6"><label class="form-label">Email Address</label><input name="email" type="email" class="form-control" value="<?= e($row['email'] ?? '') ?>" required></div>
