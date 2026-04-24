@@ -102,8 +102,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const sidebar = document.getElementById('adminSidebar');
     const toggle = document.getElementById('adminSidebarToggle');
     if (sidebar && toggle) {
+        const storageKey = 'stm_admin_sidebar_collapsed';
+        try {
+            if (localStorage.getItem(storageKey) === '1') {
+                document.body.classList.add('admin-sidebar-collapsed');
+            }
+        } catch (e) {}
+
         toggle.addEventListener('click', function () {
             document.body.classList.toggle('admin-sidebar-collapsed');
+            try {
+                localStorage.setItem(storageKey, document.body.classList.contains('admin-sidebar-collapsed') ? '1' : '0');
+            } catch (e) {}
         });
     }
 
