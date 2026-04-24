@@ -8,6 +8,7 @@ class ContentModel
     public function __construct(array $config)
     {
         $this->pdo = Database::getInstance($config['db']);
+        $this->ensureAnalyticsStorage();
     }
 
     public function pdo(): PDO
@@ -401,6 +402,11 @@ class ContentModel
             ');
             return $stmt->execute($data);
         } catch (PDOException) {
+            $today = date('Ymd');
+            $total = (int)($this->getSettingValue('applications_total') ?? '0');
+            $daily = (int)($this->getSettingValue('applications_day_' . $today) ?? '0');
+            $this->setSettingValue('applications_total', (string)($total + 1));
+            $this->setSettingValue('applications_day_' . $today, (string)($daily + 1));
             return false;
         }
     }
@@ -413,7 +419,33 @@ class ContentModel
             $stmt->execute();
             return $stmt->fetchAll();
         } catch (PDOException) {
-            return [];
+            try {
+                $stmt = $this->pdo->prepare("
+                    SELECT
+                        id,
+                        name,
+                        email,
+                        phone,
+                        '' AS guardian_name,
+                        '' AS guardian_phone,
+                        '' AS county,
+                        'Programme Application' AS course_selection,
+                        '' AS grade,
+                        '' AS level,
+                        '' AS preferred_intake,
+                        '' AS referral_source,
+                        created_at
+                    FROM messages
+                    WHERE subject = 'Programme Application'
+                    ORDER BY id DESC
+                    LIMIT :lim
+                ");
+                $stmt->bindValue(':lim', max(1, min($limit, 500)), PDO::PARAM_INT);
+                $stmt->execute();
+                return $stmt->fetchAll();
+            } catch (PDOException) {
+                return [];
+            }
         }
     }
 
@@ -435,6 +467,26 @@ class ContentModel
             $stmt->execute();
             return $stmt->fetchAll();
         } catch (PDOException) {
+            if ($table === 'programme_applications') {
+                try {
+                    $stmt = $this->pdo->prepare("
+                        SELECT DATE(created_at) AS day, COUNT(*) AS total
+                        FROM messages
+                        WHERE subject = 'Programme Application'
+                          AND created_at >= DATE_SUB(NOW(), INTERVAL :days DAY)
+                        GROUP BY DATE(created_at)
+                        ORDER BY DATE(created_at) ASC
+                    ");
+                    $stmt->bindValue(':days', max(1, min(90, $days)), PDO::PARAM_INT);
+                    $stmt->execute();
+                    return $stmt->fetchAll();
+                } catch (PDOException) {
+                    return $this->getDailyTrendFromSettings('applications_day_', $days);
+                }
+            }
+            if ($table === 'page_visits') {
+                return $this->getDailyTrendFromSettings('page_visit_day_', $days);
+            }
             return [];
         }
     }
@@ -461,6 +513,15 @@ class ContentModel
         } catch (Throwable) {
             // no-op
         }
+        $today = date('Ymd');
+        $dailyKey = 'page_visit_day_' . $today;
+        $total = (int)($this->getSettingValue('page_visit_total') ?? '0');
+        $daily = (int)($this->getSettingValue($dailyKey) ?? '0');
+        $pathKey = 'page_visit_path_' . slugify($cleanPath);
+        $pathCount = (int)($this->getSettingValue($pathKey) ?? '0');
+        $this->setSettingValue('page_visit_total', (string)($total + 1));
+        $this->setSettingValue($dailyKey, (string)($daily + 1));
+        $this->setSettingValue($pathKey, (string)($pathCount + 1));
     }
 
     public function getTopVisitedPages(int $limit = 10, bool $adminOnly = false): array
@@ -479,7 +540,24 @@ class ContentModel
             $stmt->execute();
             return $stmt->fetchAll();
         } catch (PDOException) {
-            return [];
+            try {
+                $stmt = $this->pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'page_visit_path_%'");
+                $rows = $stmt->fetchAll();
+                $mapped = [];
+                foreach ($rows as $row) {
+                    $key = (string)($row['setting_key'] ?? '');
+                    $count = (int)($row['setting_value'] ?? 0);
+                    $slug = str_replace('page_visit_path_', '', $key);
+                    if ($slug === '') {
+                        continue;
+                    }
+                    $mapped[] = ['path' => '/' . str_replace('-', '/', $slug), 'visits' => $count];
+                }
+                usort($mapped, static fn(array $a, array $b) => ((int)$b['visits'] <=> (int)$a['visits']));
+                return array_slice($mapped, 0, max(1, min($limit, 50)));
+            } catch (PDOException) {
+                return [];
+            }
         }
     }
 
@@ -512,8 +590,77 @@ class ContentModel
         try {
             return (int)($this->pdo->query("SELECT COUNT(*) AS total FROM {$table}")->fetch()['total'] ?? 0);
         } catch (PDOException) {
+            if ($table === 'programme_applications') {
+                try {
+                    return (int)($this->pdo->query("SELECT COUNT(*) AS total FROM messages WHERE subject = 'Programme Application'")->fetch()['total'] ?? 0);
+                } catch (PDOException) {
+                    return 0;
+                }
+            }
             return 0;
         }
+    }
+
+    private function ensureAnalyticsStorage(): void
+    {
+        try {
+            $this->pdo->exec("CREATE TABLE IF NOT EXISTS programme_applications (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(190) NOT NULL,
+                email VARCHAR(190) NOT NULL,
+                phone VARCHAR(60) NOT NULL,
+                guardian_name VARCHAR(190) NULL,
+                guardian_phone VARCHAR(60) NULL,
+                county VARCHAR(120) NULL,
+                course_selection VARCHAR(190) NOT NULL,
+                grade VARCHAR(80) NULL,
+                level VARCHAR(80) NULL,
+                preferred_intake VARCHAR(80) NULL,
+                referral_source VARCHAR(190) NULL,
+                created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+            )");
+            $this->pdo->exec("CREATE TABLE IF NOT EXISTS page_visits (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                path VARCHAR(255) NOT NULL,
+                user_role VARCHAR(40) NULL,
+                is_admin TINYINT(1) NOT NULL DEFAULT 0,
+                session_id VARCHAR(128) NULL,
+                ip_address VARCHAR(64) NULL,
+                user_agent VARCHAR(255) NULL,
+                created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+            )");
+        } catch (Throwable) {
+            // no-op
+        }
+    }
+
+    private function getDailyTrendFromSettings(string $prefix, int $days): array
+    {
+        try {
+            $stmt = $this->pdo->prepare("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE :prefix");
+            $stmt->execute(['prefix' => $prefix . '%']);
+            $rows = $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+        $map = [];
+        foreach ($rows as $row) {
+            $key = (string)($row['setting_key'] ?? '');
+            $value = (int)($row['setting_value'] ?? 0);
+            $dateRaw = str_replace($prefix, '', $key);
+            if (!preg_match('/^\d{8}$/', $dateRaw)) {
+                continue;
+            }
+            $day = substr($dateRaw, 0, 4) . '-' . substr($dateRaw, 4, 2) . '-' . substr($dateRaw, 6, 2);
+            $map[$day] = $value;
+        }
+        $out = [];
+        $days = max(1, min(90, $days));
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $day = date('Y-m-d', strtotime('-' . $i . ' day'));
+            $out[] = ['day' => $day, 'total' => (int)($map[$day] ?? 0)];
+        }
+        return $out;
     }
 
     public function getAdminUsers(): array
