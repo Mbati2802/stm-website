@@ -52,7 +52,18 @@
 <div class="col-12">
   <label class="form-label">Social Updates Feed Embed (Events page)</label>
   <textarea name="social_updates_embed" rows="5" class="form-control" placeholder="Paste social feed embed iframe/html snippet"><?= e((string)($siteSettings['events_social_updates_html'] ?? '')) ?></textarea>
+  <div class="d-flex flex-wrap gap-2 mt-2">
+    <button type="button" class="btn btn-sm btn-outline-primary" id="preview-social-embed-btn">Preview Embed</button>
+  </div>
   <small class="text-muted">This appears on the public Events page under "Social Updates Feed".</small>
+</div>
+<div class="col-12">
+  <div class="card border-0 soft-card" id="social-embed-preview-wrap" style="display:none;">
+    <div class="card-header bg-light fw-semibold">Social Feed Preview</div>
+    <div class="card-body p-0">
+      <iframe id="social-embed-preview-frame" title="Social embed preview" style="width:100%;height:360px;border:0;"></iframe>
+    </div>
+  </div>
 </div>
 <?php elseif($entity==='users'): ?>
 <div class="col-md-6"><label class="form-label">Full Name</label><input name="name" class="form-control" value="<?= e($row['name'] ?? '') ?>" required></div>
@@ -106,3 +117,28 @@
 <div class="col-12"><label class="form-label">Upload Image (optional)</label><input type="file" name="image_file" accept="image/png,image/jpeg,image/webp" class="form-control"></div>
 <?php endif; ?>
 </div><div class="mt-3"><button class="btn btn-primary"><?= $isEdit ? 'Update' : 'Save' ?></button> <a class="btn btn-outline-secondary" href="<?= e(base_url('admin/list/' . $entity)) ?>">Cancel</a></div></form></div></section>
+<?php if ($entity === 'events'): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const btn = document.getElementById('preview-social-embed-btn');
+  const frame = document.getElementById('social-embed-preview-frame');
+  const wrap = document.getElementById('social-embed-preview-wrap');
+  const source = document.querySelector('textarea[name="social_updates_embed"]');
+  if (!btn || !frame || !wrap || !source) return;
+
+  btn.addEventListener('click', function () {
+    const html = String(source.value || '').trim();
+    if (html === '') {
+      wrap.style.display = 'none';
+      return;
+    }
+    wrap.style.display = '';
+    const doc = frame.contentWindow && frame.contentWindow.document;
+    if (!doc) return;
+    doc.open();
+    doc.write('<!doctype html><html><body style="margin:0;padding:14px;font-family:Arial,sans-serif;background:#fff;">' + html + '</body></html>');
+    doc.close();
+  });
+});
+</script>
+<?php endif; ?>
