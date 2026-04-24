@@ -69,6 +69,14 @@ class AdminContentController extends Controller
         'banner_library',
         'banner_media',
         'banner_default_height',
+        'admin_reply_email_heading',
+        'admin_reply_email_subheading',
+        'admin_reply_email_footer_text',
+        'admin_reply_email_logo_url',
+        'admin_reply_email_bg_color',
+        'admin_reply_email_card_color',
+        'admin_reply_email_accent_color',
+        'admin_reply_email_footer_bg_color',
         'junior_admin_permissions',
         'teacher_permissions',
     ];
@@ -274,21 +282,31 @@ class AdminContentController extends Controller
         $replyText = $body . "\n\n--- Original Message ---\nFrom: " . (string)($message['name'] ?? '') . ' <' . $to . ">\nSubject: " . (string)($message['subject'] ?? '') . "\n" . (string)($message['message'] ?? '');
         $settings = $model->getSettings();
         $appName = (string)($this->config['app_name'] ?? 'College');
-        $logoUrl = base_url('assets/images/logo.png');
+        $logoUrl = trim((string)($settings['admin_reply_email_logo_url'] ?? ''));
+        if ($logoUrl === '') {
+            $logoUrl = base_url('assets/images/logo.png');
+        }
         $contactPhone = trim((string)($settings['phone'] ?? '+254 791 309011'));
         $contactEmail = trim((string)($settings['email'] ?? 'contact@stmarysmchmcollege.ac.ke'));
+        $heading = trim((string)($settings['admin_reply_email_heading'] ?? 'Thank you for your email'));
+        $subheading = trim((string)($settings['admin_reply_email_subheading'] ?? ('Here is our response from ' . $appName)));
+        $footerText = trim((string)($settings['admin_reply_email_footer_text'] ?? 'We value your message and are always ready to assist.'));
+        $bgColor = $this->sanitizeHexColor((string)($settings['admin_reply_email_bg_color'] ?? ''), '#6f7584');
+        $cardColor = $this->sanitizeHexColor((string)($settings['admin_reply_email_card_color'] ?? ''), '#f5f6fb');
+        $accentColor = $this->sanitizeHexColor((string)($settings['admin_reply_email_accent_color'] ?? ''), '#5fc7e7');
+        $footerBgColor = $this->sanitizeHexColor((string)($settings['admin_reply_email_footer_bg_color'] ?? ''), '#2c3653');
         $safeReplyBodyHtml = nl2br(e($body));
         $safeSenderName = e((string)($message['name'] ?? 'User'));
         $safeOriginalSubject = e((string)($message['subject'] ?? 'General Enquiry'));
-        $html = '<!doctype html><html><body style="margin:0;padding:0;background:#6f7584;">'
+        $html = '<!doctype html><html><body style="margin:0;padding:0;background:' . e($bgColor) . ';">'
             . '<div style="max-width:760px;margin:20px auto;padding:0 12px;">'
-            . '<div style="background:#f5f6fb;border-top:4px solid #5fc7e7;border-bottom:4px solid #5fc7e7;">'
+            . '<div style="background:' . e($cardColor) . ';border-top:4px solid ' . e($accentColor) . ';border-bottom:4px solid ' . e($accentColor) . ';">'
             . '<div style="padding:26px 34px 20px;text-align:center;">'
             . '<div style="width:88px;height:88px;margin:0 auto 14px;border-radius:50%;background:#f6dfb8;display:flex;align-items:center;justify-content:center;overflow:hidden;">'
             . '<img src="' . e($logoUrl) . '" alt="' . e($appName) . ' logo" style="width:64px;height:64px;object-fit:contain;">'
             . '</div>'
-            . '<h1 style="margin:0;color:#1f2a44;font-family:Arial,sans-serif;font-size:42px;line-height:1.1;">Thank you for your email</h1>'
-            . '<p style="margin:8px 0 0;color:#6e7381;font-family:Arial,sans-serif;font-size:14px;">Here is our response from ' . e($appName) . '</p>'
+            . '<h1 style="margin:0;color:#1f2a44;font-family:Arial,sans-serif;font-size:42px;line-height:1.1;">' . e($heading) . '</h1>'
+            . '<p style="margin:8px 0 0;color:#6e7381;font-family:Arial,sans-serif;font-size:14px;">' . e($subheading) . '</p>'
             . '</div>'
             . '<div style="padding:0 34px 28px;">'
             . '<table role="presentation" style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;color:#1f2a44;">'
@@ -301,9 +319,9 @@ class AdminContentController extends Controller
             . '<p style="margin:16px 0 0;">Thank you,<br>' . e($appName) . '</p>'
             . '</div>'
             . '</div>'
-            . '<div style="background:#2c3653;padding:18px 34px;color:#cfd6ea;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;">'
+            . '<div style="background:' . e($footerBgColor) . ';padding:18px 34px;color:#cfd6ea;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;">'
             . '<strong style="color:#fff;">' . e($appName) . '</strong><br>'
-            . e($contactEmail) . ' | ' . e($contactPhone)
+            . e($contactEmail) . ' | ' . e($contactPhone) . '<br>' . e($footerText)
             . '</div>'
             . '</div></div></body></html>';
         $sent = send_notification_email($to, $subject, $replyText, $html);
@@ -1203,5 +1221,14 @@ class AdminContentController extends Controller
             return '';
         }
         return (string)($decoded[$programmeName] ?? '');
+    }
+
+    private function sanitizeHexColor(string $raw, string $fallback): string
+    {
+        $value = trim($raw);
+        if (preg_match('/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/', $value)) {
+            return $value;
+        }
+        return $fallback;
     }
 }

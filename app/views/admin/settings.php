@@ -124,6 +124,42 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                                 <input name="admission_number_format" class="form-control" value="<?= e($settings['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}') ?>">
                                 <small class="text-muted">Available placeholders: {YEAR}, {YY}, {MM}, {DD}, {SEQ4}, {SEQ5}, {SEQ6}, {ID}</small>
                             </div>
+                            <div class="col-12">
+                                <hr class="my-2">
+                                <h3 class="h6 text-uppercase text-muted mb-2">Admin Reply Email Template</h3>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Reply Heading</label>
+                                <input name="admin_reply_email_heading" class="form-control" value="<?= e($settings['admin_reply_email_heading'] ?? 'Thank you for your email') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Reply Subheading</label>
+                                <input name="admin_reply_email_subheading" class="form-control" value="<?= e($settings['admin_reply_email_subheading'] ?? '') ?>" placeholder="Here is our response from the college">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Logo URL/Path</label>
+                                <input name="admin_reply_email_logo_url" class="form-control" value="<?= e($settings['admin_reply_email_logo_url'] ?? '') ?>" placeholder="<?= e(base_url('assets/images/logo.png')) ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Footer Text</label>
+                                <input name="admin_reply_email_footer_text" class="form-control" value="<?= e($settings['admin_reply_email_footer_text'] ?? '') ?>" placeholder="We value your message and are always ready to assist.">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Background Color</label>
+                                <input name="admin_reply_email_bg_color" class="form-control" value="<?= e($settings['admin_reply_email_bg_color'] ?? '#6f7584') ?>" placeholder="#6f7584">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Card Color</label>
+                                <input name="admin_reply_email_card_color" class="form-control" value="<?= e($settings['admin_reply_email_card_color'] ?? '#f5f6fb') ?>" placeholder="#f5f6fb">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Accent Color</label>
+                                <input name="admin_reply_email_accent_color" class="form-control" value="<?= e($settings['admin_reply_email_accent_color'] ?? '#5fc7e7') ?>" placeholder="#5fc7e7">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Footer BG Color</label>
+                                <input name="admin_reply_email_footer_bg_color" class="form-control" value="<?= e($settings['admin_reply_email_footer_bg_color'] ?? '#2c3653') ?>" placeholder="#2c3653">
+                            </div>
                             <?php if (Auth::isSuperAdmin()): ?>
                             <div class="col-12">
                                 <label class="form-label">Senior Admin Permissions</label>
