@@ -155,6 +155,19 @@ class ProgrammesController extends Controller
                 'subject' => 'Programme Application',
                 'message' => $message,
             ]);
+            $model->saveProgrammeApplication([
+                'name' => $name,
+                'email' => $email,
+                'phone' => $phone,
+                'guardian_name' => $guardianName,
+                'guardian_phone' => $guardianPhone,
+                'county' => $county,
+                'course_selection' => $course,
+                'grade' => $grade,
+                'level' => $level,
+                'preferred_intake' => $intake,
+                'referral_source' => $referral,
+            ]);
             $model->incrementProgrammeMetric($courseSlug, 'applications');
         } catch (Throwable) {
             flash('error', 'Application service is temporarily unavailable. Please try again shortly.');

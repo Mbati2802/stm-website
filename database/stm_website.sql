@@ -109,8 +109,10 @@ CREATE TABLE messages (
     phone VARCHAR(40) NULL,
     subject VARCHAR(190) NULL,
     message TEXT NOT NULL,
+    read_at DATETIME NULL,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_messages_email (email)
+    INDEX idx_messages_email (email),
+    INDEX idx_messages_read_at (read_at)
 );
 
 CREATE TABLE pages (
@@ -175,6 +177,38 @@ CREATE TABLE admin_messages (
     INDEX idx_admin_messages_read (read_at),
     CONSTRAINT fk_admin_messages_sender FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_admin_messages_recipient FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE programme_applications (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(190) NOT NULL,
+    email VARCHAR(190) NOT NULL,
+    phone VARCHAR(60) NOT NULL,
+    guardian_name VARCHAR(190) NULL,
+    guardian_phone VARCHAR(60) NULL,
+    county VARCHAR(120) NULL,
+    course_selection VARCHAR(190) NOT NULL,
+    grade VARCHAR(80) NULL,
+    level VARCHAR(80) NULL,
+    preferred_intake VARCHAR(80) NULL,
+    referral_source VARCHAR(190) NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_programme_applications_created (created_at),
+    INDEX idx_programme_applications_course (course_selection)
+);
+
+CREATE TABLE page_visits (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    path VARCHAR(255) NOT NULL,
+    user_role VARCHAR(40) NULL,
+    is_admin TINYINT(1) NOT NULL DEFAULT 0,
+    session_id VARCHAR(128) NULL,
+    ip_address VARCHAR(64) NULL,
+    user_agent VARCHAR(255) NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_page_visits_created (created_at),
+    INDEX idx_page_visits_path (path),
+    INDEX idx_page_visits_admin (is_admin)
 );
 
 CREATE TABLE student_accounts (

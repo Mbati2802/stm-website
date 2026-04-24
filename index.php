@@ -109,6 +109,7 @@ $router->add('GET', 'admin/settings', [AdminContentController::class, 'settings'
 $router->add('POST', 'admin/settings', [AdminContentController::class, 'saveSettings']);
 $router->add('GET', 'admin/internal-messages', [AdminContentController::class, 'internalMessages']);
 $router->add('POST', 'admin/internal-messages/send', [AdminContentController::class, 'sendInternalMessage']);
+$router->add('GET', 'admin/applications', [AdminContentController::class, 'applications']);
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
 $basePath = dirname($_SERVER['SCRIPT_NAME']);

@@ -6,14 +6,19 @@ class AdminDashboardController extends Controller
         Auth::requireAdmin();
         $model = new ContentModel($this->config);
         $portalModel = new StudentPortalModel($this->config);
+        $trafficTrend = $model->getDailyTrend('page_visits', 30);
+        $trafficHits30 = array_sum(array_map(static fn($d) => (int)($d['total'] ?? 0), $trafficTrend));
+        $applicationTrend = $model->getDailyTrend('programme_applications', 30);
 
         $stats = [
             'Programmes' => $model->countAll('programmes'),
             'Departments' => $model->countAll('departments'),
             'Media Posts' => $model->countAll('news') + $model->countAll('careers') + $model->countAll('tenders'),
-            'Messages' => $model->countAll('messages'),
+            'Unread Messages' => $model->getUnreadPublicMessagesCount(),
             'Students' => count($portalModel->allStudents()),
             'Team Users' => $model->countAll('users'),
+            'Applications' => $model->countAll('programme_applications'),
+            'Traffic Hits' => $trafficHits30,
         ];
 
         $contentBreakdown = [
@@ -47,6 +52,10 @@ class AdminDashboardController extends Controller
             'roleCounts' => $roleCounts,
             'recentMessages' => array_slice($model->all('messages'), 0, 5),
             'recentEvents' => array_slice($model->all('events'), 0, 5),
+            'applicationTrend' => $applicationTrend,
+            'trafficTrend' => $trafficTrend,
+            'topPages' => $model->getTopVisitedPages(8, false),
+            'topCourses' => $model->getTopCourseViews(8),
         ]);
     }
 }

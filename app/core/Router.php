@@ -23,6 +23,17 @@ class Router
                 array_shift($matches);
                 [$controller, $action] = $route['handler'];
                 $instance = new $controller($GLOBALS['config']);
+                if (strtoupper($method) === 'GET') {
+                    try {
+                        $path = '/' . trim($uri, '/');
+                        if ($path === '/') {
+                            $path = '/';
+                        }
+                        (new ContentModel($GLOBALS['config']))->logPageVisit($path, str_starts_with($path, '/admin'));
+                    } catch (Throwable) {
+                        // no-op
+                    }
+                }
                 if (strtoupper($method) === 'POST') {
                     $token = $_POST['_csrf'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
                     if (!csrf_validate(is_string($token) ? $token : '')) {

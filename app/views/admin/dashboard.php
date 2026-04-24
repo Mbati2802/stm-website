@@ -78,6 +78,67 @@
                 </div>
             </div>
         </div>
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6">
+                <div class="soft-card p-3 h-100">
+                    <h2 class="h6 text-uppercase text-primary mb-3">Applications Trend</h2>
+                    <canvas id="applicationsTrend" height="220"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="soft-card p-3 h-100">
+                    <h2 class="h6 text-uppercase text-primary mb-3">Website Traffic Trend</h2>
+                    <canvas id="trafficTrend" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6">
+                <div class="soft-card p-3 h-100">
+                    <h2 class="h6 text-uppercase text-primary mb-3">Top Performing Pages</h2>
+                    <div class="table-responsive">
+                        <table class="table table-sm admin-table mb-0">
+                            <thead><tr><th class="col-lg">Path</th><th class="col-sm">Visits</th></tr></thead>
+                            <tbody>
+                                <?php if (empty($topPages)): ?>
+                                    <tr><td colspan="2" class="text-muted">No page traffic recorded yet.</td></tr>
+                                <?php else: ?>
+                                    <?php foreach ($topPages as $row): ?>
+                                        <tr>
+                                            <td title="<?= e((string)($row['path'] ?? '')) ?>"><?= e((string)($row['path'] ?? '')) ?></td>
+                                            <td><?= (int)($row['visits'] ?? 0) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="soft-card p-3 h-100">
+                    <h2 class="h6 text-uppercase text-primary mb-3">Top Courses by Views</h2>
+                    <div class="table-responsive">
+                        <table class="table table-sm admin-table mb-0">
+                            <thead><tr><th class="col-md">Course Slug</th><th class="col-sm">Views</th><th class="col-sm">Applications</th></tr></thead>
+                            <tbody>
+                                <?php if (empty($topCourses)): ?>
+                                    <tr><td colspan="3" class="text-muted">No course engagement data yet.</td></tr>
+                                <?php else: ?>
+                                    <?php foreach ($topCourses as $row): ?>
+                                        <tr>
+                                            <td title="<?= e((string)($row['slug'] ?? '')) ?>"><?= e((string)($row['slug'] ?? '')) ?></td>
+                                            <td><?= (int)($row['views'] ?? 0) ?></td>
+                                            <td><?= (int)($row['applications'] ?? 0) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="soft-card p-3">
             <h2 class="h6 text-uppercase text-primary mb-3">Quick Actions</h2>
             <div class="admin-grid-actions">
@@ -86,6 +147,7 @@
                 <a class="btn btn-outline-primary" href="<?= e(base_url('admin/event-registrations')) ?>"><i class="bi bi-calendar2-week"></i>Event Registrations</a>
                 <a class="btn btn-outline-primary" href="<?= e(base_url('admin/media')) ?>"><i class="bi bi-folder2-open"></i>Media Library</a>
                 <a class="btn btn-outline-primary" href="<?= e(base_url('admin/messages')) ?>"><i class="bi bi-envelope"></i>Messages</a>
+                <a class="btn btn-outline-primary" href="<?= e(base_url('admin/applications')) ?>"><i class="bi bi-ui-checks-grid"></i>Applications</a>
                 <a class="btn btn-outline-primary" href="<?= e(base_url('admin/internal-messages')) ?>"><i class="bi bi-chat-left-dots"></i>Team Messages</a>
                 <a class="btn btn-outline-primary" href="<?= e(base_url('admin/students')) ?>"><i class="bi bi-people"></i>Students</a>
                 <a class="btn btn-primary" href="<?= e(base_url('admin/settings')) ?>"><i class="bi bi-sliders"></i>Settings</a>
@@ -108,5 +170,26 @@ document.addEventListener('DOMContentLoaded', function () {
     createPie('contentPie', <?= json_encode(array_keys($contentBreakdown)) ?>, <?= json_encode(array_values($contentBreakdown)) ?>, ['#1e6fb7','#3598db','#6fc2ff','#9f8df2','#f2a65a','#7ccba2']);
     createPie('engagementPie', <?= json_encode(array_keys($engagementBreakdown)) ?>, <?= json_encode(array_values($engagementBreakdown)) ?>, ['#ef476f','#ffd166','#06d6a0']);
     createPie('rolesPie', <?= json_encode(array_keys($roleCounts)) ?>, <?= json_encode(array_values($roleCounts)) ?>, ['#185490','#b45f06','#2a9d8f']);
+    const createLine = function (id, raw, label, color) {
+        const el = document.getElementById(id);
+        if (!el || typeof Chart === 'undefined') return;
+        new Chart(el, {
+            type: 'line',
+            data: {
+                labels: raw.map((r) => r.day || ''),
+                datasets: [{
+                    label: label,
+                    data: raw.map((r) => Number(r.total || 0)),
+                    borderColor: color,
+                    backgroundColor: 'rgba(24,84,144,.12)',
+                    fill: true,
+                    tension: 0.25
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+    };
+    createLine('applicationsTrend', <?= json_encode($applicationTrend) ?>, 'Applications', '#185490');
+    createLine('trafficTrend', <?= json_encode($trafficTrend) ?>, 'Visits', '#0aaae8');
 });
 </script>

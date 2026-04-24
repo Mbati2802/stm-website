@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        <form method="POST" action="<?= e(base_url('admin/messages/reply/' . (int)($message['id'] ?? 0))) ?>" class="soft-card p-4">
+        <form method="POST" action="<?= e(base_url('admin/messages/reply/' . (int)($message['id'] ?? 0))) ?>" enctype="multipart/form-data" class="soft-card p-4">
             <?= csrf_field() ?>
             <h2 class="h6 text-uppercase text-muted mb-3">Send Reply</h2>
             <div class="mb-3">
@@ -31,7 +31,16 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Reply Message</label>
-                <textarea name="reply_body" rows="8" class="form-control" required></textarea>
+                <textarea name="reply_body" rows="8" class="form-control rich-editor" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Helpful Links (optional)</label>
+                <textarea name="reply_links" rows="3" class="form-control" placeholder="https://example.com/admissions-guide&#10;https://example.com/fee-structure"></textarea>
+                <small class="text-muted">Add one URL per line. These links are appended to the email.</small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Attachment (optional: image or PDF)</label>
+                <input type="file" name="reply_attachment" class="form-control" accept="image/png,image/jpeg,image/webp,application/pdf">
             </div>
             <button class="btn btn-primary"><i class="bi bi-send me-1"></i>Send Reply</button>
         </form>

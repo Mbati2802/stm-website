@@ -464,6 +464,35 @@ SET @sql := IF(
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- ---------------------------------------------------------------------
+-- messages read tracking
+-- ---------------------------------------------------------------------
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'messages'
+          AND COLUMN_NAME = 'read_at'
+    ),
+    'SELECT "messages.read_at exists" AS info',
+    'ALTER TABLE messages ADD COLUMN read_at DATETIME NULL AFTER message'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'messages'
+          AND INDEX_NAME = 'idx_messages_read_at'
+    ),
+    'SELECT "idx_messages_read_at exists" AS info',
+    'CREATE INDEX idx_messages_read_at ON messages(read_at)'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ---------------------------------------------------------------------
 -- email_logs
 -- ---------------------------------------------------------------------
 SET @sql := IF(
@@ -599,6 +628,124 @@ SET @sql := IF(
         ADD CONSTRAINT fk_admin_messages_recipient
         FOREIGN KEY (recipient_id) REFERENCES users(id)
         ON DELETE CASCADE'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ---------------------------------------------------------------------
+-- programme_applications
+-- ---------------------------------------------------------------------
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'programme_applications'
+    ),
+    'SELECT "programme_applications exists" AS info',
+    'CREATE TABLE programme_applications (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(190) NOT NULL,
+        email VARCHAR(190) NOT NULL,
+        phone VARCHAR(60) NOT NULL,
+        guardian_name VARCHAR(190) NULL,
+        guardian_phone VARCHAR(60) NULL,
+        county VARCHAR(120) NULL,
+        course_selection VARCHAR(190) NOT NULL,
+        grade VARCHAR(80) NULL,
+        level VARCHAR(80) NULL,
+        preferred_intake VARCHAR(80) NULL,
+        referral_source VARCHAR(190) NULL,
+        created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'programme_applications'
+          AND INDEX_NAME = 'idx_programme_applications_created'
+    ),
+    'SELECT "idx_programme_applications_created exists" AS info',
+    'CREATE INDEX idx_programme_applications_created ON programme_applications(created_at)'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'programme_applications'
+          AND INDEX_NAME = 'idx_programme_applications_course'
+    ),
+    'SELECT "idx_programme_applications_course exists" AS info',
+    'CREATE INDEX idx_programme_applications_course ON programme_applications(course_selection)'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ---------------------------------------------------------------------
+-- page_visits
+-- ---------------------------------------------------------------------
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'page_visits'
+    ),
+    'SELECT "page_visits exists" AS info',
+    'CREATE TABLE page_visits (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        path VARCHAR(255) NOT NULL,
+        user_role VARCHAR(40) NULL,
+        is_admin TINYINT(1) NOT NULL DEFAULT 0,
+        session_id VARCHAR(128) NULL,
+        ip_address VARCHAR(64) NULL,
+        user_agent VARCHAR(255) NULL,
+        created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'page_visits'
+          AND INDEX_NAME = 'idx_page_visits_created'
+    ),
+    'SELECT "idx_page_visits_created exists" AS info',
+    'CREATE INDEX idx_page_visits_created ON page_visits(created_at)'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'page_visits'
+          AND INDEX_NAME = 'idx_page_visits_path'
+    ),
+    'SELECT "idx_page_visits_path exists" AS info',
+    'CREATE INDEX idx_page_visits_path ON page_visits(path)'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'page_visits'
+          AND INDEX_NAME = 'idx_page_visits_admin'
+    ),
+    'SELECT "idx_page_visits_admin exists" AS info',
+    'CREATE INDEX idx_page_visits_admin ON page_visits(is_admin)'
 );
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 

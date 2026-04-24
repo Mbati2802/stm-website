@@ -373,7 +373,8 @@ function send_notification_email_with_attachment(
     string $message,
     string $attachmentName,
     string $attachmentContent,
-    string $attachmentMime = 'application/octet-stream'
+    string $attachmentMime = 'application/octet-stream',
+    ?string $htmlMessage = null
 ): bool {
     global $config;
     $to = trim($to);
@@ -405,19 +406,40 @@ function send_notification_email_with_attachment(
         $replyTo = '';
     }
 
-    $headers = [
-        'MIME-Version: 1.0',
-        'Content-Type: multipart/mixed; boundary="' . $boundary . '"',
-    ];
+    $headers = ['MIME-Version: 1.0', 'Content-Type: multipart/mixed; boundary="' . $boundary . '"'];
     if ($replyTo !== '') {
         $headers[] = 'Reply-To: ' . $replyTo;
     }
 
+    $htmlBody = $htmlMessage !== null ? trim((string)$htmlMessage) : '';
+    $useHtml = $htmlBody !== '';
+    $altBoundary = '';
+    if ($useHtml) {
+        try {
+            $altBoundary = '=_Alt_' . bin2hex(random_bytes(10));
+        } catch (Throwable) {
+            $altBoundary = '=_Alt_' . md5((string)microtime(true) . $subject . $to);
+        }
+    }
+
     $body = '';
     $body .= '--' . $boundary . "\r\n";
-    $body .= "Content-Type: text/plain; charset=UTF-8\r\n";
-    $body .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-    $body .= $message . "\r\n\r\n";
+    if ($useHtml) {
+        $body .= 'Content-Type: multipart/alternative; boundary="' . $altBoundary . '"' . "\r\n\r\n";
+        $body .= '--' . $altBoundary . "\r\n";
+        $body .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        $body .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+        $body .= $message . "\r\n\r\n";
+        $body .= '--' . $altBoundary . "\r\n";
+        $body .= "Content-Type: text/html; charset=UTF-8\r\n";
+        $body .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+        $body .= $htmlBody . "\r\n\r\n";
+        $body .= '--' . $altBoundary . "--\r\n";
+    } else {
+        $body .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        $body .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
+        $body .= $message . "\r\n\r\n";
+    }
     $body .= '--' . $boundary . "\r\n";
     $body .= 'Content-Type: ' . $attachmentMime . '; name="' . $attachmentName . '"' . "\r\n";
     $body .= "Content-Transfer-Encoding: base64\r\n";

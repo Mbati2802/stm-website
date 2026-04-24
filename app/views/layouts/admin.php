@@ -17,7 +17,7 @@ if ($adminId > 0 && !str_ends_with($viewPath, 'admin/login.php')) {
     $topbarModel = new ContentModel($this->config);
     $unreadTeamMessages = $topbarModel->getUnreadAdminMessageCount($adminId);
     if (Auth::canManageEntity('messages')) {
-        $publicMessagesCount = $topbarModel->countAll('messages');
+        $publicMessagesCount = $topbarModel->getUnreadPublicMessagesCount();
     }
     if (Auth::canManageEntity('students')) {
         $supportTicketsCount = count((new StudentPortalModel($this->config))->getAllSupportTickets());
@@ -82,6 +82,7 @@ if ($adminId > 0 && !str_ends_with($viewPath, 'admin/login.php')) {
                 <?php if (Auth::canManageEntity('gallery')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/gallery') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/gallery')) ?>"><i class="bi bi-images"></i><span>Gallery</span></a><?php endif; ?>
                 <?php if (Auth::canManageEntity('library_resources')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/library_resources') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/library_resources')) ?>"><i class="bi bi-book"></i><span>Library Materials</span></a><?php endif; ?>
                 <?php if (Auth::canManageEntity('messages')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/messages') ? 'active' : '' ?>" href="<?= e(base_url('admin/messages')) ?>"><i class="bi bi-envelope"></i><span>Messages</span></a><?php endif; ?>
+                <?php if (Auth::canManageEntity('messages')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/applications') ? 'active' : '' ?>" href="<?= e(base_url('admin/applications')) ?>"><i class="bi bi-ui-checks-grid"></i><span>Applications</span></a><?php endif; ?>
                 <a class="nav-link <?= str_contains($adminPath, 'admin/internal-messages') ? 'active' : '' ?>" href="<?= e(base_url('admin/internal-messages')) ?>"><i class="bi bi-chat-left-dots"></i><span>Team Messages</span><?php if ($unreadTeamMessages > 0): ?><span class="badge rounded-pill text-bg-warning ms-auto"><?= (int)$unreadTeamMessages ?></span><?php endif; ?></a>
                 <?php if (Auth::canManageEntity('students')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/support-tickets') ? 'active' : '' ?>" href="<?= e(base_url('admin/support-tickets')) ?>"><i class="bi bi-headset"></i><span>Support Tickets</span></a><?php endif; ?>
                 <?php if (Auth::canManageEntity('students')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/students') ? 'active' : '' ?>" href="<?= e(base_url('admin/students')) ?>"><i class="bi bi-people"></i><span>Student Accounts</span></a><?php endif; ?>
@@ -99,10 +100,11 @@ if ($adminId > 0 && !str_ends_with($viewPath, 'admin/login.php')) {
     </aside>
     <main class="admin-main">
         <header class="admin-topbar">
-            <button class="btn btn-outline-primary btn-sm" type="button" id="adminSidebarToggle"><i class="bi bi-list"></i></button>
+            <button class="btn btn-sm admin-sidebar-toggle-btn" type="button" id="adminSidebarToggle"><i class="bi bi-list"></i></button>
             <div class="admin-topbar-title">
                 <strong><?= e($metaTitle ?? 'Admin') ?></strong>
-                <span class="text-muted">Content Management</span>
+                <span class="topbar-sep"></span>
+                <span>Content Management</span>
             </div>
             <div class="admin-topbar-tools">
                 <span class="admin-clock" id="adminClock">--:--:--</span>

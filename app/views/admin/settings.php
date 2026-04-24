@@ -661,7 +661,7 @@ document.addEventListener('DOMContentLoaded', function () {
             + '<div style="background:' + esc(cardColor) + ';border-top:4px solid ' + esc(accentColor) + ';border-bottom:4px solid ' + esc(accentColor) + ';">'
             + '<div style="padding:26px 34px 20px;text-align:center;">'
             + '<div style="margin:0 auto 14px;display:flex;align-items:center;justify-content:center;overflow:hidden;">'
-            + '<img src="' + esc(logoUrl) + '" alt="' + esc(appName) + ' logo" style="width:64px;height:64px;object-fit:contain;">'
+            + '<img src="' + esc(logoUrl) + '" alt="' + esc(appName) + ' logo" style="display:block;margin:0 auto;width:64px;height:64px;object-fit:contain;">'
             + '</div>'
             + '<h1 style="margin:0;color:#1f2a44;font-family:Arial,sans-serif;font-size:42px;line-height:1.1;">' + esc(heading) + '</h1>'
             + '<p style="margin:8px 0 0;color:#6e7381;font-family:Arial,sans-serif;font-size:14px;">' + esc(subheading) + '</p>'
@@ -677,9 +677,11 @@ document.addEventListener('DOMContentLoaded', function () {
             + '<p style="margin:16px 0 0;">Thank you,<br>' + esc(appName) + '</p>'
             + '</div>'
             + '</div>'
-            + '<div style="background:' + esc(footerBgColor) + ';padding:18px 34px;color:#f0d78c;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;text-align:center;">'
+            + '<div style="background:' + esc(footerBgColor) + ';padding:18px 34px;color:#b9e7ff;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;text-align:center;">'
             + '<strong style="color:#fff;">' + esc(appName) + '</strong><br>'
-            + esc(contactEmail) + ' | ' + esc(contactPhone) + ' | ' + esc(contactPhone2) + '<br>' + esc(footerText)
+            + '<a href="mailto:' + esc(contactEmail) + '" style="color:#b9e7ff;text-decoration:none;">' + esc(contactEmail) + '</a>'
+            + ' | <a href="tel:' + esc(contactPhone) + '" style="color:#b9e7ff;text-decoration:none;">' + esc(contactPhone) + '</a>'
+            + ' | <a href="tel:' + esc(contactPhone2) + '" style="color:#b9e7ff;text-decoration:none;">' + esc(contactPhone2) + '</a><br>' + esc(footerText)
             + '</div>'
             + '</div></div></body></html>';
     };

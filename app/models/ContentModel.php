@@ -368,13 +368,143 @@ class ContentModel
         return $stmt->execute($data);
     }
 
+    public function getUnreadPublicMessagesCount(): int
+    {
+        try {
+            return (int)($this->pdo->query('SELECT COUNT(*) AS total FROM messages WHERE read_at IS NULL')->fetch()['total'] ?? 0);
+        } catch (PDOException) {
+            return 0;
+        }
+    }
+
+    public function markPublicMessageRead(int $id): void
+    {
+        try {
+            $stmt = $this->pdo->prepare('UPDATE messages SET read_at = NOW() WHERE id = :id AND read_at IS NULL');
+            $stmt->execute(['id' => $id]);
+        } catch (PDOException) {
+            // no-op
+        }
+    }
+
+    public function saveProgrammeApplication(array $data): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare('
+                INSERT INTO programme_applications(
+                    name, email, phone, guardian_name, guardian_phone, county, course_selection,
+                    grade, level, preferred_intake, referral_source, created_at
+                ) VALUES(
+                    :name, :email, :phone, :guardian_name, :guardian_phone, :county, :course_selection,
+                    :grade, :level, :preferred_intake, :referral_source, NOW()
+                )
+            ');
+            return $stmt->execute($data);
+        } catch (PDOException) {
+            return false;
+        }
+    }
+
+    public function getProgrammeApplications(int $limit = 100): array
+    {
+        try {
+            $stmt = $this->pdo->prepare('SELECT * FROM programme_applications ORDER BY id DESC LIMIT :lim');
+            $stmt->bindValue(':lim', max(1, min($limit, 500)), PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function getDailyTrend(string $table, int $days = 14): array
+    {
+        $allowed = ['programme_applications', 'page_visits'];
+        if (!in_array($table, $allowed, true)) {
+            return [];
+        }
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT DATE(created_at) AS day, COUNT(*) AS total
+                FROM {$table}
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL :days DAY)
+                GROUP BY DATE(created_at)
+                ORDER BY DATE(created_at) ASC
+            ");
+            $stmt->bindValue(':days', max(1, min(90, $days)), PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function logPageVisit(string $path, bool $isAdmin = false): void
+    {
+        $cleanPath = trim($path);
+        if ($cleanPath === '') {
+            $cleanPath = '/';
+        }
+        try {
+            $stmt = $this->pdo->prepare('
+                INSERT INTO page_visits(path, user_role, is_admin, session_id, ip_address, user_agent, created_at)
+                VALUES(:path, :user_role, :is_admin, :session_id, :ip_address, :user_agent, NOW())
+            ');
+            $stmt->execute([
+                'path' => substr($cleanPath, 0, 255),
+                'user_role' => substr((string)(Auth::role() ?? ''), 0, 40),
+                'is_admin' => $isAdmin ? 1 : 0,
+                'session_id' => substr((string)session_id(), 0, 128),
+                'ip_address' => substr((string)($_SERVER['REMOTE_ADDR'] ?? ''), 0, 64),
+                'user_agent' => substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255),
+            ]);
+        } catch (Throwable) {
+            // no-op
+        }
+    }
+
+    public function getTopVisitedPages(int $limit = 10, bool $adminOnly = false): array
+    {
+        try {
+            $stmt = $this->pdo->prepare('
+                SELECT path, COUNT(*) AS visits
+                FROM page_visits
+                WHERE is_admin = :is_admin
+                GROUP BY path
+                ORDER BY visits DESC
+                LIMIT :lim
+            ');
+            $stmt->bindValue(':is_admin', $adminOnly ? 1 : 0, PDO::PARAM_INT);
+            $stmt->bindValue(':lim', max(1, min($limit, 50)), PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function getTopCourseViews(int $limit = 8): array
+    {
+        $metrics = $this->programmeMetricsMap();
+        $rows = [];
+        foreach ($metrics as $slug => $vals) {
+            $rows[] = [
+                'slug' => (string)$slug,
+                'views' => (int)($vals['views'] ?? 0),
+                'applications' => (int)($vals['applications'] ?? 0),
+            ];
+        }
+        usort($rows, static fn(array $a, array $b) => ($b['views'] <=> $a['views']));
+        return array_slice($rows, 0, max(1, min($limit, 30)));
+    }
+
     public function countAll(string $table): int
     {
         $allowed = [
             'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
             'library_resources', 'faqs', 'messages', 'pages', 'users',
             'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments',
-            'study_materials', 'grading_schemes', 'event_registrations'
+            'study_materials', 'grading_schemes', 'event_registrations', 'programme_applications', 'page_visits'
         ];
         if (!in_array($table, $allowed, true)) {
             return 0;

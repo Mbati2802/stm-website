@@ -116,8 +116,31 @@
     top:.4rem;
     z-index:60;
 }
-.admin-topbar-title{display:flex;flex-direction:column;line-height:1.2;color:#07253d}
+.admin-topbar-title{
+    display:flex;
+    align-items:center;
+    gap:.55rem;
+    line-height:1.2;
+    color:#fff;
+    flex-wrap:nowrap;
+    white-space:nowrap;
+}
+.topbar-sep{
+    width:1px;
+    height:18px;
+    background:#f0c15d;
+    display:inline-block;
+}
 .admin-topbar-tools{display:flex;align-items:center;gap:.45rem}
+.admin-sidebar-toggle-btn{
+    border:1px solid rgba(255,255,255,.7);
+    color:#fff;
+    background:rgba(16,42,67,.25);
+}
+.admin-sidebar-toggle-btn:hover{
+    color:#fff;
+    background:rgba(16,42,67,.45);
+}
 .admin-clock{
     padding:.2rem .55rem;
     border-radius:.45rem;

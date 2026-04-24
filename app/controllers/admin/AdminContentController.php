@@ -252,6 +252,8 @@ class AdminContentController extends Controller
             flash('error', 'Message not found.');
             $this->redirect('admin/messages');
         }
+        $model->markPublicMessageRead($id);
+        $message = $model->findById('messages', $id) ?? $message;
         $this->view('admin/message_view', [
             'metaTitle' => 'Message Details',
             'message' => $message,
@@ -274,12 +276,19 @@ class AdminContentController extends Controller
         $to = trim((string)($message['email'] ?? ''));
         $subject = trim((string)($_POST['reply_subject'] ?? ''));
         $body = trim((string)($_POST['reply_body'] ?? ''));
+        $linksRaw = trim((string)($_POST['reply_links'] ?? ''));
         if (!filter_var($to, FILTER_VALIDATE_EMAIL) || $subject === '' || $body === '') {
             flash('error', 'Provide a valid reply subject and message body.');
             $this->redirect('admin/messages/view/' . (int)$id);
         }
 
-        $replyText = $body . "\n\n--- Original Message ---\nFrom: " . (string)($message['name'] ?? '') . ' <' . $to . ">\nSubject: " . (string)($message['subject'] ?? '') . "\n" . (string)($message['message'] ?? '');
+        $linkLines = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $linksRaw) ?: [])));
+        $validLinks = array_values(array_filter($linkLines, static fn($u) => filter_var($u, FILTER_VALIDATE_URL)));
+        $safeReplyBodyHtml = safe_html($body);
+        $replyText = plain_text_multiline($body) . "\n\n--- Original Message ---\nFrom: " . (string)($message['name'] ?? '') . ' <' . $to . ">\nSubject: " . (string)($message['subject'] ?? '') . "\n" . (string)($message['message'] ?? '');
+        if ($validLinks !== []) {
+            $replyText .= "\n\nHelpful links:\n- " . implode("\n- ", $validLinks);
+        }
         $settings = $model->getSettings();
         $appName = (string)($this->config['app_name'] ?? 'College');
         $logoUrl = trim((string)($settings['admin_reply_email_logo_url'] ?? ''));
@@ -295,9 +304,20 @@ class AdminContentController extends Controller
         $cardColor = $this->sanitizeHexColor((string)($settings['admin_reply_email_card_color'] ?? ''), '#f5f6fb');
         $accentColor = $this->sanitizeHexColor((string)($settings['admin_reply_email_accent_color'] ?? ''), '#5fc7e7');
         $footerBgColor = $this->sanitizeHexColor((string)($settings['admin_reply_email_footer_bg_color'] ?? ''), '#2c3653');
-        $safeReplyBodyHtml = nl2br(e($body));
         $safeSenderName = e((string)($message['name'] ?? 'User'));
         $safeOriginalSubject = e((string)($message['subject'] ?? 'General Enquiry'));
+        $safeContactEmail = e($contactEmail);
+        $safeContactPhone = e($contactPhone);
+        $safePhone2 = e('0101 711 499');
+        $linksHtml = '';
+        if ($validLinks !== []) {
+            $items = '';
+            foreach ($validLinks as $url) {
+                $safeUrl = e($url);
+                $items .= '<li style="margin:0 0 6px;"><a href="' . $safeUrl . '" style="color:#0d6efd;text-decoration:none;">' . $safeUrl . '</a></li>';
+            }
+            $linksHtml = '<div style="margin-top:14px;"><strong>Helpful Links</strong><ul style="margin:8px 0 0 18px;padding:0;">' . $items . '</ul></div>';
+        }
         $html = '<!doctype html><html><body style="margin:0;padding:0;background:' . e($bgColor) . ';">'
             . '<div style="max-width:760px;margin:20px auto;padding:0 12px;">'
             . '<div style="background:' . e($cardColor) . ';border-top:4px solid ' . e($accentColor) . ';border-bottom:4px solid ' . e($accentColor) . ';">'
@@ -315,16 +335,30 @@ class AdminContentController extends Controller
             . '</table>'
             . '<div style="margin-top:18px;font-family:Arial,sans-serif;color:#20293f;font-size:15px;line-height:1.65;">'
             . '<p style="margin:0 0 12px;">Hi, ' . $safeSenderName . '</p>'
-            . '<p style="margin:0 0 12px;">' . $safeReplyBodyHtml . '</p>'
+            . '<div style="margin:0 0 12px;">' . $safeReplyBodyHtml . '</div>'
+            . $linksHtml
             . '<p style="margin:16px 0 0;">Thank you,<br>' . e($appName) . '</p>'
             . '</div>'
             . '</div>'
-            . '<div style="background:' . e($footerBgColor) . ';padding:18px 34px;color:#f0d78c;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;text-align:center;">'
+            . '<div style="background:' . e($footerBgColor) . ';padding:18px 34px;color:#b9e7ff;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;text-align:center;">'
             . '<strong style="color:#fff;">' . e($appName) . '</strong><br>'
-            . e($contactEmail) . ' | ' . e($contactPhone) . ' | 0101 711 499<br>' . e($footerText)
+            . '<a href="mailto:' . $safeContactEmail . '" style="color:#b9e7ff;text-decoration:none;">' . $safeContactEmail . '</a>'
+            . ' | <a href="tel:' . $safeContactPhone . '" style="color:#b9e7ff;text-decoration:none;">' . $safeContactPhone . '</a>'
+            . ' | <a href="tel:' . $safePhone2 . '" style="color:#b9e7ff;text-decoration:none;">' . $safePhone2 . '</a><br>' . e($footerText)
             . '</div>'
             . '</div></div></body></html>';
-        $sent = send_notification_email($to, $subject, $replyText, $html);
+        $attachmentPath = $this->uploadFile('reply_attachment', ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'], 'message-replies');
+        if ($attachmentPath !== '') {
+            $absolute = $this->webRootPath() . DIRECTORY_SEPARATOR . ltrim(str_replace('/', DIRECTORY_SEPARATOR, $attachmentPath), DIRECTORY_SEPARATOR);
+            $attachmentName = basename($absolute);
+            $attachmentMime = mime_content_type($absolute) ?: 'application/octet-stream';
+            $attachmentContent = @file_get_contents($absolute);
+            $sent = is_string($attachmentContent)
+                ? send_notification_email_with_attachment($to, $subject, $replyText, $attachmentName, $attachmentContent, $attachmentMime, $html)
+                : false;
+        } else {
+            $sent = send_notification_email($to, $subject, $replyText, $html);
+        }
         if (!$sent) {
             $errorDetail = trim(email_last_error_get());
             $messageText = 'Reply could not be sent. Please check email settings.';
@@ -407,6 +441,20 @@ class AdminContentController extends Controller
         $this->view('admin/event_registrations', [
             'metaTitle' => 'Event Registrations',
             'rows' => $rows,
+        ]);
+    }
+
+    public function applications(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('messages')) {
+            $this->redirect('admin');
+        }
+        $model = new ContentModel($this->config);
+        $this->view('admin/applications', [
+            'metaTitle' => 'Programme Applications',
+            'rows' => $model->getProgrammeApplications(300),
+            'trend' => $model->getDailyTrend('programme_applications', 30),
         ]);
     }
 
