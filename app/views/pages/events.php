@@ -4,6 +4,10 @@ $upcoming = is_array($upcoming ?? null) ? $upcoming : [];
 $pastGallery = is_array($pastGallery ?? null) ? $pastGallery : [];
 $announcementsHtml = (string)($announcementsHtml ?? '');
 $socialUpdatesHtml = (string)($socialUpdatesHtml ?? '');
+$elfsightClass = '';
+if (preg_match('/elfsight-app-[A-Za-z0-9\-]+/', $socialUpdatesHtml, $match)) {
+  $elfsightClass = (string)($match[0] ?? '');
+}
 
 function event_category(string $raw): string {
     $v = trim($raw);
@@ -70,17 +74,22 @@ include __DIR__ . '/../partials/page_hero.php';
   </div>
 </section>
 
+<?php endif; ?>
+
 <section class="section-stack">
   <div class="site-width boxed-section" data-aos="fade-up">
     <h2 class="split-title mb-3"><span class="title-primary">Social</span> | <span class="title-secondary">Updates Feed</span></h2>
-    <?php if (trim($socialUpdatesHtml) !== ''): ?>
+    <?php if ($elfsightClass !== ''): ?>
+      <div class="soft-card bg-white p-4">
+        <div class="<?= e($elfsightClass) ?>" data-elfsight-app-lazy></div>
+      </div>
+    <?php elseif (trim($socialUpdatesHtml) !== ''): ?>
       <div class="soft-card bg-white p-4"><?= safe_html($socialUpdatesHtml, ['div','iframe','a','p','br','strong','b','em','i','span','blockquote']) ?></div>
     <?php else: ?>
       <p class="text-muted mb-0">No social feed embed configured yet.</p>
     <?php endif; ?>
   </div>
 </section>
-<?php endif; ?>
 
 <section class="section-stack" id="upcoming">
   <div class="site-width boxed-section" data-aos="fade-up">

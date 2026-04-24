@@ -13,6 +13,11 @@ $homeExtraSections = json_decode((string)($settings['home_extra_sections_json'] 
 if (!is_array($homeExtraSections)) {
     $homeExtraSections = [];
 }
+$homeSocialUpdatesHtml = (string)($settings['events_social_updates_html'] ?? '');
+$homeElfsightClass = '';
+if (preg_match('/elfsight-app-[A-Za-z0-9\-]+/', $homeSocialUpdatesHtml, $match)) {
+    $homeElfsightClass = (string)($match[0] ?? '');
+}
 ?>
 <?php $sv = $sectionVisibility ?? ['hero'=>true,'cards'=>true,'banner'=>true,'why'=>true,'courses'=>true,'testimonials'=>true,'events'=>true,'news'=>true,'cta'=>true]; ?>
 <?php if ($sv['hero']): ?>
@@ -175,12 +180,12 @@ foreach ($bannerCandidates as $candidate) {
         <h2 class="h3 fw-bold mb-4" data-aos="fade-up">Student Testimonials</h2>
         <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel" data-aos="fade-up">
             <div class="carousel-inner">
-                <?php $testimonialSlides = array_chunk($testimonials, 3); ?>
+                <?php $testimonialSlides = array_chunk($testimonials, 1); ?>
                 <?php foreach ($testimonialSlides as $index => $slide): ?>
                     <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                        <div class="row g-4">
+                        <div class="row g-4 justify-content-center">
                             <?php foreach ($slide as $testimonial): ?>
-                                <div class="col-md-4">
+                                <div class="col-md-8 col-lg-6">
                                     <div class="soft-card p-4 bg-white h-100 testimonial-card">
                                         <div class="testimonial-avatar-wrap mb-3">
                                             <img src="<?= e((string)($testimonial['image'] ?? 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300')) ?>" alt="<?= e((string)($testimonial['name'] ?? 'Student')) ?>" class="testimonial-avatar">
@@ -239,8 +244,14 @@ foreach ($bannerCandidates as $candidate) {
             <div class="col-lg-5">
                 <h3 class="h6 text-muted mb-3">Social Updates</h3>
                 <div class="event-social-box">
-                    <p class="mb-2 fw-semibold">Tweets / Social Feed</p>
-                    <p class="small text-muted mb-0">Embed your latest updates here from official social channels.</p>
+                    <?php if ($homeElfsightClass !== ''): ?>
+                        <div class="<?= e($homeElfsightClass) ?>" data-elfsight-app-lazy></div>
+                    <?php elseif (trim($homeSocialUpdatesHtml) !== ''): ?>
+                        <?= safe_html($homeSocialUpdatesHtml, ['div','iframe','a','p','br','strong','b','em','i','span','blockquote']) ?>
+                    <?php else: ?>
+                        <p class="mb-2 fw-semibold">Tweets / Social Feed</p>
+                        <p class="small text-muted mb-0">Embed your latest updates here from official social channels.</p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

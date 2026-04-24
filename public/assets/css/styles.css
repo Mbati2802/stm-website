@@ -325,6 +325,12 @@ a{text-decoration:none}
     }
     .programme-mosaic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     .testimonials-box{padding-left:1rem;padding-right:1rem;min-height:auto}
+    .testimonial-card{padding:1rem!important}
+    .testimonial-avatar{
+        width:62px;
+        height:62px;
+    }
+    .testimonial-message{font-size:.9rem}
     .testimonials-section .carousel-control-prev,
     .testimonials-section .carousel-control-next{opacity:1}
     .banner-section{min-height:auto}
