@@ -127,14 +127,13 @@
 .admin-table td,.admin-table th{vertical-align:middle}
 .admin-table{table-layout:fixed;width:100%}
 .admin-table td,.admin-table th{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.admin-table .col-xs{max-width:90px;width:90px}
-.admin-table .col-sm{max-width:140px;width:140px}
-.admin-table .col-md{max-width:210px;width:210px}
-.admin-table .col-lg{max-width:300px;width:300px}
-.admin-table .col-xl{max-width:420px;width:420px}
+.admin-table .col-xs{max-width:7%}
+.admin-table .col-sm{max-width:11%}
+.admin-table .col-md{max-width:16%}
+.admin-table .col-lg{max-width:22%}
+.admin-table .col-xl{max-width:30%}
 .admin-table .col-actions{
-    max-width:none!important;
-    width:130px;
+    max-width:12%!important;
     white-space:nowrap;
     overflow:visible;
     text-overflow:clip;
@@ -200,4 +199,7 @@ body.admin-sidebar-collapsed .admin-nav-group{padding:.3rem}
     .admin-sidebar{position:static;height:auto}
     body.admin-sidebar-collapsed .admin-shell{grid-template-columns:1fr}
     .admin-topbar{position:sticky;top:.3rem;z-index:50}
+}
+@media (max-width: 1200px){
+    .admin-table td,.admin-table th{font-size:.78rem;padding:.38rem .42rem}
 }
