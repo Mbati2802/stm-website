@@ -44,16 +44,24 @@ class StudentPortalController extends Controller
 
     public function login(): void
     {
+        $limitKey = 'portal_login_' . md5((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+        if (!rate_limit_check($limitKey, 5, 15 * 60)) {
+            flash('error', 'Too many login attempts. Please wait 15 minutes and try again.');
+            $this->redirect('portal/login');
+        }
+
         $admissionNumber = strtoupper(trim($_POST['admission_number'] ?? ''));
         $password = (string)($_POST['password'] ?? '');
         $model = new StudentPortalModel($this->config);
         $student = $model->findStudentByAdmissionNumber($admissionNumber);
 
         if ($student === null || !password_verify($password, (string)$student['password'])) {
+            rate_limit_increment($limitKey);
             flash('error', 'Invalid admission number or password.');
             $this->redirect('portal/login');
         }
 
+        rate_limit_clear($limitKey);
         session_regenerate_id(true);
         $_SESSION['student_id'] = (int)$student['id'];
         $_SESSION['student_name'] = (string)$student['name'];
@@ -88,8 +96,15 @@ class StudentPortalController extends Controller
 
     public function sendResetCode(): void
     {
+        $limitKey = 'portal_reset_' . md5((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+        if (!rate_limit_check($limitKey, 5, 15 * 60)) {
+            flash('error', 'Too many reset requests. Please wait 15 minutes and try again.');
+            $this->redirect('portal/forgot-password');
+        }
+
         $email = trim($_POST['email'] ?? '');
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            rate_limit_increment($limitKey);
             flash('error', 'Please provide a valid email address.');
             $this->redirect('portal/forgot-password');
         }
@@ -97,6 +112,7 @@ class StudentPortalController extends Controller
         $model = new StudentPortalModel($this->config);
         $student = $model->findStudentByEmail($email);
         if ($student === null) {
+            rate_limit_increment($limitKey);
             flash('error', 'No student account found with that email.');
             $this->redirect('portal/forgot-password');
         }
@@ -113,6 +129,7 @@ class StudentPortalController extends Controller
         ]);
         send_notification_email($email, 'Student Portal Password Reset Code', $mailBody);
 
+        rate_limit_clear($limitKey);
         flash('success', 'A reset code has been sent to your email.');
         $this->redirect('portal/reset-password');
     }
@@ -303,7 +320,41 @@ class StudentPortalController extends Controller
     public function support(): void
     {
         $student = $this->requireStudent();
-        $this->view('student/support', ['metaTitle' => 'Student Portal - IT Support'], 'student');
+        $model = new StudentPortalModel($this->config);
+        $this->view('student/support', [
+            'metaTitle' => 'Student Portal - IT Support',
+            'tickets' => $model->getSupportTicketsByStudent((int)$student['id']),
+        ], 'student');
+    }
+
+    public function submitSupportTicket(): void
+    {
+        $student = $this->requireStudent();
+        $subject = trim($_POST['subject'] ?? '');
+        $category = trim($_POST['category'] ?? '');
+        $message = trim($_POST['message'] ?? '');
+        if ($subject === '' || $message === '') {
+            flash('error', 'Please provide a subject and issue details.');
+            $this->redirect('portal/support');
+        }
+
+        $model = new StudentPortalModel($this->config);
+        $ok = $model->createSupportTicket([
+            'student_id' => (int)$student['id'],
+            'name' => (string)($student['name'] ?? 'Student'),
+            'email' => (string)($student['email'] ?? ''),
+            'admission_number' => (string)($student['admission_number'] ?? ''),
+            'subject' => $subject,
+            'category' => $category,
+            'message' => $message,
+        ]);
+        if (!$ok) {
+            flash('error', 'Unable to submit ticket right now. Please try again.');
+            $this->redirect('portal/support');
+        }
+
+        flash('success', 'Support ticket submitted. The admin team will respond soon.');
+        $this->redirect('portal/support');
     }
 
     // Account Section

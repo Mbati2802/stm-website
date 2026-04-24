@@ -215,4 +215,58 @@ class StudentPortalModel
             return [];
         }
     }
+
+    public function createSupportTicket(array $data): bool
+    {
+        try {
+            $prefix = '[Portal Support]';
+            $subjectBits = array_filter([
+                $prefix,
+                trim((string)($data['category'] ?? 'General')),
+                trim((string)($data['subject'] ?? 'Ticket')),
+            ]);
+            $subject = implode(' ', $subjectBits);
+            $admission = trim((string)($data['admission_number'] ?? ''));
+            $ticketBody = trim((string)($data['message'] ?? ''));
+            $message = ($admission !== '' ? ('Admission: ' . $admission . "\n") : '') . $ticketBody;
+            $stmt = $this->pdo->prepare('INSERT INTO messages(name, email, phone, subject, message, created_at) VALUES(:name, :email, :phone, :subject, :message, NOW())');
+            return $stmt->execute([
+                'name' => trim((string)($data['name'] ?? 'Student')),
+                'email' => trim((string)($data['email'] ?? '')),
+                'phone' => '',
+                'subject' => $subject,
+                'message' => $message,
+            ]);
+        } catch (PDOException) {
+            return false;
+        }
+    }
+
+    public function getSupportTicketsByStudent(int $studentId): array
+    {
+        try {
+            $student = $this->findStudentById($studentId);
+            if ($student === null) {
+                return [];
+            }
+            $email = trim((string)($student['email'] ?? ''));
+            if ($email === '') {
+                return [];
+            }
+            $stmt = $this->pdo->prepare("SELECT id, subject, message, created_at FROM messages WHERE email = :email AND subject LIKE '[Portal Support]%' ORDER BY id DESC");
+            $stmt->execute(['email' => $email]);
+            return $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function getAllSupportTickets(): array
+    {
+        try {
+            return $this->pdo->query("SELECT id, name, email, subject, message, created_at FROM messages WHERE subject LIKE '[Portal Support]%' ORDER BY id DESC")->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
 }

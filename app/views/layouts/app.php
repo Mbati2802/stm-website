@@ -3,14 +3,31 @@ $settingsModel = new ContentModel($this->config);
 $siteSettings = $settingsModel->getSettings();
 $appName = $this->config['app_name'];
 $path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
+$metaTitleValue = trim((string)($metaTitle ?? ''));
+$metaDescriptionValue = trim((string)($metaDescription ?? 'Modern career-focused technical training institution in Kenya. Apply today.'));
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$host = (string)($_SERVER['HTTP_HOST'] ?? 'localhost');
+$canonicalPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+$canonicalUrl = $scheme . '://' . $host . $canonicalPath;
+$openGraphImage = trim((string)($metaImage ?? ''));
 ?>
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= e($metaTitle ?? '') ?> | <?= e($appName) ?></title>
-    <meta name="description" content="Modern career-focused technical training institution in Kenya. Apply today.">
+    <title><?= e($metaTitleValue !== '' ? ($metaTitleValue . ' | ' . $appName) : $appName) ?></title>
+    <meta name="description" content="<?= e($metaDescriptionValue) ?>">
+    <link rel="canonical" href="<?= e($canonicalUrl) ?>">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<?= e($metaTitleValue !== '' ? ($metaTitleValue . ' | ' . $appName) : $appName) ?>">
+    <meta property="og:description" content="<?= e($metaDescriptionValue) ?>">
+    <meta property="og:url" content="<?= e($canonicalUrl) ?>">
+    <?php if ($openGraphImage !== ''): ?><meta property="og:image" content="<?= e($openGraphImage) ?>"><?php endif; ?>
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= e($metaTitleValue !== '' ? ($metaTitleValue . ' | ' . $appName) : $appName) ?>">
+    <meta name="twitter:description" content="<?= e($metaDescriptionValue) ?>">
+    <?php if ($openGraphImage !== ''): ?><meta name="twitter:image" content="<?= e($openGraphImage) ?>"><?php endif; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">

@@ -293,6 +293,26 @@ class ContentModel
         }
     }
 
+    public function getBySlug(string $table, string $slug): ?array
+    {
+        $allowed = ['news', 'careers', 'tenders'];
+        if (!in_array($table, $allowed, true)) {
+            return null;
+        }
+        try {
+            $stmt = $this->pdo->prepare("SELECT * FROM {$table} WHERE slug = :slug LIMIT 1");
+            $stmt->execute(['slug' => trim($slug)]);
+            $row = $stmt->fetch() ?: null;
+            if ($row === null) {
+                return null;
+            }
+            $filtered = $this->filterHidden($table, [$row]);
+            return $filtered[0] ?? null;
+        } catch (PDOException) {
+            return null;
+        }
+    }
+
     public function paginate(string $table, int $page = 1, int $perPage = 6, ?string $search = null): array
     {
         $allowed = ['news', 'careers', 'tenders', 'library_resources', 'gallery'];

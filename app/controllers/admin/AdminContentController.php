@@ -232,6 +232,19 @@ class AdminContentController extends Controller
         $this->view('admin/messages', ['metaTitle' => 'Contact Messages', 'rows' => $model->all('messages')]);
     }
 
+    public function supportTickets(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+        }
+        $portalModel = new StudentPortalModel($this->config);
+        $this->view('admin/support_tickets', [
+            'metaTitle' => 'Student Support Tickets',
+            'rows' => $portalModel->getAllSupportTickets(),
+        ]);
+    }
+
     public function exportMessages(): void
     {
         Auth::requireAdmin();

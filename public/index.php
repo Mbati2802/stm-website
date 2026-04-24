@@ -14,6 +14,7 @@ session_start();
 
 $router = new Router();
 
+$router->add('GET', 'sitemap.xml', [SeoController::class, 'sitemap']);
 $router->add('GET', '', [HomeController::class, 'index']);
 $router->add('GET', 'about', [AboutController::class, 'about']);
 $router->add('GET', 'uniqueness', [AboutController::class, 'uniqueness']);
@@ -32,6 +33,7 @@ $router->add('POST', 'programmes/apply', [ProgrammesController::class, 'submitAp
 $router->add('GET', 'programmes/{slug}', [ProgrammesController::class, 'show']);
 $router->add('GET', 'library', [LibraryController::class, 'index']);
 $router->add('GET', 'media', [MediaController::class, 'index']);
+$router->add('GET', 'media/{type}/{slug}', [MediaController::class, 'show']);
 $router->add('GET', 'gallery', [MediaController::class, 'gallery']);
 $router->add('GET', 'events', [EventsController::class, 'index']);
 $router->add('GET', 'events/{slug}', [EventsController::class, 'show']);
@@ -73,6 +75,7 @@ $router->add('GET', 'portal/fees', [StudentPortalController::class, 'fees']);
 $router->add('GET', 'portal/clearance', [StudentPortalController::class, 'clearance']);
 $router->add('GET', 'portal/certificates', [StudentPortalController::class, 'certificates']);
 $router->add('GET', 'portal/support', [StudentPortalController::class, 'support']);
+$router->add('POST', 'portal/support', [StudentPortalController::class, 'submitSupportTicket']);
 
 // Student Portal - Account Section
 $router->add('GET', 'portal/profile', [StudentPortalController::class, 'profile']);
@@ -90,6 +93,7 @@ $router->add('POST', 'admin/edit/{entity}/{id}', [AdminContentController::class,
 $router->add('GET', 'admin/toggle/{entity}/{id}', [AdminContentController::class, 'toggleVisibility']);
 $router->add('GET', 'admin/delete/{entity}/{id}', [AdminContentController::class, 'delete']);
 $router->add('GET', 'admin/messages', [AdminContentController::class, 'messages']);
+$router->add('GET', 'admin/support-tickets', [AdminContentController::class, 'supportTickets']);
 $router->add('GET', 'admin/messages/export', [AdminContentController::class, 'exportMessages']);
 $router->add('GET', 'admin/event-registrations', [AdminContentController::class, 'eventRegistrations']);
 $router->add('GET', 'admin/students', [AdminContentController::class, 'students']);

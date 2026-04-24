@@ -120,6 +120,50 @@ function csrf_validate(?string $token): bool
     return hash_equals($expected, (string)$token);
 }
 
+function rate_limit_check(string $key, int $maxAttempts, int $windowSeconds): bool
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return true;
+    }
+    $bucket = (string)($_SESSION['_rate_limit'][$key] ?? '');
+    if ($bucket === '') {
+        return true;
+    }
+    $parts = explode('|', $bucket);
+    $count = (int)($parts[0] ?? 0);
+    $startedAt = (int)($parts[1] ?? 0);
+    $now = time();
+    if ($startedAt <= 0 || ($now - $startedAt) > $windowSeconds) {
+        return true;
+    }
+    return $count < $maxAttempts;
+}
+
+function rate_limit_increment(string $key): void
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return;
+    }
+    $bucket = (string)($_SESSION['_rate_limit'][$key] ?? '');
+    $parts = explode('|', $bucket);
+    $count = (int)($parts[0] ?? 0);
+    $startedAt = (int)($parts[1] ?? 0);
+    $now = time();
+    if ($startedAt <= 0 || ($now - $startedAt) > 3600) {
+        $count = 0;
+        $startedAt = $now;
+    }
+    $_SESSION['_rate_limit'][$key] = ($count + 1) . '|' . $startedAt;
+}
+
+function rate_limit_clear(string $key): void
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return;
+    }
+    unset($_SESSION['_rate_limit'][$key]);
+}
+
 function slugify(string $text): string
 {
     $text = strtolower(trim($text));
