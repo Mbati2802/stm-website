@@ -94,6 +94,8 @@ $router->add('POST', 'admin/edit/{entity}/{id}', [AdminContentController::class,
 $router->add('GET', 'admin/toggle/{entity}/{id}', [AdminContentController::class, 'toggleVisibility']);
 $router->add('GET', 'admin/delete/{entity}/{id}', [AdminContentController::class, 'delete']);
 $router->add('GET', 'admin/messages', [AdminContentController::class, 'messages']);
+$router->add('GET', 'admin/messages/view/{id}', [AdminContentController::class, 'viewMessage']);
+$router->add('POST', 'admin/messages/reply/{id}', [AdminContentController::class, 'replyMessage']);
 $router->add('GET', 'admin/support-tickets', [AdminContentController::class, 'supportTickets']);
 $router->add('GET', 'admin/messages/export', [AdminContentController::class, 'exportMessages']);
 $router->add('GET', 'admin/event-registrations', [AdminContentController::class, 'eventRegistrations']);

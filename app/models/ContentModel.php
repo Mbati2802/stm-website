@@ -389,7 +389,7 @@ class ContentModel
     {
         $allowed = [
             'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
-            'library_resources', 'faqs', 'pages', 'users',
+            'library_resources', 'faqs', 'pages', 'users', 'messages',
             'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials', 'grading_schemes'
         ];
         if (!in_array($table, $allowed, true)) {
@@ -403,7 +403,7 @@ class ContentModel
     {
         $allowed = [
             'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
-            'library_resources', 'faqs', 'pages', 'users',
+            'library_resources', 'faqs', 'pages', 'users', 'messages',
             'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials', 'grading_schemes'
         ];
         if (!in_array($table, $allowed, true)) {

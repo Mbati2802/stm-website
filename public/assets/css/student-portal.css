@@ -313,6 +313,30 @@ body.student-portal {
     border-top: 1px solid var(--student-border);
 }
 
+/* Reuse compact table behavior for portal pages using .admin-table */
+.student-portal .admin-table {
+    table-layout: fixed;
+    width: 100%;
+}
+.student-portal .admin-table td,
+.student-portal .admin-table th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.student-portal .admin-table .col-xs{max-width:90px;width:90px}
+.student-portal .admin-table .col-sm{max-width:140px;width:140px}
+.student-portal .admin-table .col-md{max-width:210px;width:210px}
+.student-portal .admin-table .col-lg{max-width:300px;width:300px}
+.student-portal .admin-table .col-xl{max-width:420px;width:420px}
+.student-portal .admin-table .col-actions{
+    max-width:none!important;
+    width:130px;
+    white-space:nowrap;
+    overflow:visible;
+    text-overflow:clip;
+}
+
 /* Student Buttons */
 .btn-student {
     border-radius: 0.5rem;

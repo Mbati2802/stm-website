@@ -232,6 +232,56 @@ class AdminContentController extends Controller
         $this->view('admin/messages', ['metaTitle' => 'Contact Messages', 'rows' => $model->all('messages')]);
     }
 
+    public function viewMessage(int $id): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('messages')) {
+            $this->redirect('admin');
+        }
+        $model = new ContentModel($this->config);
+        $message = $model->findById('messages', $id);
+        if ($message === null) {
+            flash('error', 'Message not found.');
+            $this->redirect('admin/messages');
+        }
+        $this->view('admin/message_view', [
+            'metaTitle' => 'Message Details',
+            'message' => $message,
+        ]);
+    }
+
+    public function replyMessage(int $id): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('messages')) {
+            $this->redirect('admin');
+        }
+        $model = new ContentModel($this->config);
+        $message = $model->findById('messages', $id);
+        if ($message === null) {
+            flash('error', 'Message not found.');
+            $this->redirect('admin/messages');
+        }
+
+        $to = trim((string)($message['email'] ?? ''));
+        $subject = trim((string)($_POST['reply_subject'] ?? ''));
+        $body = trim((string)($_POST['reply_body'] ?? ''));
+        if (!filter_var($to, FILTER_VALIDATE_EMAIL) || $subject === '' || $body === '') {
+            flash('error', 'Provide a valid reply subject and message body.');
+            $this->redirect('admin/messages/view/' . (int)$id);
+        }
+
+        $replyText = $body . "\n\n--- Original Message ---\nFrom: " . (string)($message['name'] ?? '') . ' <' . $to . ">\nSubject: " . (string)($message['subject'] ?? '') . "\n" . (string)($message['message'] ?? '');
+        $sent = send_notification_email($to, $subject, $replyText);
+        if (!$sent) {
+            flash('error', 'Reply could not be sent. Please check email settings.');
+            $this->redirect('admin/messages/view/' . (int)$id);
+        }
+
+        flash('success', 'Reply sent successfully.');
+        $this->redirect('admin/messages/view/' . (int)$id);
+    }
+
     public function supportTickets(): void
     {
         Auth::requireAdmin();
