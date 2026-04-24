@@ -54,6 +54,7 @@ class StudentPortalController extends Controller
             $this->redirect('portal/login');
         }
 
+        session_regenerate_id(true);
         $_SESSION['student_id'] = (int)$student['id'];
         $_SESSION['student_name'] = (string)$student['name'];
         $_SESSION['student_email'] = (string)$student['email'];

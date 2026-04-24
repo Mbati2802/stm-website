@@ -84,6 +84,7 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
         <?php endif; ?>
 
         <form id="settings-form" method="POST" enctype="multipart/form-data">
+            <?= csrf_field() ?>
             <div class="row g-3 settings-layout">
                 <div class="col-lg-6 d-grid gap-3">
                     <div class="soft-card p-4 settings-card" data-settings-section="general">

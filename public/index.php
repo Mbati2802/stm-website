@@ -3,6 +3,13 @@ require_once __DIR__ . '/../bootstrap.php';
 
 $config = require __DIR__ . '/../config/config.php';
 session_name($config['session_name']);
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
 session_start();
 
 $router = new Router();

@@ -28,6 +28,7 @@ $currentIntake = (string)($currentIntake ?? 'January');
     <div class="row g-4">
       <div class="col-lg-8">
         <form id="programmeApplyForm" method="POST" action="<?= e(base_url('programmes/apply')) ?>" class="soft-card p-4 bg-white">
+      <?= csrf_field() ?>
       <h2 class="h6 text-uppercase text-muted mb-3">Personal Information</h2>
       <div class="row g-3">
         <div class="col-md-6"><label class="form-label">Name</label><input required name="name" class="form-control"></div>

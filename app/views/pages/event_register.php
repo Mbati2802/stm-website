@@ -20,6 +20,7 @@ $slug = (string)($event['slug'] ?? '');
     <div class="row g-4">
       <div class="col-lg-8">
         <form method="POST" action="<?= e(base_url('events/' . $slug . '/register')) ?>" class="soft-card p-4 bg-white">
+          <?= csrf_field() ?>
           <div class="row g-3">
             <div class="col-md-6"><label class="form-label">Full Name</label><input required name="name" class="form-control" value="<?= e(old('name')) ?>"></div>
             <div class="col-md-6"><label class="form-label">Phone</label><input required name="phone" class="form-control" value="<?= e(old('phone')) ?>"></div>

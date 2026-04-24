@@ -4,6 +4,7 @@
         <p class="portal-subtitle mb-3">Only official college email addresses are allowed.</p>
         <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= e($msg) ?></div><?php endif; ?>
         <form method="POST" action="<?= e(base_url('portal/register')) ?>">
+            <?= csrf_field() ?>
             <div class="mb-3">
                 <label class="form-label">Full Name</label>
                 <input name="name" class="form-control" required>

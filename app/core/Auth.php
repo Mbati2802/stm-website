@@ -21,42 +21,12 @@ class Auth
             ($user['status'] ?? 'active') === 'active' &&
             password_verify($password, $user['password'])
         ) {
+            session_regenerate_id(true);
             $_SESSION['admin_id'] = $user['id'];
             $_SESSION['admin_name'] = $user['name'];
             $_SESSION['admin_role'] = (string)($user['role'] ?? self::ROLE_SUPER_ADMIN);
             self::loadRolePermissions($pdo);
             return true;
-        }
-
-        // First-run recovery: ensure default admin credentials work.
-        $defaultEmail = $GLOBALS['config']['admin_email'] ?? 'admin@stm.ac.ke';
-        if ($email === $defaultEmail && $password === 'password123') {
-            $insert = $pdo->prepare(
-                'INSERT INTO users(name, email, password, role, status, created_at)
-                 VALUES(:name, :email, :password, :role, :status, NOW())
-                 ON DUPLICATE KEY UPDATE
-                 name = VALUES(name),
-                 password = VALUES(password),
-                 role = VALUES(role),
-                 status = VALUES(status)'
-            );
-            $insert->execute([
-                'name' => 'System Admin',
-                'email' => $defaultEmail,
-                'password' => password_hash('password123', PASSWORD_DEFAULT),
-                'role' => self::ROLE_SUPER_ADMIN,
-                'status' => 'active',
-            ]);
-
-            $stmt->execute(['email' => $email]);
-            $user = $stmt->fetch();
-            if ($user && password_verify($password, $user['password'])) {
-                $_SESSION['admin_id'] = $user['id'];
-                $_SESSION['admin_name'] = $user['name'];
-                $_SESSION['admin_role'] = (string)($user['role'] ?? self::ROLE_SUPER_ADMIN);
-                self::loadRolePermissions($pdo);
-                return true;
-            }
         }
 
         return false;

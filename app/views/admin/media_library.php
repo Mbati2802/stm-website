@@ -11,6 +11,7 @@
     <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= e($msg) ?></div><?php endif; ?>
 
     <form method="POST" action="<?= e(base_url('admin/media/upload')) ?>" enctype="multipart/form-data" class="settings-section-card mb-4">
+      <?= csrf_field() ?>
       <h6><i class="bi bi-cloud-upload me-2"></i>Upload New Media</h6>
       <div class="row g-3">
         <div class="col-md-3"><label class="form-label">Title Prefix (optional)</label><input name="title" class="form-control" placeholder="Graduation 2026"></div>

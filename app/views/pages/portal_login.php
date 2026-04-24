@@ -5,6 +5,7 @@
         <?php if ($msg = flash('success')): ?><div class="alert alert-success"><?= e($msg) ?></div><?php endif; ?>
         <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= e($msg) ?></div><?php endif; ?>
         <form method="POST" action="<?= e(base_url('portal/login')) ?>">
+            <?= csrf_field() ?>
             <div class="mb-3">
                 <label class="form-label">Admission Number</label>
                 <input name="admission_number" class="form-control" required>

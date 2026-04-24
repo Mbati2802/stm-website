@@ -21,6 +21,7 @@ include __DIR__ . '/../partials/page_hero.php';
     <div class="row g-4">
       <div class="col-md-6">
         <form method="POST" action="<?= e(base_url('contact-registrar')) ?>" class="soft-card p-4">
+          <?= csrf_field() ?>
           <div class="mb-3"><label class="form-label">Name</label><input required name="name" class="form-control"></div>
           <div class="mb-3"><label class="form-label">Email</label><input required type="email" name="email" class="form-control"></div>
           <div class="mb-3"><label class="form-label">Phone</label><input name="phone" class="form-control"></div>

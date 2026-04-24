@@ -23,6 +23,16 @@ class Router
                 array_shift($matches);
                 [$controller, $action] = $route['handler'];
                 $instance = new $controller($GLOBALS['config']);
+                if (strtoupper($method) === 'POST') {
+                    $token = $_POST['_csrf'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+                    if (!csrf_validate(is_string($token) ? $token : '')) {
+                        http_response_code(419);
+                        flash('error', 'Your session expired. Please try again.');
+                        $back = $_SERVER['HTTP_REFERER'] ?? base_url('');
+                        header('Location: ' . $back);
+                        exit;
+                    }
+                }
                 call_user_func_array([$instance, $action], $matches);
                 return;
             }

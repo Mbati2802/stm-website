@@ -81,6 +81,45 @@ function flash(string $key, ?string $value = null): ?string
     return $message;
 }
 
+function csrf_token(): string
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return '';
+    }
+    $token = (string)($_SESSION['_csrf'] ?? '');
+    if ($token !== '') {
+        return $token;
+    }
+    try {
+        $token = bin2hex(random_bytes(32));
+    } catch (Throwable) {
+        $token = bin2hex(pack('N', (int)(microtime(true) * 1000000))) . bin2hex(pack('N', random_int(1, PHP_INT_MAX)));
+    }
+    $_SESSION['_csrf'] = $token;
+    return $token;
+}
+
+function csrf_field(): string
+{
+    $token = csrf_token();
+    if ($token === '') {
+        return '';
+    }
+    return '<input type="hidden" name="_csrf" value="' . e($token) . '">';
+}
+
+function csrf_validate(?string $token): bool
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return false;
+    }
+    $expected = (string)($_SESSION['_csrf'] ?? '');
+    if ($expected === '' || $token === null || $token === '') {
+        return false;
+    }
+    return hash_equals($expected, (string)$token);
+}
+
 function slugify(string $text): string
 {
     $text = strtolower(trim($text));

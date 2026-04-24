@@ -6,6 +6,7 @@
                 <p class="text-muted mb-0">Assign or generate admission numbers for student portal access.</p>
             </div>
             <form method="POST" action="<?= e(base_url('admin/students/bulk-assign')) ?>">
+                <?= csrf_field() ?>
                 <button class="btn btn-primary">
                     <i class="bi bi-magic me-1"></i>Generate Missing Admission Numbers
                 </button>
@@ -60,6 +61,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <form method="POST" action="<?= e(base_url('admin/students/reset-password')) ?>">
+                        <?= csrf_field() ?>
                         <div class="modal-body">
                             <input type="hidden" name="student_id" id="resetStudentId">
                             <div class="mb-3">
@@ -97,6 +99,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <form method="POST" action="<?= e(base_url('admin/students/assign')) ?>">
+                        <?= csrf_field() ?>
                         <div class="modal-body">
                             <input type="hidden" name="student_id" id="assignStudentId">
                             <div class="mb-3">
