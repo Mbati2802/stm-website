@@ -464,6 +464,55 @@ SET @sql := IF(
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- ---------------------------------------------------------------------
+-- email_logs
+-- ---------------------------------------------------------------------
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'email_logs'
+    ),
+    'SELECT "email_logs exists" AS info',
+    'CREATE TABLE email_logs (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        status VARCHAR(60) NOT NULL,
+        recipient_email VARCHAR(190) NULL,
+        subject VARCHAR(255) NULL,
+        error_message VARCHAR(1000) NULL,
+        context_json LONGTEXT NULL,
+        created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'email_logs'
+          AND INDEX_NAME = 'idx_email_logs_created'
+    ),
+    'SELECT "idx_email_logs_created exists" AS info',
+    'CREATE INDEX idx_email_logs_created ON email_logs(created_at)'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'email_logs'
+          AND INDEX_NAME = 'idx_email_logs_status'
+    ),
+    'SELECT "idx_email_logs_status exists" AS info',
+    'CREATE INDEX idx_email_logs_status ON email_logs(status)'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ---------------------------------------------------------------------
 -- Optional seed: ensure at least one super admin exists
 -- ---------------------------------------------------------------------
 INSERT INTO users(name, email, password, role, status, created_at)

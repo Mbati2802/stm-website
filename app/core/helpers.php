@@ -191,11 +191,95 @@ function safe_html(?string $html, array $allowedTags = ['p','br','strong','b','e
     return $clean;
 }
 
+function email_delivery_log(string $status, array $context = []): void
+{
+    global $config;
+    $safeContext = [];
+    foreach ($context as $key => $value) {
+        if (is_scalar($value) || $value === null) {
+            $safeContext[(string)$key] = $value;
+        }
+    }
+    $safeContext['time'] = date('Y-m-d H:i:s');
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        $_SESSION['email_delivery_last'] = [
+            'status' => $status,
+            'context' => $safeContext,
+        ];
+    }
+
+    try {
+        if (is_array($config ?? null) && isset($config['db']) && is_array($config['db'])) {
+            $pdo = Database::getInstance($config['db']);
+            $stmt = $pdo->prepare('
+                INSERT INTO email_logs(status, recipient_email, subject, error_message, context_json, created_at)
+                VALUES(:status, :recipient_email, :subject, :error_message, :context_json, NOW())
+            ');
+            $stmt->execute([
+                'status' => substr((string)$status, 0, 60),
+                'recipient_email' => substr((string)($safeContext['to'] ?? ''), 0, 190),
+                'subject' => substr((string)($safeContext['subject'] ?? ''), 0, 255),
+                'error_message' => substr((string)($safeContext['error'] ?? ''), 0, 1000),
+                'context_json' => json_encode($safeContext, JSON_UNESCAPED_SLASHES),
+            ]);
+        }
+    } catch (Throwable) {
+        // Keep email sending non-blocking even if logging storage fails.
+    }
+    @error_log('[email:' . $status . '] ' . json_encode($safeContext, JSON_UNESCAPED_SLASHES));
+}
+
+function email_delivery_last_status(): array
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return [];
+    }
+    $last = $_SESSION['email_delivery_last'] ?? null;
+    return is_array($last) ? $last : [];
+}
+
+function email_delivery_recent_logs(int $limit = 20): array
+{
+    global $config;
+    $resolvedLimit = max(1, min(100, $limit));
+    try {
+        if (!is_array($config ?? null) || !isset($config['db']) || !is_array($config['db'])) {
+            return [];
+        }
+        $pdo = Database::getInstance($config['db']);
+        $stmt = $pdo->prepare('
+            SELECT status, recipient_email, subject, error_message, created_at
+            FROM email_logs
+            ORDER BY id DESC
+            LIMIT :limit
+        ');
+        $stmt->bindValue(':limit', $resolvedLimit, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll();
+        return is_array($rows) ? $rows : [];
+    } catch (Throwable) {
+        return [];
+    }
+}
+
+function email_last_error_set(string $message): void
+{
+    $GLOBALS['__email_last_error'] = $message;
+}
+
+function email_last_error_get(): string
+{
+    return (string)($GLOBALS['__email_last_error'] ?? '');
+}
+
 function send_notification_email(string $to, string $subject, string $message, ?string $htmlMessage = null): bool
 {
     global $config;
+    email_last_error_set('');
     $to = trim($to);
     if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
+        email_last_error_set('Invalid recipient email address.');
+        email_delivery_log('invalid-recipient', ['to' => $to]);
         return false;
     }
 
@@ -255,14 +339,30 @@ function send_notification_email(string $to, string $subject, string $message, ?
 
     $smtpSent = smtp_send_email($to, $subject, $body, implode("\r\n", $baseHeaders), $boundary, $config ?? []);
     if ($smtpSent !== null) {
+        email_delivery_log($smtpSent ? 'smtp-success' : 'smtp-failed', [
+            'to' => $to,
+            'subject' => $subject,
+            'error' => email_last_error_get(),
+        ]);
         return $smtpSent;
     }
 
     try {
         $mailHeaders = $baseHeaders;
         $mailHeaders[] = 'From: ' . $fromAddress;
-        return @mail($to, $subject, $body, implode("\r\n", $mailHeaders));
+        $sent = @mail($to, $subject, $body, implode("\r\n", $mailHeaders));
+        if (!$sent && email_last_error_get() === '') {
+            email_last_error_set('PHP mail() returned false.');
+        }
+        email_delivery_log($sent ? 'mail-success' : 'mail-failed', [
+            'to' => $to,
+            'subject' => $subject,
+            'error' => email_last_error_get(),
+        ]);
+        return $sent;
     } catch (Throwable) {
+        email_last_error_set('PHP mail() threw an exception.');
+        email_delivery_log('mail-exception', ['to' => $to, 'subject' => $subject]);
         return false;
     }
 }
@@ -357,6 +457,7 @@ function smtp_send_email(string $to, string $subject, string $body, string $head
         $smtpFrom = $smtpUser;
     }
     if ($smtpFrom === '' || !filter_var($smtpFrom, FILTER_VALIDATE_EMAIL)) {
+        email_last_error_set('SMTP From address is invalid.');
         return false;
     }
 
@@ -367,6 +468,7 @@ function smtp_send_email(string $to, string $subject, string $body, string $head
 
     $socket = @stream_socket_client($transport . ':' . $smtpPort, $errno, $errstr, 20);
     if (!$socket) {
+        email_last_error_set('SMTP connection failed: ' . $errstr . ' (' . $errno . ').');
         return false;
     }
     stream_set_timeout($socket, 20);
@@ -389,6 +491,9 @@ function smtp_send_email(string $to, string $subject, string $body, string $head
     $ok = $ok && smtp_command($socket, 'RCPT TO:<' . $to . '>', [250, 251]);
     $ok = $ok && smtp_command($socket, 'DATA', [354]);
     if (!$ok) {
+        if (email_last_error_get() === '') {
+            email_last_error_set('SMTP handshake failed before DATA transmission.');
+        }
         @fwrite($socket, "QUIT\r\n");
         @fclose($socket);
         return false;
@@ -401,14 +506,14 @@ function smtp_send_email(string $to, string $subject, string $body, string $head
     $mailHeaders[] = $headers;
     $mailHeaders[] = 'Date: ' . date('r');
     $mailHeaders[] = 'Message-ID: <' . md5((string)microtime(true) . $to) . '@' . preg_replace('/^.*@/', '', $smtpFrom) . '>';
-    if ($boundary !== null) {
-        $mailHeaders[] = 'Content-Type: multipart/mixed; boundary="' . $boundary . '"';
-    }
     $mailData = implode("\r\n", $mailHeaders) . "\r\n\r\n" . $body;
     $mailData = str_replace(["\r\n.", "\n."], ["\r\n..", "\n.."], $mailData);
     @fwrite($socket, $mailData . "\r\n.\r\n");
 
     $ok = smtp_expect($socket, [250]);
+    if (!$ok && email_last_error_get() === '') {
+        email_last_error_set('SMTP server rejected the message body.');
+    }
     @fwrite($socket, "QUIT\r\n");
     @fclose($socket);
     return $ok;
@@ -438,7 +543,12 @@ function smtp_expect($socket, array $expectedCodes): bool
             break;
         }
     }
-    return in_array($code, $expectedCodes, true);
+    $isExpected = in_array($code, $expectedCodes, true);
+    if (!$isExpected) {
+        $lineSummary = trim($line);
+        email_last_error_set('SMTP response ' . $code . ' not expected. Last line: ' . $lineSummary);
+    }
+    return $isExpected;
 }
 
 function generate_simple_pdf(array $lines): string

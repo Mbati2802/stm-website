@@ -150,6 +150,18 @@ CREATE TABLE settings (
     setting_value TEXT NULL
 );
 
+CREATE TABLE email_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    status VARCHAR(60) NOT NULL,
+    recipient_email VARCHAR(190) NULL,
+    subject VARCHAR(255) NULL,
+    error_message VARCHAR(1000) NULL,
+    context_json LONGTEXT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_email_logs_created (created_at),
+    INDEX idx_email_logs_status (status)
+);
+
 CREATE TABLE student_accounts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(160) NOT NULL,

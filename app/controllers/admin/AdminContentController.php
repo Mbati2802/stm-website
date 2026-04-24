@@ -326,7 +326,12 @@ class AdminContentController extends Controller
             . '</div></div></body></html>';
         $sent = send_notification_email($to, $subject, $replyText, $html);
         if (!$sent) {
-            flash('error', 'Reply could not be sent. Please check email settings.');
+            $errorDetail = trim(email_last_error_get());
+            $messageText = 'Reply could not be sent. Please check email settings.';
+            if ($errorDetail !== '') {
+                $messageText .= ' Reason: ' . $errorDetail;
+            }
+            flash('error', $messageText);
             $this->redirect('admin/messages/view/' . (int)$id);
         }
 
@@ -419,7 +424,12 @@ class AdminContentController extends Controller
             $settings = [];
             flash('error', 'Unable to load settings right now. Confirm the `settings` table exists and try again.');
         }
-        $this->view('admin/settings', ['metaTitle' => 'Settings', 'settings' => $settings]);
+        $this->view('admin/settings', [
+            'metaTitle' => 'Settings',
+            'settings' => $settings,
+            'emailDiagnostics' => email_delivery_last_status(),
+            'emailDiagnosticsHistory' => email_delivery_recent_logs(25),
+        ]);
     }
 
     public function students(): void

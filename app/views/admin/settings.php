@@ -82,6 +82,81 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
         <?php if ($msg = flash('error')): ?>
             <div class="alert alert-danger"><?= e($msg) ?></div>
         <?php endif; ?>
+        <?php
+        $diag = is_array($emailDiagnostics ?? null) ? $emailDiagnostics : [];
+        $diagStatus = strtolower(trim((string)($diag['status'] ?? '')));
+        $diagContext = is_array($diag['context'] ?? null) ? $diag['context'] : [];
+        $diagTo = (string)($diagContext['to'] ?? '');
+        $diagSubject = (string)($diagContext['subject'] ?? '');
+        $diagError = (string)($diagContext['error'] ?? '');
+        $diagTime = (string)($diagContext['time'] ?? '');
+        $diagClass = 'secondary';
+        $diagHistory = is_array($emailDiagnosticsHistory ?? null) ? $emailDiagnosticsHistory : [];
+        if (str_contains($diagStatus, 'success')) {
+            $diagClass = 'success';
+        } elseif (str_contains($diagStatus, 'failed') || str_contains($diagStatus, 'exception') || str_contains($diagStatus, 'invalid')) {
+            $diagClass = 'danger';
+        }
+        ?>
+        <div class="soft-card p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2 class="h6 text-uppercase text-muted mb-0">Email Diagnostics</h2>
+                <?php if ($diagStatus !== ''): ?>
+                    <span class="badge bg-<?= e($diagClass) ?>"><?= e(strtoupper(str_replace('-', ' ', $diagStatus))) ?></span>
+                <?php else: ?>
+                    <span class="badge bg-secondary">NO ATTEMPTS YET</span>
+                <?php endif; ?>
+            </div>
+            <?php if ($diagStatus === ''): ?>
+                <p class="text-muted mb-0 small">No email delivery attempts recorded in this admin session yet.</p>
+            <?php else: ?>
+                <div class="row g-2 small">
+                    <div class="col-md-6"><strong>Time:</strong> <?= e($diagTime !== '' ? $diagTime : 'N/A') ?></div>
+                    <div class="col-md-6"><strong>Recipient:</strong> <?= e($diagTo !== '' ? $diagTo : 'N/A') ?></div>
+                    <div class="col-md-12"><strong>Subject:</strong> <?= e($diagSubject !== '' ? $diagSubject : 'N/A') ?></div>
+                    <div class="col-md-12"><strong>Reason:</strong> <?= e($diagError !== '' ? $diagError : 'No error reported.') ?></div>
+                </div>
+            <?php endif; ?>
+            <hr class="my-3">
+            <h3 class="h6 text-uppercase text-muted mb-2">Recent Delivery History</h3>
+            <?php if ($diagHistory === []): ?>
+                <p class="text-muted mb-0 small">No persisted email logs found yet. Run the latest SQL migration to enable database history.</p>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Recipient</th>
+                                <th>Subject</th>
+                                <th>Reason</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($diagHistory as $entry): ?>
+                                <?php
+                                $entryStatus = strtolower(trim((string)($entry['status'] ?? '')));
+                                $entryClass = 'secondary';
+                                if (str_contains($entryStatus, 'success')) {
+                                    $entryClass = 'success';
+                                } elseif (str_contains($entryStatus, 'failed') || str_contains($entryStatus, 'exception') || str_contains($entryStatus, 'invalid')) {
+                                    $entryClass = 'danger';
+                                }
+                                ?>
+                                <tr>
+                                    <td><span class="badge bg-<?= e($entryClass) ?>"><?= e(strtoupper(str_replace('-', ' ', $entryStatus !== '' ? $entryStatus : 'unknown'))) ?></span></td>
+                                    <td title="<?= e((string)($entry['recipient_email'] ?? '')) ?>"><?= e((string)($entry['recipient_email'] ?? '')) ?></td>
+                                    <td title="<?= e((string)($entry['subject'] ?? '')) ?>"><?= e((string)($entry['subject'] ?? '')) ?></td>
+                                    <td title="<?= e((string)($entry['error_message'] ?? '')) ?>"><?= e((string)($entry['error_message'] ?? '')) ?></td>
+                                    <td><?= e((string)($entry['created_at'] ?? '')) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
 
         <form id="settings-form" method="POST" enctype="multipart/form-data">
             <?= csrf_field() ?>
@@ -159,6 +234,9 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                             <div class="col-md-3">
                                 <label class="form-label">Footer BG Color</label>
                                 <input name="admin_reply_email_footer_bg_color" class="form-control" value="<?= e($settings['admin_reply_email_footer_bg_color'] ?? '#2c3653') ?>" placeholder="#2c3653">
+                            </div>
+                            <div class="col-12 d-flex justify-content-end">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="preview-reply-template-btn">Preview Reply Template</button>
                             </div>
                             <?php if (Auth::isSuperAdmin()): ?>
                             <div class="col-12">
@@ -481,6 +559,19 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
         </form>
     </div>
 </section>
+<div class="modal fade" id="reply-template-preview-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Admin Reply Template Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <iframe id="reply-template-preview-frame" title="Reply template preview" style="width:100%;height:75vh;border:0;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.querySelectorAll('[data-settings-tab]');
@@ -516,6 +607,80 @@ document.addEventListener('DOMContentLoaded', function () {
             if (inputId) syncPermissionInput(inputId);
         });
     });
+
+    const previewBtn = document.getElementById('preview-reply-template-btn');
+    const previewFrame = document.getElementById('reply-template-preview-frame');
+    const previewModalEl = document.getElementById('reply-template-preview-modal');
+    const buildPreviewHtml = function () {
+        const getVal = function(name, fallback) {
+            const input = document.querySelector('[name="' + name + '"]');
+            const raw = input ? String(input.value || '').trim() : '';
+            return raw !== '' ? raw : fallback;
+        };
+        const esc = function (value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        };
+        const sanitizeHex = function (value, fallback) {
+            return /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/.test(value) ? value : fallback;
+        };
+
+        const appName = 'College';
+        const heading = getVal('admin_reply_email_heading', 'Thank you for your email');
+        const subheading = getVal('admin_reply_email_subheading', 'Here is our response from ' + appName);
+        const logoUrl = getVal('admin_reply_email_logo_url', <?= json_encode(base_url('assets/images/logo.png')) ?>);
+        const footerText = getVal('admin_reply_email_footer_text', 'We value your message and are always ready to assist.');
+        const contactEmail = getVal('email', 'contact@stmarysmchmcollege.ac.ke');
+        const contactPhone = getVal('phone', '+254 791 309011');
+        const bgColor = sanitizeHex(getVal('admin_reply_email_bg_color', '#6f7584'), '#6f7584');
+        const cardColor = sanitizeHex(getVal('admin_reply_email_card_color', '#f5f6fb'), '#f5f6fb');
+        const accentColor = sanitizeHex(getVal('admin_reply_email_accent_color', '#5fc7e7'), '#5fc7e7');
+        const footerBgColor = sanitizeHex(getVal('admin_reply_email_footer_bg_color', '#2c3653'), '#2c3653');
+
+        return '<!doctype html><html><body style="margin:0;padding:24px;background:' + esc(bgColor) + ';">'
+            + '<div style="max-width:760px;margin:0 auto;padding:0 12px;">'
+            + '<div style="background:' + esc(cardColor) + ';border-top:4px solid ' + esc(accentColor) + ';border-bottom:4px solid ' + esc(accentColor) + ';">'
+            + '<div style="padding:26px 34px 20px;text-align:center;">'
+            + '<div style="width:88px;height:88px;margin:0 auto 14px;border-radius:50%;background:#f6dfb8;display:flex;align-items:center;justify-content:center;overflow:hidden;">'
+            + '<img src="' + esc(logoUrl) + '" alt="' + esc(appName) + ' logo" style="width:64px;height:64px;object-fit:contain;">'
+            + '</div>'
+            + '<h1 style="margin:0;color:#1f2a44;font-family:Arial,sans-serif;font-size:42px;line-height:1.1;">' + esc(heading) + '</h1>'
+            + '<p style="margin:8px 0 0;color:#6e7381;font-family:Arial,sans-serif;font-size:14px;">' + esc(subheading) + '</p>'
+            + '</div>'
+            + '<div style="padding:0 34px 28px;">'
+            + '<table role="presentation" style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;color:#1f2a44;">'
+            + '<tr><td style="padding:10px 0;border-top:3px solid #2e3448;border-bottom:1px solid #2e3448;font-weight:700;width:110px;">Title</td><td style="padding:10px 0;border-top:3px solid #2e3448;border-bottom:1px solid #2e3448;">Sample Reply Subject</td></tr>'
+            + '<tr><td style="padding:10px 0;border-bottom:2px solid #2e3448;font-weight:700;">Regarding</td><td style="padding:10px 0;border-bottom:2px solid #2e3448;">Original enquiry subject</td></tr>'
+            + '</table>'
+            + '<div style="margin-top:18px;font-family:Arial,sans-serif;color:#20293f;font-size:15px;line-height:1.65;">'
+            + '<p style="margin:0 0 12px;">Hi, Student Name</p>'
+            + '<p style="margin:0 0 12px;">This is a preview of how your admin reply email will look to recipients.</p>'
+            + '<p style="margin:16px 0 0;">Thank you,<br>' + esc(appName) + '</p>'
+            + '</div>'
+            + '</div>'
+            + '<div style="background:' + esc(footerBgColor) + ';padding:18px 34px;color:#cfd6ea;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;">'
+            + '<strong style="color:#fff;">' + esc(appName) + '</strong><br>'
+            + esc(contactEmail) + ' | ' + esc(contactPhone) + '<br>' + esc(footerText)
+            + '</div>'
+            + '</div></div></body></html>';
+    };
+
+    if (previewBtn && previewFrame && previewModalEl && window.bootstrap && window.bootstrap.Modal) {
+        const modal = new window.bootstrap.Modal(previewModalEl);
+        previewBtn.addEventListener('click', function () {
+            const doc = previewFrame.contentWindow && previewFrame.contentWindow.document;
+            if (!doc) return;
+            doc.open();
+            doc.write(buildPreviewHtml());
+            doc.close();
+            modal.show();
+        });
+    }
+
     if (tabs[0]) {
         tabs[0].click();
     }
