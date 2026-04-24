@@ -13,9 +13,9 @@
     <form method="POST" action="<?= e(base_url('admin/media/upload')) ?>" enctype="multipart/form-data" class="settings-section-card mb-4">
       <h6><i class="bi bi-cloud-upload me-2"></i>Upload New Media</h6>
       <div class="row g-3">
-        <div class="col-md-4"><label class="form-label">Title (optional)</label><input name="title" class="form-control" placeholder="Enter media title"></div>
+        <div class="col-md-3"><label class="form-label">Title Prefix (optional)</label><input name="title" class="form-control" placeholder="Graduation 2026"></div>
         <div class="col-md-3"><label class="form-label">Category</label><input name="category" class="form-control" placeholder="Events"></div>
-        <div class="col-md-5"><label class="form-label">Image File</label><input required type="file" name="media_file" accept="image/*" class="form-control"></div>
+        <div class="col-md-6"><label class="form-label">Image Files (bulk)</label><input required type="file" name="media_files[]" accept="image/*" class="form-control" multiple></div>
       </div>
       <div class="mt-3"><button class="btn btn-primary"><i class="bi bi-upload me-2"></i>Upload Media</button></div>
     </form>

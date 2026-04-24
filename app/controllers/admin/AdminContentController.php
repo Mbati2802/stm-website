@@ -911,22 +911,29 @@ class AdminContentController extends Controller
             $this->redirect('admin');
         }
         $pdo = Database::getInstance($this->config['db']);
-        $title = trim($_POST['title'] ?? '');
+        $titlePrefix = trim($_POST['title'] ?? '');
         $category = trim($_POST['category'] ?? 'General');
-        $filePath = $this->uploadFile('media_file', ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], 'media');
-        if ($filePath === '') {
+        $filePaths = $this->uploadMultipleFiles('media_files', ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], 'media');
+        if ($filePaths === []) {
             flash('error', 'Please upload a valid image file.');
             $this->redirect('admin/media');
         }
 
         try {
             $stmt = $pdo->prepare('INSERT INTO media_assets(title, file_path, category, created_at) VALUES(:title,:file_path,:category,NOW())');
-            $stmt->execute([
-                'title' => $title !== '' ? $title : basename($filePath),
-                'file_path' => $filePath,
-                'category' => $category !== '' ? $category : 'General',
-            ]);
-            flash('success', 'Media uploaded.');
+            $uploadedCount = 0;
+            foreach ($filePaths as $index => $filePath) {
+                $computedTitle = $titlePrefix !== ''
+                    ? ($titlePrefix . ' #' . ($index + 1))
+                    : basename((string)$filePath);
+                $stmt->execute([
+                    'title' => $computedTitle,
+                    'file_path' => $filePath,
+                    'category' => $category !== '' ? $category : 'General',
+                ]);
+                $uploadedCount++;
+            }
+            flash('success', 'Media uploaded: ' . $uploadedCount . ' file(s).');
         } catch (PDOException) {
             flash('error', 'Media table missing. Create `media_assets` in MySQL.');
         }
