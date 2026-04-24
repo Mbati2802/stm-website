@@ -374,7 +374,11 @@ class ContentModel
         try {
             return (int)($this->pdo->query('SELECT COUNT(*) AS total FROM messages WHERE read_at IS NULL')->fetch()['total'] ?? 0);
         } catch (PDOException) {
-            return 0;
+            try {
+                return (int)($this->pdo->query('SELECT COUNT(*) AS total FROM messages')->fetch()['total'] ?? 0);
+            } catch (PDOException) {
+                return 0;
+            }
         }
     }
 

@@ -174,6 +174,10 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                                 <input name="email" class="form-control" value="<?= e($settings['email'] ?? '') ?>">
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label">Admissions Email</label>
+                                <input name="admissions_email" class="form-control" value="<?= e($settings['admissions_email'] ?? 'admission@stmarysmchmcollege.ac.ke') ?>">
+                            </div>
+                            <div class="col-md-6">
                                 <label class="form-label">Location</label>
                                 <input name="location" class="form-control" value="<?= e($settings['location'] ?? '') ?>">
                             </div>
@@ -288,6 +292,13 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                         <label class="form-label">Cards JSON</label>
                         <textarea name="home_value_cards" rows="12" class="form-control" placeholder='[{\"title_primary\":\"Flexibility\",\"title_secondary\":\"That Fits You\",\"text\":\"...\",\"icon\":\"bi-calendar-check\",\"cta_label\":\"Apply\",\"cta_link\":\"programmes\"}]'><?= e($settings['home_value_cards'] ?? '') ?></textarea>
                         <small class="text-muted">Use Bootstrap Icons classes like <code>bi-heart-pulse</code>, <code>bi-people</code>, <code>bi-award</code>.</small>
+                    </div>
+
+                    <div class="soft-card p-4 settings-card" data-settings-section="home">
+                        <h2 class="h6 text-uppercase text-muted mb-3">Homepage Testimonials</h2>
+                        <label class="form-label">Testimonials JSON</label>
+                        <textarea name="home_testimonials_json" rows="10" class="form-control" placeholder='[{"name":"Jane D.","course":"Diploma in Nursing","message":"Great college experience","image":"https://..."}]'><?= e($settings['home_testimonials_json'] ?? '') ?></textarea>
+                        <small class="text-muted">Each item: <code>name</code>, <code>course</code>, <code>message</code>, <code>image</code>.</small>
                     </div>
 
                     <div class="soft-card p-4 settings-card" data-settings-section="home">

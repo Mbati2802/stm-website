@@ -182,9 +182,12 @@ foreach ($bannerCandidates as $candidate) {
                             <?php foreach ($slide as $testimonial): ?>
                                 <div class="col-md-4">
                                     <div class="soft-card p-4 bg-white h-100 testimonial-card">
-                                        <p class="mb-2">"<?= e($testimonial['message']) ?>"</p>
-                                        <strong><?= e($testimonial['name']) ?></strong>
-                                        <p class="mb-0 small text-muted"><?= e($testimonial['course']) ?></p>
+                                        <div class="testimonial-avatar-wrap mb-3">
+                                            <img src="<?= e((string)($testimonial['image'] ?? 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300')) ?>" alt="<?= e((string)($testimonial['name'] ?? 'Student')) ?>" class="testimonial-avatar">
+                                        </div>
+                                        <p class="mb-3 testimonial-message">"<?= e((string)($testimonial['message'] ?? '')) ?>"</p>
+                                        <strong class="d-block testimonial-name"><?= e((string)($testimonial['name'] ?? '')) ?></strong>
+                                        <p class="mb-0 small text-muted"><?= e((string)($testimonial['course'] ?? '')) ?></p>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -192,11 +195,11 @@ foreach ($bannerCandidates as $candidate) {
                     </div>
                 <?php endforeach; ?>
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
+            <button class="carousel-control-prev testimonial-nav" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon testimonial-nav-icon"></span>
             </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
+            <button class="carousel-control-next testimonial-nav" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon testimonial-nav-icon"></span>
             </button>
         </div>
     </div>

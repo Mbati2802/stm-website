@@ -49,8 +49,14 @@ $programmeSidebarTitle = trim((string)($settings['programme_sidebar_title'] ?? '
 $programmeSidebarText = trim((string)($settings['programme_sidebar_text'] ?? 'Kindly ask for a return call from our proficient consultants to have your inquiries addressed.'));
 $programmeSidebarPrimaryLabel = trim((string)($settings['programme_sidebar_primary_label'] ?? 'Apply Now'));
 $programmeSidebarPrimaryLink = trim((string)($settings['programme_sidebar_primary_link'] ?? 'programmes/apply'));
-$programmeSidebarSecondaryLabel = trim((string)($settings['programme_sidebar_secondary_label'] ?? 'Contact Registrar'));
-$programmeSidebarSecondaryLink = trim((string)($settings['programme_sidebar_secondary_link'] ?? 'contact-registrar'));
+$programmeSidebarSecondaryLabel = trim((string)($settings['programme_sidebar_secondary_label'] ?? 'Contact Admissions'));
+$programmeSidebarSecondaryLink = trim((string)($settings['programme_sidebar_secondary_link'] ?? 'contact-admissions'));
+if ($programmeSidebarSecondaryLabel === '' || strtolower($programmeSidebarSecondaryLabel) === 'contact registrar') {
+  $programmeSidebarSecondaryLabel = 'Contact Admissions';
+}
+if ($programmeSidebarSecondaryLink === '' || $programmeSidebarSecondaryLink === 'contact-registrar') {
+  $programmeSidebarSecondaryLink = 'contact-admissions';
+}
 $programmeSidebarOtherTitle = trim((string)($settings['programme_sidebar_other_title'] ?? 'Other Programmes Offered'));
 $mosaicImages = json_decode((string)($settings['programme_mosaic_images_json'] ?? '[]'), true);
 if (!is_array($mosaicImages)) {
@@ -60,41 +66,19 @@ if (!is_array($mosaicImages)) {
 
 <section class="section-stack">
   <div class="site-width boxed-section programme-detail-layout">
-    <aside class="programme-floating-sidebar">
-      <div class="soft-card p-3 mb-3">
-        <img class="img-fluid mb-3" src="<?= e($programmeMainImage) ?>" alt="<?= e($programmeName) ?>">
-        <h3 class="h4 fw-bold text-primary mb-2"><?= e($programmeSidebarTitle) ?></h3>
-        <p class="small text-muted"><?= e($programmeSidebarText) ?></p>
-        <div class="d-grid gap-2">
-          <a class="btn btn-sm btn-primary" href="<?= e(base_url($programmeSidebarPrimaryLink . '?course=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>"><?= e($programmeSidebarPrimaryLabel) ?></a>
-          <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url($programmeSidebarSecondaryLink)) ?>"><?= e($programmeSidebarSecondaryLabel) ?></a>
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <h1 class="h3 fw-bold mb-2"><?= e($programmeName) ?></h1>
+        <div class="programme-detail-divider mb-3"></div>
+
+        <div class="programme-meta-card mb-3">
+          <div><strong>Department:</strong> <?= e($departmentName) ?></div>
+          <div><strong>Level:</strong> <?= e($programmeCategory) ?></div>
+          <div><strong>Duration:</strong> <?= e($programmeTerms) ?> terms</div>
+          <div>
+            <a class="btn btn-sm btn-primary" href="<?= e(base_url('programmes/apply?course=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>">Apply Now</a>
+          </div>
         </div>
-      </div>
-
-      <div class="soft-card p-3">
-        <h3 class="h5 fw-bold mb-3"><?= e($programmeSidebarOtherTitle) ?></h3>
-        <ul class="small mb-0 ps-3">
-          <?php foreach ($otherProgrammes as $item): ?>
-            <li class="mb-2">
-              <a href="<?= e(base_url('programmes/' . $item['slug'])) ?>"><?= e($item['name']) ?></a>
-            </li>
-          <?php endforeach; ?>
-        </ul>
-        <a class="btn btn-link p-0 mt-2" href="<?= e(base_url('programmes')) ?>">View More</a>
-      </div>
-    </aside>
-
-    <h1 class="h3 fw-bold mb-2"><?= e($programmeName) ?></h1>
-    <div class="programme-detail-divider mb-3"></div>
-
-    <div class="programme-meta-card mb-3">
-      <div><strong>Department:</strong> <?= e($departmentName) ?></div>
-      <div><strong>Level:</strong> <?= e($programmeCategory) ?></div>
-      <div><strong>Duration:</strong> <?= e($programmeTerms) ?> terms</div>
-      <div>
-        <a class="btn btn-sm btn-primary" href="<?= e(base_url('programmes/apply?course=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>">Apply Now</a>
-      </div>
-    </div>
 
     <h2 class="h4 fw-bold mt-4">Course Overview</h2>
     <div class="mb-3 course-overview-content"><?= $overviewHtml ?></div>
@@ -182,6 +166,30 @@ if (!is_array($mosaicImages)) {
         <?php endforeach; ?>
       </div>
     <?php endif; ?>
-    <div class="clearfix"></div>
+      </div>
+      <aside class="col-lg-4">
+        <div class="soft-card p-3 mb-3">
+          <img class="img-fluid mb-3" src="<?= e($programmeMainImage) ?>" alt="<?= e($programmeName) ?>">
+          <h3 class="h4 fw-bold text-primary mb-2"><?= e($programmeSidebarTitle) ?></h3>
+          <p class="small text-muted"><?= e($programmeSidebarText) ?></p>
+          <div class="d-grid gap-2">
+            <a class="btn btn-sm btn-primary" href="<?= e(base_url($programmeSidebarPrimaryLink . '?course=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>"><?= e($programmeSidebarPrimaryLabel) ?></a>
+            <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url($programmeSidebarSecondaryLink)) ?>"><?= e($programmeSidebarSecondaryLabel) ?></a>
+          </div>
+        </div>
+
+        <div class="soft-card p-3">
+          <h3 class="h5 fw-bold mb-3"><?= e($programmeSidebarOtherTitle) ?></h3>
+          <ul class="small mb-0 ps-3">
+            <?php foreach ($otherProgrammes as $item): ?>
+              <li class="mb-2">
+                <a href="<?= e(base_url('programmes/' . $item['slug'])) ?>"><?= e($item['name']) ?></a>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+          <a class="btn btn-link p-0 mt-2" href="<?= e(base_url('programmes')) ?>">View More</a>
+        </div>
+      </aside>
+    </div>
   </div>
 </section>

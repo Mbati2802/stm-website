@@ -24,6 +24,8 @@ $router->add('GET', 'contact', [AboutController::class, 'contact']);
 $router->add('POST', 'contact', [AboutController::class, 'submitContact']);
 $router->add('GET', 'contact-registrar', [AboutController::class, 'registrarContact']);
 $router->add('POST', 'contact-registrar', [AboutController::class, 'submitRegistrarContact']);
+$router->add('GET', 'contact-admissions', [AboutController::class, 'admissionsContact']);
+$router->add('POST', 'contact-admissions', [AboutController::class, 'submitAdmissionsContact']);
 $router->add('GET', 'faqs', [AboutController::class, 'faqs']);
 $router->add('GET', 'portals', [AboutController::class, 'portals']);
 $router->add('GET', 'programmes', [ProgrammesController::class, 'index']);
@@ -99,6 +101,7 @@ $router->add('POST', 'admin/messages/reply/{id}', [AdminContentController::class
 $router->add('GET', 'admin/support-tickets', [AdminContentController::class, 'supportTickets']);
 $router->add('GET', 'admin/messages/export', [AdminContentController::class, 'exportMessages']);
 $router->add('GET', 'admin/event-registrations', [AdminContentController::class, 'eventRegistrations']);
+$router->add('POST', 'admin/event-registrations/email/{id}', [AdminContentController::class, 'emailEventRegistrant']);
 $router->add('GET', 'admin/students', [AdminContentController::class, 'students']);
 $router->add('POST', 'admin/students/assign/{id}', [AdminContentController::class, 'assignStudentAdmissionNumber']);
 $router->add('POST', 'admin/students/bulk-assign', [AdminContentController::class, 'bulkAssignAdmissionNumbers']);

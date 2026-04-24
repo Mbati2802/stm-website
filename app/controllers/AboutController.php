@@ -110,6 +110,15 @@ class AboutController extends Controller
         ]);
     }
 
+    public function admissionsContact(): void
+    {
+        $settings = $this->model->getSettings();
+        $this->view('pages/contact_admissions', [
+            'metaTitle' => 'Contact Admissions',
+            'settings' => $settings,
+        ]);
+    }
+
     public function submitRegistrarContact(): void
     {
         $settings = $this->model->getSettings();
@@ -154,6 +163,52 @@ class AboutController extends Controller
 
         flash('success', 'Message submitted successfully. The registrar office will contact you.');
         $this->redirect('contact-registrar');
+    }
+
+    public function submitAdmissionsContact(): void
+    {
+        $settings = $this->model->getSettings();
+        $admissionsEmail = trim((string)($settings['admissions_email'] ?? ($this->config['application_notification_email'] ?? 'admission@stmarysmchmcollege.ac.ke')));
+
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+        $subject = trim($_POST['subject'] ?? 'Admissions Enquiry');
+        $message = trim($_POST['message'] ?? '');
+
+        if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $message === '') {
+            flash('error', 'Please provide valid contact details and message.');
+            $this->redirect('contact-admissions');
+        }
+
+        try {
+            $this->model->saveMessage([
+                'name' => $name,
+                'email' => $email,
+                'phone' => $phone,
+                'subject' => '[Admissions] ' . $subject,
+                'message' => $message,
+            ]);
+        } catch (Throwable) {
+            flash('error', 'Contact service is temporarily unavailable. Please try again shortly.');
+            $this->redirect('contact-admissions');
+        }
+
+        if ($admissionsEmail !== '') {
+            $mailBody = implode("\n", [
+                'A new admissions form message was submitted.',
+                'Name: ' . $name,
+                'Email: ' . $email,
+                'Phone: ' . $phone,
+                'Subject: ' . $subject,
+                'Message:',
+                $message,
+            ]);
+            send_notification_email($admissionsEmail, 'Admissions Enquiry - ' . $subject, $mailBody);
+        }
+
+        flash('success', 'Message submitted successfully. The admissions office will contact you.');
+        $this->redirect('contact-admissions');
     }
 
     public function faqs(): void

@@ -9,6 +9,7 @@ class AdminContentController extends Controller
     private const SETTINGS_TEXT_FIELDS = [
         'phone',
         'email',
+        'admissions_email',
         'location',
         'current_intake',
         'top_message',
@@ -21,6 +22,7 @@ class AdminContentController extends Controller
         'home_hero_secondary_cta_link',
         'hero_images',
         'home_value_cards',
+        'home_testimonials_json',
         'about_title',
         'about_intro',
         'about_mission',
@@ -442,6 +444,53 @@ class AdminContentController extends Controller
             'metaTitle' => 'Event Registrations',
             'rows' => $rows,
         ]);
+    }
+
+    public function emailEventRegistrant(int $id): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('events')) {
+            $this->redirect('admin');
+        }
+        $pdo = Database::getInstance($this->config['db']);
+        $subject = trim((string)($_POST['subject'] ?? ''));
+        $body = trim((string)($_POST['body'] ?? ''));
+        if ($subject === '' || $body === '') {
+            flash('error', 'Email subject and body are required.');
+            $this->redirect('admin/event-registrations');
+        }
+        try {
+            $stmt = $pdo->prepare('
+                SELECT er.*, e.title AS event_title
+                FROM event_registrations er
+                LEFT JOIN events e ON e.id = er.event_id
+                WHERE er.id = :id
+                LIMIT 1
+            ');
+            $stmt->execute(['id' => $id]);
+            $row = $stmt->fetch() ?: null;
+            if (!$row || !filter_var((string)($row['email'] ?? ''), FILTER_VALIDATE_EMAIL)) {
+                flash('error', 'Registrant email not found.');
+                $this->redirect('admin/event-registrations');
+            }
+            $safeBodyHtml = safe_html($body);
+            $html = '<!doctype html><html><body style="font-family:Arial,sans-serif;background:#f4f7fb;padding:18px;">'
+                . '<div style="max-width:680px;margin:0 auto;background:#fff;border:1px solid #dfe7f4;padding:20px;">'
+                . '<h2 style="margin:0 0 10px;color:#185490;">' . e($subject) . '</h2>'
+                . '<p style="margin:0 0 8px;color:#6b7280;">Event: ' . e((string)($row['event_title'] ?? 'Event')) . '</p>'
+                . '<div style="margin-top:14px;color:#1f2937;line-height:1.65;">' . $safeBodyHtml . '</div>'
+                . '</div></body></html>';
+            $sent = send_notification_email((string)$row['email'], $subject, plain_text_multiline($body), $html);
+            if (!$sent) {
+                flash('error', 'Could not send email to registrant.');
+                $this->redirect('admin/event-registrations');
+            }
+            flash('success', 'Email sent to registrant successfully.');
+            $this->redirect('admin/event-registrations');
+        } catch (PDOException) {
+            flash('error', 'Unable to process event registration email right now.');
+            $this->redirect('admin/event-registrations');
+        }
     }
 
     public function applications(): void

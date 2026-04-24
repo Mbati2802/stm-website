@@ -33,7 +33,7 @@ $displayTime = $timeLabel !== '' ? $timeLabel : trim($timeFromDate . ($timeToDat
     </div>
 
     <div class="row g-4">
-      <div class="col-lg-8">
+      <div class="col-lg-8 order-1">
         <div class="soft-card bg-white p-3 mb-3">
           <img
             class="img-fluid mb-3"
@@ -54,7 +54,7 @@ $displayTime = $timeLabel !== '' ? $timeLabel : trim($timeFromDate . ($timeToDat
         </div>
       </div>
 
-      <div class="col-lg-4">
+      <div class="col-lg-4 order-2">
         <div class="soft-card p-4 bg-white">
           <h2 class="h6 text-uppercase text-muted mb-3">Useful Links</h2>
           <ul class="list-unstyled mb-0">
