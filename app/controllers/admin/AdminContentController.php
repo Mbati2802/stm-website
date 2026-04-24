@@ -272,7 +272,41 @@ class AdminContentController extends Controller
         }
 
         $replyText = $body . "\n\n--- Original Message ---\nFrom: " . (string)($message['name'] ?? '') . ' <' . $to . ">\nSubject: " . (string)($message['subject'] ?? '') . "\n" . (string)($message['message'] ?? '');
-        $sent = send_notification_email($to, $subject, $replyText);
+        $settings = $model->getSettings();
+        $appName = (string)($this->config['app_name'] ?? 'College');
+        $logoUrl = base_url('assets/images/logo.png');
+        $contactPhone = trim((string)($settings['phone'] ?? '+254 791 309011'));
+        $contactEmail = trim((string)($settings['email'] ?? 'contact@stmarysmchmcollege.ac.ke'));
+        $safeReplyBodyHtml = nl2br(e($body));
+        $safeSenderName = e((string)($message['name'] ?? 'User'));
+        $safeOriginalSubject = e((string)($message['subject'] ?? 'General Enquiry'));
+        $html = '<!doctype html><html><body style="margin:0;padding:0;background:#6f7584;">'
+            . '<div style="max-width:760px;margin:20px auto;padding:0 12px;">'
+            . '<div style="background:#f5f6fb;border-top:4px solid #5fc7e7;border-bottom:4px solid #5fc7e7;">'
+            . '<div style="padding:26px 34px 20px;text-align:center;">'
+            . '<div style="width:88px;height:88px;margin:0 auto 14px;border-radius:50%;background:#f6dfb8;display:flex;align-items:center;justify-content:center;overflow:hidden;">'
+            . '<img src="' . e($logoUrl) . '" alt="' . e($appName) . ' logo" style="width:64px;height:64px;object-fit:contain;">'
+            . '</div>'
+            . '<h1 style="margin:0;color:#1f2a44;font-family:Arial,sans-serif;font-size:42px;line-height:1.1;">Thank you for your email</h1>'
+            . '<p style="margin:8px 0 0;color:#6e7381;font-family:Arial,sans-serif;font-size:14px;">Here is our response from ' . e($appName) . '</p>'
+            . '</div>'
+            . '<div style="padding:0 34px 28px;">'
+            . '<table role="presentation" style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;color:#1f2a44;">'
+            . '<tr><td style="padding:10px 0;border-top:3px solid #2e3448;border-bottom:1px solid #2e3448;font-weight:700;width:110px;">Title</td><td style="padding:10px 0;border-top:3px solid #2e3448;border-bottom:1px solid #2e3448;">' . e($subject) . '</td></tr>'
+            . '<tr><td style="padding:10px 0;border-bottom:2px solid #2e3448;font-weight:700;">Regarding</td><td style="padding:10px 0;border-bottom:2px solid #2e3448;">' . $safeOriginalSubject . '</td></tr>'
+            . '</table>'
+            . '<div style="margin-top:18px;font-family:Arial,sans-serif;color:#20293f;font-size:15px;line-height:1.65;">'
+            . '<p style="margin:0 0 12px;">Hi, ' . $safeSenderName . '</p>'
+            . '<p style="margin:0 0 12px;">' . $safeReplyBodyHtml . '</p>'
+            . '<p style="margin:16px 0 0;">Thank you,<br>' . e($appName) . '</p>'
+            . '</div>'
+            . '</div>'
+            . '<div style="background:#2c3653;padding:18px 34px;color:#cfd6ea;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;">'
+            . '<strong style="color:#fff;">' . e($appName) . '</strong><br>'
+            . e($contactEmail) . ' | ' . e($contactPhone)
+            . '</div>'
+            . '</div></div></body></html>';
+        $sent = send_notification_email($to, $subject, $replyText, $html);
         if (!$sent) {
             flash('error', 'Reply could not be sent. Please check email settings.');
             $this->redirect('admin/messages/view/' . (int)$id);
