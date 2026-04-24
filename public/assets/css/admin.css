@@ -125,6 +125,19 @@
     border-bottom:1px solid var(--admin-border);
 }
 .admin-table td,.admin-table th{vertical-align:middle}
+.admin-table{table-layout:fixed;width:100%}
+.admin-table td,.admin-table th{
+    max-width:240px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.admin-table td:last-child,.admin-table th:last-child{
+    max-width:none;
+    white-space:nowrap;
+    overflow:visible;
+    text-overflow:clip;
+}
 .admin-table tbody tr:hover{background:#f8fbff}
 .admin-theme .btn{border-radius:.55rem!important}
 .admin-theme .form-control,.admin-theme .form-select{border-radius:.55rem; border-color:#c9d5e6}

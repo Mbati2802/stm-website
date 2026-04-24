@@ -40,9 +40,9 @@
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle <?= str_starts_with($path, 'programmes') ? 'active' : '' ?>" href="#" data-bs-toggle="dropdown">Programmes <i class="bi bi-chevron-down dropdown-arrow"></i></a>
+                    <a class="nav-link dropdown-toggle <?= str_starts_with($path, 'programmes') || $path === 'departments' ? 'active' : '' ?>" href="#" data-bs-toggle="dropdown">Programmes <i class="bi bi-chevron-down dropdown-arrow"></i></a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="<?= e(base_url('programmes')) ?>">Departments</a></li>
+                        <li><a class="dropdown-item" href="<?= e(base_url('departments')) ?>">Departments</a></li>
                         <li><a class="dropdown-item" href="<?= e(base_url('programmes')) ?>">Programmes</a></li>
                         <li><a class="dropdown-item" href="<?= e(base_url('programmes')) ?>">Timetables</a></li>
                         <li><a class="dropdown-item" href="<?= e(base_url('programmes/how-to-apply')) ?>">How To Apply</a></li>
