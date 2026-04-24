@@ -368,6 +368,113 @@ class ContentModel
         return $stmt->execute($data);
     }
 
+    public function countAll(string $table): int
+    {
+        $allowed = [
+            'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
+            'library_resources', 'faqs', 'messages', 'pages', 'users',
+            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments',
+            'study_materials', 'grading_schemes', 'event_registrations'
+        ];
+        if (!in_array($table, $allowed, true)) {
+            return 0;
+        }
+        try {
+            return (int)($this->pdo->query("SELECT COUNT(*) AS total FROM {$table}")->fetch()['total'] ?? 0);
+        } catch (PDOException) {
+            return 0;
+        }
+    }
+
+    public function getAdminUsers(): array
+    {
+        try {
+            $stmt = $this->pdo->query("SELECT id, name, email, role, status FROM users WHERE role IN ('super_admin','junior_admin','teacher') AND status='active' ORDER BY name ASC");
+            return $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function sendAdminMessage(int $senderId, int $recipientId, string $subject, string $body): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare('
+                INSERT INTO admin_messages(sender_id, recipient_id, subject, body, created_at)
+                VALUES(:sender_id, :recipient_id, :subject, :body, NOW())
+            ');
+            return $stmt->execute([
+                'sender_id' => $senderId,
+                'recipient_id' => $recipientId,
+                'subject' => trim($subject),
+                'body' => trim($body),
+            ]);
+        } catch (PDOException) {
+            return false;
+        }
+    }
+
+    public function getAdminInbox(int $adminId, int $limit = 50): array
+    {
+        try {
+            $stmt = $this->pdo->prepare('
+                SELECT am.*, u.name AS sender_name, u.role AS sender_role
+                FROM admin_messages am
+                INNER JOIN users u ON u.id = am.sender_id
+                WHERE am.recipient_id = :admin_id
+                ORDER BY am.id DESC
+                LIMIT :lim
+            ');
+            $stmt->bindValue(':admin_id', $adminId, PDO::PARAM_INT);
+            $stmt->bindValue(':lim', max(1, min(200, $limit)), PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function getAdminSentMessages(int $adminId, int $limit = 50): array
+    {
+        try {
+            $stmt = $this->pdo->prepare('
+                SELECT am.*, u.name AS recipient_name, u.role AS recipient_role
+                FROM admin_messages am
+                INNER JOIN users u ON u.id = am.recipient_id
+                WHERE am.sender_id = :admin_id
+                ORDER BY am.id DESC
+                LIMIT :lim
+            ');
+            $stmt->bindValue(':admin_id', $adminId, PDO::PARAM_INT);
+            $stmt->bindValue(':lim', max(1, min(200, $limit)), PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function getUnreadAdminMessageCount(int $adminId): int
+    {
+        try {
+            $stmt = $this->pdo->prepare('SELECT COUNT(*) AS total FROM admin_messages WHERE recipient_id = :admin_id AND read_at IS NULL');
+            $stmt->execute(['admin_id' => $adminId]);
+            return (int)($stmt->fetch()['total'] ?? 0);
+        } catch (PDOException) {
+            return 0;
+        }
+    }
+
+    public function markAdminInboxAsRead(int $adminId): void
+    {
+        try {
+            $stmt = $this->pdo->prepare('UPDATE admin_messages SET read_at = NOW() WHERE recipient_id = :admin_id AND read_at IS NULL');
+            $stmt->execute(['admin_id' => $adminId]);
+        } catch (PDOException) {
+            // no-op
+        }
+    }
+
     public function all(string $table): array
     {
         $allowed = [

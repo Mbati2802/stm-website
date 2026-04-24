@@ -302,7 +302,7 @@ class AdminContentController extends Controller
             . '<div style="max-width:760px;margin:20px auto;padding:0 12px;">'
             . '<div style="background:' . e($cardColor) . ';border-top:4px solid ' . e($accentColor) . ';border-bottom:4px solid ' . e($accentColor) . ';">'
             . '<div style="padding:26px 34px 20px;text-align:center;">'
-            . '<div style="width:88px;height:88px;margin:0 auto 14px;border-radius:50%;background:#f6dfb8;display:flex;align-items:center;justify-content:center;overflow:hidden;">'
+            . '<div style="margin:0 auto 14px;display:flex;align-items:center;justify-content:center;overflow:hidden;">'
             . '<img src="' . e($logoUrl) . '" alt="' . e($appName) . ' logo" style="width:64px;height:64px;object-fit:contain;">'
             . '</div>'
             . '<h1 style="margin:0;color:#1f2a44;font-family:Arial,sans-serif;font-size:42px;line-height:1.1;">' . e($heading) . '</h1>'
@@ -319,9 +319,9 @@ class AdminContentController extends Controller
             . '<p style="margin:16px 0 0;">Thank you,<br>' . e($appName) . '</p>'
             . '</div>'
             . '</div>'
-            . '<div style="background:' . e($footerBgColor) . ';padding:18px 34px;color:#cfd6ea;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;">'
+            . '<div style="background:' . e($footerBgColor) . ';padding:18px 34px;color:#f0d78c;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;text-align:center;">'
             . '<strong style="color:#fff;">' . e($appName) . '</strong><br>'
-            . e($contactEmail) . ' | ' . e($contactPhone) . '<br>' . e($footerText)
+            . e($contactEmail) . ' | ' . e($contactPhone) . ' | 0101 711 499<br>' . e($footerText)
             . '</div>'
             . '</div></div></body></html>';
         $sent = send_notification_email($to, $subject, $replyText, $html);
@@ -430,6 +430,52 @@ class AdminContentController extends Controller
             'emailDiagnostics' => email_delivery_last_status(),
             'emailDiagnosticsHistory' => email_delivery_recent_logs(25),
         ]);
+    }
+
+    public function internalMessages(): void
+    {
+        Auth::requireAdmin();
+        $adminId = (int)($_SESSION['admin_id'] ?? 0);
+        if ($adminId <= 0) {
+            $this->redirect('admin/login');
+        }
+        $model = new ContentModel($this->config);
+        $inbox = $model->getAdminInbox($adminId, 80);
+        $sent = $model->getAdminSentMessages($adminId, 80);
+        $model->markAdminInboxAsRead($adminId);
+        $this->view('admin/internal_messages', [
+            'metaTitle' => 'Team Messages',
+            'users' => $model->getAdminUsers(),
+            'inbox' => $inbox,
+            'sent' => $sent,
+        ]);
+    }
+
+    public function sendInternalMessage(): void
+    {
+        Auth::requireAdmin();
+        $senderId = (int)($_SESSION['admin_id'] ?? 0);
+        if ($senderId <= 0) {
+            $this->redirect('admin/login');
+        }
+        $recipientId = (int)($_POST['recipient_id'] ?? 0);
+        $subject = trim((string)($_POST['subject'] ?? ''));
+        $body = trim((string)($_POST['body'] ?? ''));
+        if ($recipientId <= 0 || $subject === '' || $body === '') {
+            flash('error', 'Recipient, subject, and message body are required.');
+            $this->redirect('admin/internal-messages');
+        }
+        if ($recipientId === $senderId) {
+            flash('error', 'You cannot send a message to yourself.');
+            $this->redirect('admin/internal-messages');
+        }
+        $model = new ContentModel($this->config);
+        if (!$model->sendAdminMessage($senderId, $recipientId, $subject, $body)) {
+            flash('error', 'Message could not be sent. Confirm the admin_messages table exists.');
+            $this->redirect('admin/internal-messages');
+        }
+        flash('success', 'Message sent successfully.');
+        $this->redirect('admin/internal-messages');
     }
 
     public function students(): void

@@ -162,6 +162,21 @@ CREATE TABLE email_logs (
     INDEX idx_email_logs_status (status)
 );
 
+CREATE TABLE admin_messages (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT NOT NULL,
+    recipient_id INT NOT NULL,
+    subject VARCHAR(190) NOT NULL,
+    body TEXT NOT NULL,
+    read_at DATETIME NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_admin_messages_recipient (recipient_id),
+    INDEX idx_admin_messages_sender (sender_id),
+    INDEX idx_admin_messages_read (read_at),
+    CONSTRAINT fk_admin_messages_sender FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_admin_messages_recipient FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE TABLE student_accounts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(160) NOT NULL,

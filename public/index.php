@@ -107,6 +107,8 @@ $router->add('POST', 'admin/media/upload', [AdminContentController::class, 'uplo
 $router->add('GET', 'admin/media/delete/{id}', [AdminContentController::class, 'deleteMedia']);
 $router->add('GET', 'admin/settings', [AdminContentController::class, 'settings']);
 $router->add('POST', 'admin/settings', [AdminContentController::class, 'saveSettings']);
+$router->add('GET', 'admin/internal-messages', [AdminContentController::class, 'internalMessages']);
+$router->add('POST', 'admin/internal-messages/send', [AdminContentController::class, 'sendInternalMessage']);
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
 $basePath = dirname($_SERVER['SCRIPT_NAME']);

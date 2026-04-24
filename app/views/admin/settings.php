@@ -163,7 +163,7 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
             <div class="row g-3 settings-layout">
                 <div class="col-lg-6 d-grid gap-3">
                     <div class="soft-card p-4 settings-card" data-settings-section="general">
-                        <h2 class="h6 text-uppercase text-muted mb-3">General</h2>
+                        <h2 class="h6 text-uppercase text-primary settings-card-header mb-3">General</h2>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Phone</label>
@@ -199,10 +199,12 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                                 <input name="admission_number_format" class="form-control" value="<?= e($settings['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}') ?>">
                                 <small class="text-muted">Available placeholders: {YEAR}, {YY}, {MM}, {DD}, {SEQ4}, {SEQ5}, {SEQ6}, {ID}</small>
                             </div>
-                            <div class="col-12">
-                                <hr class="my-2">
-                                <h3 class="h6 text-uppercase text-muted mb-2">Admin Reply Email Template</h3>
-                            </div>
+                        </div>
+                    </div>
+
+                    <div class="soft-card p-4 settings-card" data-settings-section="general">
+                        <h2 class="h6 text-uppercase text-primary settings-card-header mb-3">Admin Reply Email Template</h2>
+                        <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Reply Heading</label>
                                 <input name="admin_reply_email_heading" class="form-control" value="<?= e($settings['admin_reply_email_heading'] ?? 'Thank you for your email') ?>">
@@ -238,7 +240,13 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                             <div class="col-12 d-flex justify-content-end">
                                 <button type="button" class="btn btn-outline-secondary btn-sm" id="preview-reply-template-btn">Preview Reply Template</button>
                             </div>
-                            <?php if (Auth::isSuperAdmin()): ?>
+                        </div>
+                    </div>
+
+                    <?php if (Auth::isSuperAdmin()): ?>
+                    <div class="soft-card p-4 settings-card" data-settings-section="general">
+                        <h2 class="h6 text-uppercase text-primary settings-card-header mb-3">Senior Admin Permissions</h2>
+                        <div class="row g-3">
                             <div class="col-12">
                                 <label class="form-label">Senior Admin Permissions</label>
                                 <input id="senior_permissions_input" name="junior_admin_permissions" class="form-control" value="<?= e($settings['junior_admin_permissions'] ?? '') ?>" placeholder="programmes,events,portal_courses,users,grading_schemes">
@@ -252,7 +260,13 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                                 </div>
                                 <small class="text-muted">Super Admin controls what Senior Admin can access/manage.</small>
                             </div>
-                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <div class="soft-card p-4 settings-card" data-settings-section="general">
+                        <h2 class="h6 text-uppercase text-primary settings-card-header mb-3">Teacher Permissions</h2>
+                        <div class="row g-3">
                             <div class="col-12">
                                 <label class="form-label">Teacher Permissions</label>
                                 <input id="teacher_permissions_input" name="teacher_permissions" class="form-control" value="<?= e($settings['teacher_permissions'] ?? '') ?>" placeholder="portal_courses,course_grades,course_assignments,study_materials">
@@ -636,6 +650,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const footerText = getVal('admin_reply_email_footer_text', 'We value your message and are always ready to assist.');
         const contactEmail = getVal('email', 'contact@stmarysmchmcollege.ac.ke');
         const contactPhone = getVal('phone', '+254 791 309011');
+        const contactPhone2 = '0101 711 499';
         const bgColor = sanitizeHex(getVal('admin_reply_email_bg_color', '#6f7584'), '#6f7584');
         const cardColor = sanitizeHex(getVal('admin_reply_email_card_color', '#f5f6fb'), '#f5f6fb');
         const accentColor = sanitizeHex(getVal('admin_reply_email_accent_color', '#5fc7e7'), '#5fc7e7');
@@ -645,7 +660,7 @@ document.addEventListener('DOMContentLoaded', function () {
             + '<div style="max-width:760px;margin:0 auto;padding:0 12px;">'
             + '<div style="background:' + esc(cardColor) + ';border-top:4px solid ' + esc(accentColor) + ';border-bottom:4px solid ' + esc(accentColor) + ';">'
             + '<div style="padding:26px 34px 20px;text-align:center;">'
-            + '<div style="width:88px;height:88px;margin:0 auto 14px;border-radius:50%;background:#f6dfb8;display:flex;align-items:center;justify-content:center;overflow:hidden;">'
+            + '<div style="margin:0 auto 14px;display:flex;align-items:center;justify-content:center;overflow:hidden;">'
             + '<img src="' + esc(logoUrl) + '" alt="' + esc(appName) + ' logo" style="width:64px;height:64px;object-fit:contain;">'
             + '</div>'
             + '<h1 style="margin:0;color:#1f2a44;font-family:Arial,sans-serif;font-size:42px;line-height:1.1;">' + esc(heading) + '</h1>'
@@ -662,9 +677,9 @@ document.addEventListener('DOMContentLoaded', function () {
             + '<p style="margin:16px 0 0;">Thank you,<br>' + esc(appName) + '</p>'
             + '</div>'
             + '</div>'
-            + '<div style="background:' + esc(footerBgColor) + ';padding:18px 34px;color:#cfd6ea;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;">'
+            + '<div style="background:' + esc(footerBgColor) + ';padding:18px 34px;color:#f0d78c;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;text-align:center;">'
             + '<strong style="color:#fff;">' + esc(appName) + '</strong><br>'
-            + esc(contactEmail) + ' | ' + esc(contactPhone) + '<br>' + esc(footerText)
+            + esc(contactEmail) + ' | ' + esc(contactPhone) + ' | ' + esc(contactPhone2) + '<br>' + esc(footerText)
             + '</div>'
             + '</div></div></body></html>';
     };

@@ -513,6 +513,96 @@ SET @sql := IF(
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- ---------------------------------------------------------------------
+-- admin_messages
+-- ---------------------------------------------------------------------
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'admin_messages'
+    ),
+    'SELECT "admin_messages exists" AS info',
+    'CREATE TABLE admin_messages (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        sender_id INT NOT NULL,
+        recipient_id INT NOT NULL,
+        subject VARCHAR(190) NOT NULL,
+        body TEXT NOT NULL,
+        read_at DATETIME NULL,
+        created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'admin_messages'
+          AND INDEX_NAME = 'idx_admin_messages_recipient'
+    ),
+    'SELECT "idx_admin_messages_recipient exists" AS info',
+    'CREATE INDEX idx_admin_messages_recipient ON admin_messages(recipient_id)'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'admin_messages'
+          AND INDEX_NAME = 'idx_admin_messages_sender'
+    ),
+    'SELECT "idx_admin_messages_sender exists" AS info',
+    'CREATE INDEX idx_admin_messages_sender ON admin_messages(sender_id)'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'admin_messages'
+          AND INDEX_NAME = 'idx_admin_messages_read'
+    ),
+    'SELECT "idx_admin_messages_read exists" AS info',
+    'CREATE INDEX idx_admin_messages_read ON admin_messages(read_at)'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS
+        WHERE CONSTRAINT_SCHEMA = @db
+          AND CONSTRAINT_NAME = 'fk_admin_messages_sender'
+    ),
+    'SELECT "fk_admin_messages_sender exists" AS info',
+    'ALTER TABLE admin_messages
+        ADD CONSTRAINT fk_admin_messages_sender
+        FOREIGN KEY (sender_id) REFERENCES users(id)
+        ON DELETE CASCADE'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS
+        WHERE CONSTRAINT_SCHEMA = @db
+          AND CONSTRAINT_NAME = 'fk_admin_messages_recipient'
+    ),
+    'SELECT "fk_admin_messages_recipient exists" AS info',
+    'ALTER TABLE admin_messages
+        ADD CONSTRAINT fk_admin_messages_recipient
+        FOREIGN KEY (recipient_id) REFERENCES users(id)
+        ON DELETE CASCADE'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ---------------------------------------------------------------------
 -- Optional seed: ensure at least one super admin exists
 -- ---------------------------------------------------------------------
 INSERT INTO users(name, email, password, role, status, created_at)
