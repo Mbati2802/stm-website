@@ -64,7 +64,12 @@
                   ><i class="bi bi-envelope"></i></button>
                   <?php $waPhone = preg_replace('/\D+/', '', (string)($row['phone'] ?? '')); ?>
                   <?php if ($waPhone !== ''): ?>
-                    <a class="btn btn-sm btn-success" target="_blank" rel="noopener" href="<?= e('https://wa.me/' . $waPhone) ?>" title="Send WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                    <?php
+                      $waText = 'Hello ' . (string)($row['name'] ?? '') . ",\n"
+                        . 'Thank you for registering for ' . (string)($row['event_title'] ?? 'our event') . ".\n"
+                        . 'We are reaching out with an update regarding your registration.';
+                    ?>
+                    <a class="btn btn-sm btn-success" target="_blank" rel="noopener" href="<?= e('https://wa.me/' . $waPhone . '?text=' . rawurlencode($waText)) ?>" title="Send WhatsApp"><i class="bi bi-whatsapp"></i></a>
                   <?php endif; ?>
                 </div>
               </td>
@@ -101,8 +106,9 @@
 <div class="modal fade" id="eventRegEmailModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form method="POST" id="eventRegEmailForm">
+      <form method="POST" id="eventRegEmailForm" action="<?= e(base_url('admin/event-registrations/email/0')) ?>">
         <?= csrf_field() ?>
+        <input type="hidden" name="registration_id" id="eventRegEmailRegistrationId" value="0">
         <div class="modal-header">
           <h5 class="modal-title">Email Registrant</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -115,7 +121,7 @@
           </div>
           <div>
             <label class="form-label">Message</label>
-            <textarea class="form-control rich-editor" name="body" rows="6" required></textarea>
+            <textarea class="form-control" name="body" rows="6" required></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -153,13 +159,14 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.js-email-reg').forEach((btn) => {
     btn.addEventListener('click', function () {
       const id = btn.getAttribute('data-id') || '0';
-      const name = btn.getAttribute('data-name') || 'Registrant';
       const email = btn.getAttribute('data-email') || '';
       const eventTitle = btn.getAttribute('data-event') || 'Event';
       const form = document.getElementById('eventRegEmailForm');
       if (form) {
         form.action = '<?= e(base_url('admin/event-registrations/email')) ?>/' + id;
       }
+      const hiddenId = document.getElementById('eventRegEmailRegistrationId');
+      if (hiddenId) hiddenId.value = id;
       setText('regEmailTo', email);
       const subjectInput = document.getElementById('regEmailSubject');
       if (subjectInput) {

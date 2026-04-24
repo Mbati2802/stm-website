@@ -99,6 +99,28 @@ class EventsController extends Controller
         }
 
         unset($_SESSION['old']);
+        $notifyTo = trim((string)($this->config['event_notification_email'] ?? ($this->config['notification_email'] ?? 'contact@stmarysmchmcollege.ac.ke')));
+        if ($notifyTo !== '') {
+            $mailBody = implode("\n", [
+                'A new event registration was submitted.',
+                'Event: ' . (string)($event['title'] ?? 'Event'),
+                'Name: ' . $name,
+                'Email: ' . $email,
+                'Phone: ' . $phone,
+                'Is Student: ' . ($isStudent ? 'Yes' : 'No'),
+                'Notes:',
+                $notes,
+            ]);
+            $mailHtml = build_structured_notification_email('New Event Registration', [
+                'Event' => (string)($event['title'] ?? 'Event'),
+                'Registrant Name' => $name,
+                'Email' => $email,
+                'Phone' => $phone,
+                'Is Student' => $isStudent ? 'Yes' : 'No',
+                'Notes' => $notes,
+            ]);
+            send_notification_email($notifyTo, 'Event Registration - ' . (string)($event['title'] ?? 'Event'), $mailBody, $mailHtml);
+        }
         flash('success', 'Registration received. We will contact you with confirmation details.');
         $this->redirect('events/' . $slug);
     }

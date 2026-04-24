@@ -239,7 +239,12 @@ class AdminContentController extends Controller
             $this->redirect('admin');
         }
         $model = new ContentModel($this->config);
-        $this->view('admin/messages', ['metaTitle' => 'Contact Messages', 'rows' => $model->all('messages')]);
+        $rows = $model->all('messages');
+        $filter = trim((string)($_GET['filter'] ?? 'all'));
+        if ($filter === 'unread') {
+            $rows = array_values(array_filter($rows, static fn($row) => empty($row['read_at'])));
+        }
+        $this->view('admin/messages', ['metaTitle' => 'Contact Messages', 'rows' => $rows, 'filter' => $filter]);
     }
 
     public function viewMessage(int $id): void
@@ -473,14 +478,14 @@ class AdminContentController extends Controller
                 flash('error', 'Registrant email not found.');
                 $this->redirect('admin/event-registrations');
             }
-            $safeBodyHtml = safe_html($body);
-            $html = '<!doctype html><html><body style="font-family:Arial,sans-serif;background:#f4f7fb;padding:18px;">'
-                . '<div style="max-width:680px;margin:0 auto;background:#fff;border:1px solid #dfe7f4;padding:20px;">'
-                . '<h2 style="margin:0 0 10px;color:#185490;">' . e($subject) . '</h2>'
-                . '<p style="margin:0 0 8px;color:#6b7280;">Event: ' . e((string)($row['event_title'] ?? 'Event')) . '</p>'
-                . '<div style="margin-top:14px;color:#1f2937;line-height:1.65;">' . $safeBodyHtml . '</div>'
-                . '</div></body></html>';
-            $sent = send_notification_email((string)$row['email'], $subject, plain_text_multiline($body), $html);
+            $tableHtml = build_structured_notification_email($subject, [
+                'Registrant' => (string)($row['name'] ?? ''),
+                'Email' => (string)($row['email'] ?? ''),
+                'Phone' => (string)($row['phone'] ?? ''),
+                'Event' => (string)($row['event_title'] ?? 'Event'),
+                'Message' => plain_text_multiline($body),
+            ]);
+            $sent = send_notification_email((string)$row['email'], $subject, plain_text_multiline($body), $tableHtml);
             if (!$sent) {
                 flash('error', 'Could not send email to registrant.');
                 $this->redirect('admin/event-registrations');

@@ -191,6 +191,38 @@ function safe_html(?string $html, array $allowedTags = ['p','br','strong','b','e
     return $clean;
 }
 
+function build_structured_notification_email(string $headline, array $rows, string $note = ''): string
+{
+    global $config;
+    $appName = (string)($config['app_name'] ?? 'College');
+    $safeHeadline = e($headline);
+    $safeNote = e($note);
+    $tableRows = '';
+    foreach ($rows as $label => $value) {
+        $tableRows .= '<tr>'
+            . '<td style="padding:10px 12px;border:1px solid #d9e3f2;background:#f6f9ff;font-weight:700;width:180px;">' . e((string)$label) . '</td>'
+            . '<td style="padding:10px 12px;border:1px solid #d9e3f2;">' . nl2br(e((string)$value)) . '</td>'
+            . '</tr>';
+    }
+    return '<!doctype html><html><body style="margin:0;padding:0;background:#6f7584;">'
+        . '<div style="max-width:760px;margin:20px auto;padding:0 12px;">'
+        . '<div style="background:#f5f6fb;border-top:4px solid #5fc7e7;border-bottom:4px solid #5fc7e7;">'
+        . '<div style="padding:24px 32px 14px;text-align:center;">'
+        . '<h1 style="margin:0;color:#1f2a44;font-family:Arial,sans-serif;font-size:32px;line-height:1.1;">' . $safeHeadline . '</h1>'
+        . '<p style="margin:8px 0 0;color:#6e7381;font-family:Arial,sans-serif;font-size:14px;">Notification from ' . e($appName) . '</p>'
+        . '</div>'
+        . '<div style="padding:0 28px 24px;">'
+        . '<table role="presentation" style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;color:#1f2a44;">'
+        . $tableRows
+        . '</table>'
+        . ($safeNote !== '' ? '<p style="margin:14px 0 0;color:#334155;font-family:Arial,sans-serif;font-size:13px;">' . $safeNote . '</p>' : '')
+        . '</div>'
+        . '<div style="background:#2c3653;padding:16px 28px;color:#b9e7ff;text-align:center;font-family:Arial,sans-serif;font-size:12px;">'
+        . e($appName) . ' automated notification'
+        . '</div>'
+        . '</div></div></body></html>';
+}
+
 function email_delivery_log(string $status, array $context = []): void
 {
     global $config;

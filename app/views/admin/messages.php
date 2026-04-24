@@ -3,6 +3,9 @@
         <div class="admin-page-head mb-3">
             <h1 class="h4 fw-bold mb-0">Contact Messages</h1>
             <div class="d-flex flex-wrap gap-2">
+                <?php $activeFilter = (string)($filter ?? 'all'); ?>
+                <a class="btn <?= $activeFilter === 'all' ? 'btn-primary' : 'btn-outline-primary' ?>" href="<?= e(base_url('admin/messages?filter=all')) ?>">All</a>
+                <a class="btn <?= $activeFilter === 'unread' ? 'btn-primary' : 'btn-outline-primary' ?>" href="<?= e(base_url('admin/messages?filter=unread')) ?>">Unread Only</a>
                 <a class="btn btn-primary" href="<?= e(base_url('admin/messages/export')) ?>"><i class="bi bi-download me-1"></i>Download Excel</a>
                 <a class="btn btn-outline-secondary" href="<?= e(base_url('admin')) ?>"><i class="bi bi-arrow-left me-1"></i>Dashboard</a>
             </div>

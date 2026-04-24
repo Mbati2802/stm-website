@@ -94,7 +94,14 @@ class AboutController extends Controller
                 'Message:',
                 $message,
             ]);
-            send_notification_email($notifyTo, 'New Contact Message - ' . $subject, $mailBody);
+            $mailHtml = build_structured_notification_email('New Contact Message', [
+                'Name' => $name,
+                'Email' => $email,
+                'Phone' => $phone,
+                'Subject' => $subject,
+                'Message' => $message,
+            ]);
+            send_notification_email($notifyTo, 'New Contact Message - ' . $subject, $mailBody, $mailHtml);
         }
 
         flash('success', 'Message submitted successfully. Our admissions team will contact you.');
@@ -158,7 +165,14 @@ class AboutController extends Controller
                 'Message:',
                 $message,
             ]);
-            send_notification_email($registrarEmail, 'Registrar Enquiry - ' . $subject, $mailBody);
+            $mailHtml = build_structured_notification_email('Registrar Enquiry', [
+                'Name' => $name,
+                'Email' => $email,
+                'Phone' => $phone,
+                'Subject' => $subject,
+                'Message' => $message,
+            ]);
+            send_notification_email($registrarEmail, 'Registrar Enquiry - ' . $subject, $mailBody, $mailHtml);
         }
 
         flash('success', 'Message submitted successfully. The registrar office will contact you.');
@@ -204,7 +218,14 @@ class AboutController extends Controller
                 'Message:',
                 $message,
             ]);
-            send_notification_email($admissionsEmail, 'Admissions Enquiry - ' . $subject, $mailBody);
+            $mailHtml = build_structured_notification_email('Admissions Enquiry', [
+                'Name' => $name,
+                'Email' => $email,
+                'Phone' => $phone,
+                'Subject' => $subject,
+                'Message' => $message,
+            ]);
+            send_notification_email($admissionsEmail, 'Admissions Enquiry - ' . $subject, $mailBody, $mailHtml);
         }
 
         flash('success', 'Message submitted successfully. The admissions office will contact you.');

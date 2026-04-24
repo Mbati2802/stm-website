@@ -188,7 +188,20 @@ class ProgrammesController extends Controller
                 'Application Details:',
                 $message,
             ]);
-            send_notification_email($notifyTo, 'New Programme Application - ' . $name, $mailBody);
+            $mailHtml = build_structured_notification_email('New Programme Application', [
+                'Applicant Name' => $name,
+                'Email' => $email,
+                'Phone' => $phone,
+                'Guardian Name' => $guardianName,
+                'Guardian Phone' => $guardianPhone,
+                'County' => $county,
+                'Course' => $course,
+                'Grade' => $grade,
+                'Level' => $level,
+                'Preferred Intake' => $intake,
+                'Referral Source' => $referral,
+            ]);
+            send_notification_email($notifyTo, 'New Programme Application - ' . $name, $mailBody, $mailHtml);
         }
 
         $siteSettings = $model->getSettings();
