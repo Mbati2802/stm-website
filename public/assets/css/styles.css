@@ -169,6 +169,11 @@ a{text-decoration:none}
 }
 .programme-main-content{
     margin-right:0;
+    min-width:0;
+}
+.programme-detail-cards,
+.programme-mosaic-grid{
+    clear:right;
 }
 .programme-floating-sidebar{
     float:right;
