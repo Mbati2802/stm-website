@@ -849,6 +849,26 @@ usort($defaultSnapshotCards, static function (array $a, array $b) use ($layoutMa
                             <label class="form-label">Registrar Message</label>
                             <textarea name="registrar_message" rows="6" class="form-control rich-editor"><?= e($settings['registrar_message'] ?? '') ?></textarea>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">About the Registrar's Office Text</label>
+                            <textarea name="registrar_about_text" rows="4" class="form-control"><?= e($settings['registrar_about_text'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Key Functions (use | between items)</label>
+                            <textarea name="registrar_key_functions" rows="3" class="form-control"><?= e($settings['registrar_key_functions'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Services We Offer (use | between items)</label>
+                            <textarea name="registrar_services" rows="3" class="form-control"><?= e($settings['registrar_services'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Office Hours</label>
+                            <textarea name="registrar_office_hours" rows="3" class="form-control"><?= e($settings['registrar_office_hours'] ?? '') ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Important Notice (use | between items)</label>
+                            <textarea name="registrar_important_notice" rows="3" class="form-control"><?= e($settings['registrar_important_notice'] ?? '') ?></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
