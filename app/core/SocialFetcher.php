@@ -43,12 +43,14 @@ class SocialFetcher
             }
         }
 
-        if ($igUserId !== '') {
+        if ($igUserId !== '' && $igUserId !== $pageId) {
             try {
                 $this->stats['instagram'] = $this->fetchInstagramMedia($igUserId, $token, $limitPerSource);
             } catch (\Throwable $e) {
                 $this->errors[] = 'Instagram fetch failed: ' . $e->getMessage();
             }
+        } elseif ($igUserId !== '' && $igUserId === $pageId) {
+            $this->errors[] = 'Instagram Business Account ID is the same as Facebook Page ID — skipped. Use the Graph API to look up the correct IG ID.';
         }
 
         if (!$this->dryRun) {

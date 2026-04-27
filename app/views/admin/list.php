@@ -207,6 +207,7 @@
                                 <div class="col-12">
                                     <label class="form-label">Instagram Business Account ID <span class="text-muted">(optional)</span></label>
                                     <input name="instagram_business_account_id" class="form-control" value="<?= e($entitySettings['instagram_business_account_id'] ?? '') ?>" placeholder="e.g. 17841400000000000">
+                                    <small class="text-muted">This is <strong>not</strong> the same as the Facebook Page ID. Find it via Graph API: <code>GET /{page-id}?fields=instagram_business_account</code>. Leave blank to skip Instagram.</small>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Cron Token</label>
@@ -226,10 +227,12 @@
                                 <?php endif; ?>
                                 <div class="col-12 d-flex gap-2 flex-wrap">
                                     <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save Settings</button>
-                                    <form id="socialFetchNowForm" method="POST" action="<?= e(base_url('admin/social-fetch/run')) ?>" class="d-inline"><?= csrf_field() ?><button type="submit" class="btn btn-success"><i class="bi bi-arrow-clockwise me-1"></i>Save &amp; Fetch Now</button></form>
+                                    <button type="button" class="btn btn-success" id="btnFetchNow"><i class="bi bi-arrow-clockwise me-1"></i>Fetch Now</button>
                                 </div>
                             </div>
                         </form>
+                        <!-- Fetch Now form OUTSIDE the settings form to avoid nesting -->
+                        <form id="socialFetchNowForm" method="POST" action="<?= e(base_url('admin/social-fetch/run')) ?>" style="display:none;"><?= csrf_field() ?></form>
                     </div>
                     <div class="tab-pane fade" id="socialTabDebug">
                         <p class="text-muted small mb-3">Test your API connection and preview posts that would be fetched — <strong>nothing is saved</strong> until you click "Fetch Now" on the Configuration tab.</p>
@@ -256,6 +259,13 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function(){
+    // Wire Fetch Now button to the hidden form
+    var fetchBtn = document.getElementById('btnFetchNow');
+    var fetchForm = document.getElementById('socialFetchNowForm');
+    if (fetchBtn && fetchForm) {
+        fetchBtn.addEventListener('click', function(){ fetchForm.submit(); });
+    }
+
     var btn = document.getElementById('btnRunDebug');
     if (!btn) return;
     btn.addEventListener('click', function(){
