@@ -833,7 +833,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (fetchBtn) {
         fetchBtn.addEventListener('click', function () {
             try { sessionStorage.setItem('triggerSocialFetch', '1'); } catch (e) {}
-            const mainForm = document.querySelector('form[action*="admin/settings"]');
+            const mainForm = document.getElementById('settings-form');
             if (mainForm) {
                 mainForm.submit();
             }
