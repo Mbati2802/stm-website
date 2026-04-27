@@ -4,19 +4,17 @@
 -- ============================================================
 
 -- 1. Add reply tracking to messages table
--- Each ALTER is run independently so missing columns don't block the rest.
--- If a column already exists, MySQL will report a duplicate-column error for
--- that ONE statement only — safe to ignore. Re-running this file is harmless.
--- AFTER clauses removed to avoid #1054 when prior columns are missing.
+-- IF NOT EXISTS is supported by MySQL 8.0+ and MariaDB 10.x+.
+-- Safe to re-run: existing columns and indexes are silently skipped.
 
-ALTER TABLE messages ADD COLUMN read_at DATETIME NULL;
-ALTER TABLE messages ADD COLUMN replied_at DATETIME NULL;
-ALTER TABLE messages ADD COLUMN reply_subject VARCHAR(190) NULL;
-ALTER TABLE messages ADD COLUMN reply_body TEXT NULL;
-ALTER TABLE messages ADD COLUMN replied_by INT NULL;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS read_at DATETIME NULL;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS replied_at DATETIME NULL;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS reply_subject VARCHAR(190) NULL;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS reply_body TEXT NULL;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS replied_by INT NULL;
 
-CREATE INDEX idx_messages_read_at ON messages (read_at);
-CREATE INDEX idx_messages_replied_at ON messages (replied_at);
+CREATE INDEX IF NOT EXISTS idx_messages_read_at ON messages (read_at);
+CREATE INDEX IF NOT EXISTS idx_messages_replied_at ON messages (replied_at);
 
 -- 2. Testimonials table (replaces JSON-based home_testimonials_json)
 CREATE TABLE IF NOT EXISTS testimonials (
