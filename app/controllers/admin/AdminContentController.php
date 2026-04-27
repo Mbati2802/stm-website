@@ -1196,7 +1196,7 @@ class AdminContentController extends Controller
                     'link_url' => trim($_POST['link_url'] ?? ''),
                     'source' => trim($_POST['source'] ?? 'general'),
                     'is_pinned' => isset($_POST['is_pinned']) ? 1 : 0,
-                    'is_visible' => isset($_POST['is_visible']) ? 1 : 0,
+                    'is_visible' => isset($_POST['is_visible']) ? 1 : ($isUpdate ? 0 : 1),
                 ];
                 if ($isUpdate) {
                     $stmt = $pdo->prepare('UPDATE social_updates SET content=:content, image_path=:image_path, link_url=:link_url, source=:source, is_pinned=:is_pinned, is_visible=:is_visible WHERE id=:id');
