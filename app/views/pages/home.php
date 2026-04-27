@@ -344,7 +344,7 @@ foreach ($bannerCandidates as $candidate) {
             <div class="col-12">
                 <div class="d-flex align-items-center p-2 border rounded mb-1" style="background:var(--su-card-bg)">
                     <?php if ($suShowImages && !empty($update['image_path'])): ?>
-                    <img src="<?= e((string)$update['image_path']) ?>" alt="" class="rounded me-2" style="width:60px;height:60px;object-fit:cover;flex-shrink:0" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+                    <img src="<?= e((string)$update['image_path']) ?>" alt="" class="rounded me-2" style="width:60px;height:60px;object-fit:cover;flex-shrink:0" loading="lazy">
                     <?php endif; ?>
                     <div class="flex-grow-1 min-w-0">
                         <div class="social-feed-content<?= $suContentLines > 0 ? '' : ' social-feed-content-expanded' ?>" style="<?= $suContentLines > 0 ? '-webkit-line-clamp:' . $suContentLines . ';line-clamp:' . $suContentLines : '' ?>"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
@@ -369,7 +369,7 @@ foreach ($bannerCandidates as $candidate) {
                             <span class="social-feed-source" style="color:var(--su-accent)"><i class="bi bi-<?= $update['source'] === 'instagram' ? 'instagram' : ($update['source'] === 'facebook' ? 'facebook' : 'tag') ?> me-1"></i><?= e(ucfirst((string)$update['source'])) ?></span>
                         <?php endif; ?>
                         <?php if ($suShowImages && !empty($update['image_path'])): ?>
-                            <img src="<?= e((string)$update['image_path']) ?>" alt="" class="social-feed-image" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+                            <img src="<?= e((string)$update['image_path']) ?>" alt="" class="social-feed-image" loading="lazy">
                         <?php endif; ?>
                         <div class="social-feed-content<?= $suContentLines > 0 ? '' : ' social-feed-content-expanded' ?>" style="<?= $suContentLines > 0 ? '-webkit-line-clamp:' . $suContentLines . ';line-clamp:' . $suContentLines : '' ?>"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
                         <div class="social-feed-meta">
