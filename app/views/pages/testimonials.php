@@ -5,8 +5,13 @@ $testimonialAccent = (string)($settings['testimonial_accent_color'] ?? '#5fc7e7'
 $testimonialBg = (string)($settings['testimonial_bg_color'] ?? '#f5f7fa');
 $validHexAccent = preg_match('/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/', $testimonialAccent) ? $testimonialAccent : '#5fc7e7';
 $validHexBg = preg_match('/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/', $testimonialBg) ? $testimonialBg : '#f5f7fa';
-$gridCount = max(2, min(4, (int)($settings['testimonial_grid_count'] ?? 3)));
-$colClass = match ($gridCount) { 2 => 'col-md-6', 4 => 'col-md-6 col-lg-3', default => 'col-md-6 col-lg-4' };
+$gridCount = max(2, min(5, (int)($settings['testimonial_grid_count'] ?? 3)));
+$colClass = match ($gridCount) {
+    2 => 'col-md-6',
+    4 => 'col-md-6 col-lg-3',
+    5 => 'col-md-6 testimonial-grid-col-5',
+    default => 'col-md-6 col-lg-4'
+};
 ?>
 
 <?php

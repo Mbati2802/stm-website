@@ -186,14 +186,14 @@ a{text-decoration:none}
     background:#fff;
     border-top:4px solid var(--testimonial-accent);
 }
-.testimonials-box{padding-left:1.2rem;padding-right:1.2rem;min-height:auto}
+.testimonials-box{padding-left:0;padding-right:0;min-height:auto}
 .testimonials-template-carousel .testimonials-box{min-height:460px}
 .testimonials-section .carousel-inner{min-height:300px}
 .testimonials-section .split-title .title-primary{color:var(--primary)!important}
 .testimonials-section .split-title .title-secondary{color:var(--secondary)!important}
 .testimonial-card{
     text-align:center;
-    border-radius:14px;
+    border-radius:0;
     border:1px solid rgba(15,23,42,.08);
     box-shadow:0 12px 28px rgba(15,23,42,.08);
     background:#fff;
@@ -219,6 +219,7 @@ a{text-decoration:none}
 .testimonials-card-bordered .testimonial-card{border-left:4px solid var(--testimonial-accent);text-align:left}
 .testimonials-card-bordered .testimonial-avatar-wrap{justify-content:flex-start}
 .testimonials-card-bordered .testimonial-avatar{width:60px;height:60px}
+.testimonial-grid-col-5{width:100%}
 /* Minimal template */
 .testimonial-quote-block{background:#fff;border-radius:14px;border:1px solid rgba(15,23,42,.08);box-shadow:0 8px 22px rgba(15,23,42,.06);position:relative;overflow:hidden}
 .testimonial-quote-block::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--testimonial-accent)}
@@ -381,7 +382,7 @@ a{text-decoration:none}
         margin:0 0 1rem 0;
     }
     .programme-mosaic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .testimonials-box{padding-left:1rem;padding-right:1rem;min-height:auto}
+    .testimonials-box{padding-left:0;padding-right:0;min-height:auto}
     .testimonial-card{padding:1rem!important}
     .testimonial-avatar{
         width:62px;
@@ -390,6 +391,7 @@ a{text-decoration:none}
     .testimonial-message{font-size:.9rem}
     .testimonials-section .carousel-control-prev,
     .testimonials-section .carousel-control-next{opacity:1}
+    .testimonial-grid-col-5{width:50%}
     .banner-section{min-height:auto}
     .banner-section img{height:auto;max-height:none}
     .topbar .container{display:flex;flex-direction:column;align-items:flex-start!important;gap:.35rem!important}
@@ -408,4 +410,7 @@ a{text-decoration:none}
     .topbar .topbar-location{
         display:none!important;
     }
+}
+@media (min-width: 992px){
+    .testimonial-grid-col-5{flex:0 0 auto;width:20%}
 }

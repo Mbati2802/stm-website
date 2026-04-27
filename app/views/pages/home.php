@@ -24,8 +24,13 @@ $testimonialSpeed = (int)($settings['testimonial_speed'] ?? 5000);
 if ($testimonialSpeed < 2000) { $testimonialSpeed = 5000; }
 $validHexAccent = preg_match('/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/', $testimonialAccent) ? $testimonialAccent : '#5fc7e7';
 $validHexBg = preg_match('/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/', $testimonialBg) ? $testimonialBg : '#f5f7fa';
-$testimonialGridCount = max(2, min(4, (int)($settings['testimonial_grid_count'] ?? 3)));
-$testimonialGridCol = match ($testimonialGridCount) { 2 => 'col-md-6', 4 => 'col-md-6 col-lg-3', default => 'col-md-6 col-lg-4' };
+$testimonialGridCount = max(2, min(5, (int)($settings['testimonial_grid_count'] ?? 3)));
+$testimonialGridCol = match ($testimonialGridCount) {
+    2 => 'col-md-6',
+    4 => 'col-md-6 col-lg-3',
+    5 => 'col-md-6 testimonial-grid-col-5',
+    default => 'col-md-6 col-lg-4'
+};
 $testimonialSlideEffect = (string)($settings['testimonial_slide_effect'] ?? 'slide');
 $testimonialItemsPerSlide = max(1, min(3, (int)($settings['testimonial_items_per_slide'] ?? 1)));
 ?>

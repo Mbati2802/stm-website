@@ -141,6 +141,7 @@
                                 <option value="2" <?= $gc === 2 ? 'selected' : '' ?>>2 columns</option>
                                 <option value="3" <?= $gc === 3 ? 'selected' : '' ?>>3 columns</option>
                                 <option value="4" <?= $gc === 4 ? 'selected' : '' ?>>4 columns</option>
+                                <option value="5" <?= $gc === 5 ? 'selected' : '' ?>>5 columns</option>
                             </select>
                         </div>
                         <div class="col-md-4">
