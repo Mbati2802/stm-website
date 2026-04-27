@@ -67,7 +67,7 @@ if (!is_array($mosaicImages)) {
 <section class="section-stack">
   <div class="site-width boxed-section programme-detail-layout">
     <div class="row g-4">
-      <div class="col-lg-8">
+      <div class="flex-grow-1">
         <h1 class="h3 fw-bold mb-2"><?= e($programmeName) ?></h1>
         <div class="programme-detail-divider mb-3"></div>
 
@@ -167,7 +167,7 @@ if (!is_array($mosaicImages)) {
       </div>
     <?php endif; ?>
       </div>
-      <aside class="col-lg-4">
+      <aside class="programme-floating-sidebar">
         <div class="soft-card p-3 mb-3">
           <img class="img-fluid mb-3" src="<?= e($programmeMainImage) ?>" alt="<?= e($programmeName) ?>">
           <h3 class="h4 fw-bold text-primary mb-2"><?= e($programmeSidebarTitle) ?></h3>
