@@ -522,7 +522,46 @@ usort($defaultSnapshotCards, static function (array $a, array $b) use ($layoutMa
 
                     <div class="soft-card p-4 settings-card" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Testimonials</h2>
-                        <p class="text-muted small mb-2">Manage testimonials and their appearance settings from the testimonials management page.</p>
+                        <p class="text-muted small mb-3">Manage testimonial appearance directly here or open the testimonials manager.</p>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Template Style</label>
+                                <?php $tTpl = (string)($settings['testimonial_template'] ?? 'carousel'); ?>
+                                <select name="testimonial_template" class="form-select">
+                                    <option value="carousel" <?= $tTpl === 'carousel' ? 'selected' : '' ?>>Carousel</option>
+                                    <option value="cards" <?= $tTpl === 'cards' ? 'selected' : '' ?>>Card Grid</option>
+                                    <option value="minimal" <?= $tTpl === 'minimal' ? 'selected' : '' ?>>Minimal</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Card Style</label>
+                                <?php $tStyle = (string)($settings['testimonial_card_style'] ?? 'centered'); ?>
+                                <select name="testimonial_card_style" class="form-select">
+                                    <option value="centered" <?= $tStyle === 'centered' ? 'selected' : '' ?>>Centered</option>
+                                    <option value="left" <?= $tStyle === 'left' ? 'selected' : '' ?>>Left aligned</option>
+                                    <option value="bordered" <?= $tStyle === 'bordered' ? 'selected' : '' ?>>Bordered accent</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Cards Per Row (Grid)</label>
+                                <?php $tCols = (int)($settings['testimonial_grid_count'] ?? 3); ?>
+                                <select name="testimonial_grid_count" class="form-select">
+                                    <option value="2" <?= $tCols === 2 ? 'selected' : '' ?>>2 columns</option>
+                                    <option value="3" <?= $tCols === 3 ? 'selected' : '' ?>>3 columns</option>
+                                    <option value="4" <?= $tCols === 4 ? 'selected' : '' ?>>4 columns</option>
+                                    <option value="5" <?= $tCols === 5 ? 'selected' : '' ?>>5 columns</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Items Per Slide (Carousel)</label>
+                                <?php $tSlideItems = (int)($settings['testimonial_items_per_slide'] ?? 1); ?>
+                                <select name="testimonial_items_per_slide" class="form-select">
+                                    <option value="1" <?= $tSlideItems === 1 ? 'selected' : '' ?>>1</option>
+                                    <option value="2" <?= $tSlideItems === 2 ? 'selected' : '' ?>>2</option>
+                                    <option value="3" <?= $tSlideItems === 3 ? 'selected' : '' ?>>3</option>
+                                </select>
+                            </div>
+                        </div>
                         <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/list/testimonials')) ?>"><i class="bi bi-people me-1"></i>Manage Testimonials &amp; Settings</a>
                     </div>
 
