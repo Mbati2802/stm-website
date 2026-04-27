@@ -289,7 +289,7 @@
                                 </div>
                                 <div class="col-12">
                                     <div class="form-check">
-                                        <?php $suShowImg = ($entitySettings['social_updates_show_images'] ?? '1') === '1'; ?>
+                                        <?php $suShowImg = in_array(strtolower(trim((string)($entitySettings['social_updates_show_images'] ?? '1'))), ['1', 'true', 'yes', 'on'], true); ?>
                                         <input class="form-check-input" type="checkbox" name="social_updates_show_images" value="1" <?= $suShowImg ? 'checked' : '' ?> id="chkShowImages">
                                         <label class="form-check-label" for="chkShowImages">Show images on cards</label>
                                     </div>

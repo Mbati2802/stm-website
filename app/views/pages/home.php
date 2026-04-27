@@ -306,7 +306,8 @@ foreach ($bannerCandidates as $candidate) {
 <?php if (!empty($socialUpdates)):
     $suTemplate = (string)($settings['social_updates_template'] ?? 'cards');
     $suCols = (int)($settings['social_updates_cards_per_row'] ?? 3);
-    $suShowImages = ($settings['social_updates_show_images'] ?? '1') === '1';
+    $suShowImagesRaw = strtolower(trim((string)($settings['social_updates_show_images'] ?? '1')));
+    $suShowImages = in_array($suShowImagesRaw, ['1', 'true', 'yes', 'on'], true);
     $suContentLines = (int)($settings['social_updates_content_lines'] ?? 3);
     $suRows = (int)($settings['social_updates_rows'] ?? 2);
     $suBgColor = (string)($settings['social_updates_bg_color'] ?? '#ffffff');
@@ -319,7 +320,16 @@ foreach ($bannerCandidates as $candidate) {
         $socialUpdates = array_slice($socialUpdates, 0, $suLimit);
     }
     $hasMore = count($socialUpdates) >= ($suRows > 0 ? $suRows * $suCols : 999);
-    // DEBUG removed - images confirmed in DB
+    $socialImageUrl = static function ($rawPath): string {
+        $path = trim((string)$rawPath);
+        if ($path === '') {
+            return '';
+        }
+        if (preg_match('#^(https?:)?//#i', $path) || str_starts_with($path, 'data:')) {
+            return $path;
+        }
+        return base_url(ltrim($path, '/'));
+    };
 ?>
 <section class="section-stack social-updates-section" style="--su-bg:<?= e($suBgColor) ?>;--su-card-bg:<?= e($suCardBg) ?>;--su-accent:<?= e($suAccent) ?>">
     <div class="site-width boxed-section" data-aos="fade-up" style="background:var(--su-bg)">
@@ -343,8 +353,9 @@ foreach ($bannerCandidates as $candidate) {
             <?php foreach ($socialUpdates as $update): ?>
             <div class="col-12">
                 <div class="d-flex align-items-center p-2 border rounded mb-1" style="background:var(--su-card-bg)">
-                    <?php if ($suShowImages && !empty($update['image_path'])): ?>
-                    <img src="<?= e((string)$update['image_path']) ?>" alt="" class="rounded me-2" style="width:60px;height:60px;object-fit:cover;flex-shrink:0" loading="lazy">
+                    <?php $imgSrc = $socialImageUrl($update['image_path'] ?? ''); ?>
+                    <?php if ($suShowImages && $imgSrc !== ''): ?>
+                    <img src="<?= e($imgSrc) ?>" alt="" class="rounded me-2" style="width:60px;height:60px;object-fit:cover;flex-shrink:0" loading="lazy">
                     <?php endif; ?>
                     <div class="flex-grow-1 min-w-0">
                         <div class="social-feed-content<?= $suContentLines > 0 ? '' : ' social-feed-content-expanded' ?>" style="<?= $suContentLines > 0 ? '-webkit-line-clamp:' . $suContentLines . ';line-clamp:' . $suContentLines : '' ?>"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
@@ -368,8 +379,9 @@ foreach ($bannerCandidates as $candidate) {
                         <?php if (!empty($update['source'])): ?>
                             <span class="social-feed-source" style="color:var(--su-accent)"><i class="bi bi-<?= $update['source'] === 'instagram' ? 'instagram' : ($update['source'] === 'facebook' ? 'facebook' : 'tag') ?> me-1"></i><?= e(ucfirst((string)$update['source'])) ?></span>
                         <?php endif; ?>
-                        <?php if ($suShowImages && !empty($update['image_path'])): ?>
-                            <img src="<?= e((string)$update['image_path']) ?>" alt="" class="social-feed-image" loading="lazy">
+                        <?php $imgSrc = $socialImageUrl($update['image_path'] ?? ''); ?>
+                        <?php if ($suShowImages && $imgSrc !== ''): ?>
+                            <img src="<?= e($imgSrc) ?>" alt="" class="social-feed-image" loading="lazy">
                         <?php endif; ?>
                         <div class="social-feed-content<?= $suContentLines > 0 ? '' : ' social-feed-content-expanded' ?>" style="<?= $suContentLines > 0 ? '-webkit-line-clamp:' . $suContentLines . ';line-clamp:' . $suContentLines : '' ?>"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
                         <div class="social-feed-meta">
