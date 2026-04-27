@@ -38,6 +38,7 @@ $router->add('GET', 'library', [LibraryController::class, 'index']);
 $router->add('GET', 'media', [MediaController::class, 'index']);
 $router->add('GET', 'media/{type}/{slug}', [MediaController::class, 'show']);
 $router->add('GET', 'gallery', [MediaController::class, 'gallery']);
+$router->add('GET', 'testimonials', [HomeController::class, 'testimonials']);
 $router->add('GET', 'events', [EventsController::class, 'index']);
 $router->add('GET', 'events/{slug}', [EventsController::class, 'show']);
 $router->add('GET', 'events/{slug}/register', [EventsController::class, 'registerForm']);
@@ -110,6 +111,9 @@ $router->add('POST', 'admin/media/upload', [AdminContentController::class, 'uplo
 $router->add('GET', 'admin/media/delete/{id}', [AdminContentController::class, 'deleteMedia']);
 $router->add('GET', 'admin/settings', [AdminContentController::class, 'settings']);
 $router->add('POST', 'admin/settings', [AdminContentController::class, 'saveSettings']);
+$router->add('POST', 'admin/settings/partial', [AdminContentController::class, 'savePartialSettings']);
+$router->add('POST', 'admin/social-fetch/run', [AdminContentController::class, 'runSocialFetch']);
+$router->add('GET', 'cron/social-fetch', [AdminContentController::class, 'cronSocialFetch']);
 $router->add('GET', 'admin/internal-messages', [AdminContentController::class, 'internalMessages']);
 $router->add('POST', 'admin/internal-messages/send', [AdminContentController::class, 'sendInternalMessage']);
 $router->add('GET', 'admin/applications', [AdminContentController::class, 'applications']);
