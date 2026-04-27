@@ -66,8 +66,32 @@ if (!is_array($mosaicImages)) {
 
 <section class="section-stack">
   <div class="site-width boxed-section programme-detail-layout">
-    <div class="row g-4">
-      <div class="flex-grow-1">
+    <div class="programme-detail-wrapper">
+      <aside class="programme-floating-sidebar">
+        <div class="soft-card p-3 mb-3">
+          <img class="img-fluid mb-3" src="<?= e($programmeMainImage) ?>" alt="<?= e($programmeName) ?>">
+          <h3 class="h4 fw-bold text-primary mb-2"><?= e($programmeSidebarTitle) ?></h3>
+          <p class="small text-muted"><?= e($programmeSidebarText) ?></p>
+          <div class="d-grid gap-2">
+            <a class="btn btn-sm btn-primary" href="<?= e(base_url($programmeSidebarPrimaryLink . '?course=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>"><?= e($programmeSidebarPrimaryLabel) ?></a>
+            <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url($programmeSidebarSecondaryLink)) ?>"><?= e($programmeSidebarSecondaryLabel) ?></a>
+          </div>
+        </div>
+
+        <div class="soft-card p-3">
+          <h3 class="h5 fw-bold mb-3"><?= e($programmeSidebarOtherTitle) ?></h3>
+          <ul class="small mb-0 ps-3">
+            <?php foreach ($otherProgrammes as $item): ?>
+              <li class="mb-2">
+                <a href="<?= e(base_url('programmes/' . $item['slug'])) ?>"><?= e($item['name']) ?></a>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+          <a class="btn btn-link p-0 mt-2" href="<?= e(base_url('programmes')) ?>">View More</a>
+        </div>
+      </aside>
+
+      <div class="programme-main-content">
         <h1 class="h3 fw-bold mb-2"><?= e($programmeName) ?></h1>
         <div class="programme-detail-divider mb-3"></div>
 
@@ -80,38 +104,44 @@ if (!is_array($mosaicImages)) {
           </div>
         </div>
 
-    <h2 class="h4 fw-bold mt-4">Course Overview</h2>
-    <div class="mb-3 course-overview-content"><?= $overviewHtml ?></div>
+        <h2 class="h4 fw-bold mt-4">Course Overview</h2>
+        <div class="mb-3 course-overview-content"><?= $overviewHtml ?></div>
 
-    <h2 class="h4 fw-bold mt-4">Course Objectives</h2>
-    <p>By the end of this course, students will be able to:</p>
-    <ul>
-      <?php foreach (($objectives !== [] ? $objectives : [
-        'Understand human growth, behavior, and mental processes',
-        'Apply basic counselling skills in different settings',
-        'Provide emotional and psychological support to individuals',
-        'Handle ethical issues in counselling practice',
-        'Communicate effectively with clients from diverse backgrounds',
-      ]) as $item): ?>
-        <li><?= e(plain_text($item)) ?></li>
-      <?php endforeach; ?>
-    </ul>
+        <div class="row g-3 mt-4 mb-4">
+          <div class="col-lg-6">
+            <h2 class="h4 fw-bold mb-3">Course Objectives</h2>
+            <p>By the end of this course, students will be able to:</p>
+            <ul>
+              <?php foreach (($objectives !== [] ? $objectives : [
+                'Understand human growth, behavior, and mental processes',
+                'Apply basic counselling skills in different settings',
+                'Provide emotional and psychological support to individuals',
+                'Handle ethical issues in counselling practice',
+                'Communicate effectively with clients from diverse backgrounds',
+              ]) as $item): ?>
+                <li><?= e(plain_text($item)) ?></li>
+              <?php endforeach; ?>
+            </ul>
+          </div>
 
-    <h2 class="h4 fw-bold mt-4">Course Content</h2>
-    <p>Key areas of study include:</p>
-    <ul>
-      <?php foreach (($contentAreas !== [] ? $contentAreas : [
-        'Introduction to Counselling Psychology',
-        'Human Development and Behavior',
-        'Communication and Interpersonal Skills',
-        'Counselling Theories and Approaches',
-        'Mental Health Awareness',
-        'Ethics and Professional Practice',
-        'Crisis Intervention and Support',
-      ]) as $item): ?>
-        <li><?= e(plain_text($item)) ?></li>
-      <?php endforeach; ?>
-    </ul>
+          <div class="col-lg-6">
+            <h2 class="h4 fw-bold mb-3">Course Content</h2>
+            <p>Key areas of study include:</p>
+            <ul>
+              <?php foreach (($contentAreas !== [] ? $contentAreas : [
+                'Introduction to Counselling Psychology',
+                'Human Development and Behavior',
+                'Communication and Interpersonal Skills',
+                'Counselling Theories and Approaches',
+                'Mental Health Awareness',
+                'Ethics and Professional Practice',
+                'Crisis Intervention and Support',
+              ]) as $item): ?>
+                <li><?= e(plain_text($item)) ?></li>
+              <?php endforeach; ?>
+            </ul>
+          </div>
+        </div>
 
     <div class="row g-3 mt-2 programme-detail-cards">
       <div class="col-md-6 col-lg-3">
@@ -167,29 +197,6 @@ if (!is_array($mosaicImages)) {
       </div>
     <?php endif; ?>
       </div>
-      <aside class="programme-floating-sidebar">
-        <div class="soft-card p-3 mb-3">
-          <img class="img-fluid mb-3" src="<?= e($programmeMainImage) ?>" alt="<?= e($programmeName) ?>">
-          <h3 class="h4 fw-bold text-primary mb-2"><?= e($programmeSidebarTitle) ?></h3>
-          <p class="small text-muted"><?= e($programmeSidebarText) ?></p>
-          <div class="d-grid gap-2">
-            <a class="btn btn-sm btn-primary" href="<?= e(base_url($programmeSidebarPrimaryLink . '?course=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>"><?= e($programmeSidebarPrimaryLabel) ?></a>
-            <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url($programmeSidebarSecondaryLink)) ?>"><?= e($programmeSidebarSecondaryLabel) ?></a>
-          </div>
-        </div>
-
-        <div class="soft-card p-3">
-          <h3 class="h5 fw-bold mb-3"><?= e($programmeSidebarOtherTitle) ?></h3>
-          <ul class="small mb-0 ps-3">
-            <?php foreach ($otherProgrammes as $item): ?>
-              <li class="mb-2">
-                <a href="<?= e(base_url('programmes/' . $item['slug'])) ?>"><?= e($item['name']) ?></a>
-              </li>
-            <?php endforeach; ?>
-          </ul>
-          <a class="btn btn-link p-0 mt-2" href="<?= e(base_url('programmes')) ?>">View More</a>
-        </div>
-      </aside>
     </div>
   </div>
 </section>

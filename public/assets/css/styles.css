@@ -137,6 +137,12 @@ a{text-decoration:none}
 .compact-programme-card .small{font-size:.78rem}
 .programme-detail-layout{background:#f8f8f8}
 .programme-detail-divider{width:86px;height:4px;background:linear-gradient(90deg,var(--primary) 0 60%, #f08a5d 60% 100%)}
+.programme-detail-wrapper{
+    overflow:auto;
+}
+.programme-main-content{
+    margin-right:0;
+}
 .programme-floating-sidebar{
     float:right;
     width:32%;
