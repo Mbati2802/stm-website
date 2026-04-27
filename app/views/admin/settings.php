@@ -160,7 +160,7 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
             <?php endif; ?>
         </div>
 
-        <form id="settings-form" method="POST" enctype="multipart/form-data">
+        <form id="settings-form" method="POST" action="<?= e(base_url('admin/settings')) ?>" enctype="multipart/form-data">
             <?= csrf_field() ?>
             <div class="row g-3 settings-layout">
                 <div class="col-lg-6 d-grid gap-3">
@@ -712,6 +712,25 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
     </div>
 </div>
 <script>
+// Fetch-now button and sessionStorage trigger — independent of tabs
+document.addEventListener('DOMContentLoaded', function () {
+    const fetchBtn = document.getElementById('btnFetchSocialNow');
+    if (fetchBtn) {
+        fetchBtn.addEventListener('click', function () {
+            try { sessionStorage.setItem('triggerSocialFetch', '1'); } catch (ex) {}
+            const mainForm = document.getElementById('settings-form');
+            if (mainForm) { mainForm.submit(); }
+        });
+    }
+    try {
+        if (sessionStorage.getItem('triggerSocialFetch') === '1') {
+            sessionStorage.removeItem('triggerSocialFetch');
+            const fetchForm = document.getElementById('socialFetchNowForm');
+            if (fetchForm) { setTimeout(function () { fetchForm.submit(); }, 200); }
+        }
+    } catch (ex) {}
+});
+
 document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.querySelectorAll('[data-settings-tab]');
     const cards = document.querySelectorAll('[data-settings-section]');
@@ -827,26 +846,5 @@ document.addEventListener('DOMContentLoaded', function () {
         tabs[0].click();
     }
 
-    // "Save then Fetch Now" button: save settings first, then on next load
-    // (after redirect) trigger the fetch form. Uses sessionStorage flag.
-    const fetchBtn = document.getElementById('btnFetchSocialNow');
-    if (fetchBtn) {
-        fetchBtn.addEventListener('click', function () {
-            try { sessionStorage.setItem('triggerSocialFetch', '1'); } catch (e) {}
-            const mainForm = document.getElementById('settings-form');
-            if (mainForm) {
-                mainForm.submit();
-            }
-        });
-    }
-    try {
-        if (sessionStorage.getItem('triggerSocialFetch') === '1') {
-            sessionStorage.removeItem('triggerSocialFetch');
-            const fetchForm = document.getElementById('socialFetchNowForm');
-            if (fetchForm) {
-                setTimeout(function(){ fetchForm.submit(); }, 200);
-            }
-        }
-    } catch (e) {}
 });
 </script>

@@ -264,63 +264,61 @@ foreach ($bannerCandidates as $candidate) {
 <?php if ($sv['events']): ?>
 <section class="section-stack">
     <div class="site-width boxed-section events-section" data-aos="fade-up">
-        <div class="row g-4">
-            <div class="col-lg-7">
-                <h2 class="h4 fw-bold mb-4 split-title"><span class="title-primary">Upcoming</span> <span class="title-secondary">Events</span></h2>
-                <?php foreach ($events as $event): ?>
-                    <?php
-                    $startsAt = (string)($event['starts_at'] ?? '');
-                    $startTs = $startsAt !== '' ? strtotime($startsAt) : null;
-                    $day = $startTs ? date('d', $startTs) : '';
-                    $month = $startTs ? strtoupper(date('M', $startTs)) : '';
-                    $timeLabel = trim((string)($event['time_label'] ?? ''));
-                    $location = trim((string)($event['location'] ?? ''));
-                    ?>
-                    <a class="event-row d-flex align-items-center gap-3 text-decoration-none" href="<?= e(base_url('events/' . ($event['slug'] ?? ''))) ?>">
-                        <div class="event-date text-center">
-                            <span class="d-block event-day"><?= e($day) ?></span>
-                            <span class="d-block event-month"><?= e($month) ?></span>
-                        </div>
-                        <div class="event-info">
-                            <h3 class="h5 mb-1"><?= e($event['title'] ?? '') ?></h3>
-                            <p class="mb-0 text-muted"><?= e($timeLabel) ?><?= $timeLabel !== '' && $location !== '' ? ' • ' : '' ?><?= e($location) ?></p>
-                        </div>
-                    </a>
-                <?php endforeach; ?>
-                <div class="mt-3">
-                    <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('events')) ?>">View all events</a>
+        <h2 class="h4 fw-bold mb-4 split-title"><span class="title-primary">Upcoming</span> <span class="title-secondary">Events</span></h2>
+        <?php foreach ($events as $event): ?>
+            <?php
+            $startsAt = (string)($event['starts_at'] ?? '');
+            $startTs = $startsAt !== '' ? strtotime($startsAt) : null;
+            $day = $startTs ? date('d', $startTs) : '';
+            $month = $startTs ? strtoupper(date('M', $startTs)) : '';
+            $timeLabel = trim((string)($event['time_label'] ?? ''));
+            $location = trim((string)($event['location'] ?? ''));
+            ?>
+            <a class="event-row d-flex align-items-center gap-3 text-decoration-none" href="<?= e(base_url('events/' . ($event['slug'] ?? ''))) ?>">
+                <div class="event-date text-center">
+                    <span class="d-block event-day"><?= e($day) ?></span>
+                    <span class="d-block event-month"><?= e($month) ?></span>
                 </div>
-            </div>
-            <div class="col-lg-5">
-                <h3 class="h6 text-muted mb-3"><?= e($socialUpdatesTitle) ?></h3>
-                <div class="event-social-box social-feed">
-                    <?php if (!empty($socialUpdates)): ?>
-                        <?php foreach ($socialUpdates as $update): ?>
-                            <article class="social-feed-item <?= !empty($update['is_pinned']) ? 'social-feed-pinned' : '' ?>">
-                                <?php if (!empty($update['is_pinned'])): ?>
-                                    <span class="badge bg-warning text-dark social-feed-pin"><i class="bi bi-pin-angle-fill me-1"></i>Pinned</span>
-                                <?php endif; ?>
-                                <?php if (!empty($update['source'])): ?>
-                                    <span class="social-feed-source"><i class="bi bi-tag me-1"></i><?= e(ucfirst((string)$update['source'])) ?></span>
-                                <?php endif; ?>
-                                <?php if (!empty($update['image_path'])): ?>
-                                    <img src="<?= e((string)$update['image_path']) ?>" alt="" class="social-feed-image">
-                                <?php endif; ?>
-                                <div class="social-feed-content"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
-                                <div class="social-feed-meta">
-                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i><?= e(date('M j, Y', strtotime((string)($update['created_at'] ?? 'now')))) ?></span>
-                                    <?php if (!empty($update['link_url'])): ?>
-                                        <a href="<?= e((string)$update['link_url']) ?>" target="_blank" rel="noopener" class="small">Read more <i class="bi bi-box-arrow-up-right"></i></a>
-                                    <?php endif; ?>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <p class="mb-2 fw-semibold">No updates yet</p>
-                        <p class="small text-muted mb-0">Add updates from the admin panel under "Social Updates".</p>
-                    <?php endif; ?>
+                <div class="event-info">
+                    <h3 class="h5 mb-1"><?= e($event['title'] ?? '') ?></h3>
+                    <p class="mb-0 text-muted"><?= e($timeLabel) ?><?= $timeLabel !== '' && $location !== '' ? ' • ' : '' ?><?= e($location) ?></p>
                 </div>
-            </div>
+            </a>
+        <?php endforeach; ?>
+        <div class="mt-3">
+            <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('events')) ?>">View all events</a>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<?php if (!empty($socialUpdates)): ?>
+<section class="section-stack">
+    <div class="site-width boxed-section" data-aos="fade-up">
+        <h2 class="h4 fw-bold mb-4 split-title"><span class="title-primary"><?= e($socialUpdatesTitle) ?></span></h2>
+        <div class="row g-3">
+            <?php foreach ($socialUpdates as $update): ?>
+                <div class="col-md-6 col-lg-4">
+                    <article class="social-feed-item h-100 <?= !empty($update['is_pinned']) ? 'social-feed-pinned' : '' ?>">
+                        <?php if (!empty($update['is_pinned'])): ?>
+                            <span class="badge bg-warning text-dark social-feed-pin"><i class="bi bi-pin-angle-fill me-1"></i>Pinned</span>
+                        <?php endif; ?>
+                        <?php if (!empty($update['source'])): ?>
+                            <span class="social-feed-source"><i class="bi bi-<?= $update['source'] === 'instagram' ? 'instagram' : ($update['source'] === 'facebook' ? 'facebook' : 'tag') ?> me-1"></i><?= e(ucfirst((string)$update['source'])) ?></span>
+                        <?php endif; ?>
+                        <?php if (!empty($update['image_path'])): ?>
+                            <img src="<?= e((string)$update['image_path']) ?>" alt="" class="social-feed-image">
+                        <?php endif; ?>
+                        <div class="social-feed-content"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
+                        <div class="social-feed-meta">
+                            <span class="text-muted small"><i class="bi bi-clock me-1"></i><?= e(date('M j, Y', strtotime((string)($update['created_at'] ?? 'now')))) ?></span>
+                            <?php if (!empty($update['link_url'])): ?>
+                                <a href="<?= e((string)$update['link_url']) ?>" target="_blank" rel="noopener" class="small ms-2">View post <i class="bi bi-box-arrow-up-right"></i></a>
+                            <?php endif; ?>
+                        </div>
+                    </article>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
