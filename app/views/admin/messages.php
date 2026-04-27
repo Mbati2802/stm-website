@@ -6,7 +6,9 @@
                 <?php $activeFilter = (string)($filter ?? 'all'); ?>
                 <a class="btn <?= $activeFilter === 'all' ? 'btn-primary' : 'btn-outline-primary' ?>" href="<?= e(base_url('admin/messages?filter=all')) ?>">All</a>
                 <a class="btn <?= $activeFilter === 'unread' ? 'btn-primary' : 'btn-outline-primary' ?>" href="<?= e(base_url('admin/messages?filter=unread')) ?>">Unread Only</a>
-                <a class="btn btn-primary" href="<?= e(base_url('admin/messages/export')) ?>"><i class="bi bi-download me-1"></i>Download Excel</a>
+                <?php if (Auth::canManageEntity('messages')): ?>
+                    <a class="btn btn-primary" href="<?= e(base_url('admin/messages/export')) ?>"><i class="bi bi-download me-1"></i>Download Excel</a>
+                <?php endif; ?>
                 <a class="btn btn-outline-secondary" href="<?= e(base_url('admin')) ?>"><i class="bi bi-arrow-left me-1"></i>Dashboard</a>
             </div>
         </div>
@@ -42,8 +44,10 @@
                             <?php endif; ?>
                             <div class="action-buttons d-inline-flex">
                                 <a class="btn btn-sm btn-action-view" href="<?= e(base_url('admin/messages/view/' . (int)$row['id'])) ?>" title="Open Message"><i class="bi bi-eye"></i></a>
-                                <a class="btn btn-sm btn-action-edit" href="<?= e(base_url('admin/messages/view/' . (int)$row['id'])) ?>" title="Reply"><i class="bi bi-reply"></i></a>
-                                <a class="btn btn-sm btn-action-delete" href="<?= e(base_url('admin/messages/delete/' . $row['id'])) ?>" onclick="return confirm('Delete message?')" title="Delete"><i class="bi bi-trash"></i></a>
+                                <?php if (Auth::canManageEntity('messages')): ?>
+                                    <a class="btn btn-sm btn-action-edit" href="<?= e(base_url('admin/messages/view/' . (int)$row['id'])) ?>" title="Reply"><i class="bi bi-reply"></i></a>
+                                    <a class="btn btn-sm btn-action-delete" href="<?= e(base_url('admin/messages/delete/' . $row['id'])) ?>" onclick="return confirm('Delete message?')" title="Delete"><i class="bi bi-trash"></i></a>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>

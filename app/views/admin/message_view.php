@@ -22,6 +22,7 @@
             </div>
         </div>
 
+        <?php if (Auth::canManageEntity('messages')): ?>
         <form method="POST" action="<?= e(base_url('admin/messages/reply/' . (int)($message['id'] ?? 0))) ?>" enctype="multipart/form-data" class="soft-card p-4">
             <?= csrf_field() ?>
             <h2 class="h6 text-uppercase text-muted mb-3">Send Reply</h2>
@@ -44,5 +45,6 @@
             </div>
             <button class="btn btn-primary"><i class="bi bi-send me-1"></i>Send Reply</button>
         </form>
+        <?php endif; ?>
     </div>
 </section>

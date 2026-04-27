@@ -298,7 +298,7 @@ class AdminContentController extends Controller
     public function messages(): void
     {
         Auth::requireAdmin();
-        if (!Auth::canManageEntity('messages')) {
+        if (!Auth::canViewEntity('messages')) {
             $this->redirect('admin');
         }
         $model = new ContentModel($this->config);
@@ -313,7 +313,7 @@ class AdminContentController extends Controller
     public function viewMessage(int $id): void
     {
         Auth::requireAdmin();
-        if (!Auth::canManageEntity('messages')) {
+        if (!Auth::canViewEntity('messages')) {
             $this->redirect('admin');
         }
         $model = new ContentModel($this->config);
@@ -648,7 +648,7 @@ class AdminContentController extends Controller
     public function students(): void
     {
         Auth::requireAdmin();
-        if (!Auth::canManageEntity('students')) {
+        if (!Auth::canViewEntity('students')) {
             $this->redirect('admin');
         }
         $portalModel = new StudentPortalModel($this->config);
@@ -1331,7 +1331,7 @@ class AdminContentController extends Controller
     public function mediaLibrary(): void
     {
         Auth::requireAdmin();
-        if (!Auth::canManageEntity('media')) {
+        if (!Auth::canViewEntity('media')) {
             $this->redirect('admin');
         }
         $pdo = Database::getInstance($this->config['db']);

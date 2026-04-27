@@ -27,7 +27,9 @@
                 <?php elseif ($entity === 'social_updates'): ?>
                     <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#entitySettingsModal"><i class="bi bi-gear me-1"></i>Social Settings</button>
                 <?php endif; ?>
-                <a class="btn btn-primary" href="<?= e(base_url('admin/create/' . $entity)) ?>"><i class="bi bi-plus-circle me-1"></i>Add New</a>
+                <?php if (Auth::canManageEntity($entity)): ?>
+                    <a class="btn btn-primary" href="<?= e(base_url('admin/create/' . $entity)) ?>"><i class="bi bi-plus-circle me-1"></i>Add New</a>
+                <?php endif; ?>
                 <a class="btn btn-outline-secondary" href="<?= e(base_url('admin')) ?>"><i class="bi bi-arrow-left me-1"></i>Dashboard</a>
             </div>
         </div>
@@ -70,11 +72,13 @@
                             } else {
                                 $isVisible = !in_array((int)$row['id'], $hiddenIds, true);
                             }
-                        ?><a class="btn btn-sm btn-action-toggle" href="<?= e(base_url('admin/toggle/' . $entity . '/' . $row['id'])) ?>" title="<?= $isVisible ? 'Visible' : 'Hidden' ?>"><?= $isVisible ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>' ?></a></td>
+                        ?><?php if (Auth::canManageEntity($entity)): ?><a class="btn btn-sm btn-action-toggle" href="<?= e(base_url('admin/toggle/' . $entity . '/' . $row['id'])) ?>" title="<?= $isVisible ? 'Visible' : 'Hidden' ?>"><?= $isVisible ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>' ?></a><?php endif; ?></td>
                         <td class="col-actions">
                             <div class="action-buttons">
-                                <a class="btn btn-sm btn-action-edit" href="<?= e(base_url('admin/edit/' . $entity . '/' . $row['id'])) ?>" title="Edit"><i class="bi bi-pencil-square"></i></a>
-                                <a class="btn btn-sm btn-action-delete" href="<?= e(base_url('admin/delete/' . $entity . '/' . $row['id'])) ?>" onclick="return confirm('Delete item?')" title="Delete"><i class="bi bi-trash"></i></a>
+                                <?php if (Auth::canManageEntity($entity)): ?>
+                                    <a class="btn btn-sm btn-action-edit" href="<?= e(base_url('admin/edit/' . $entity . '/' . $row['id'])) ?>" title="Edit"><i class="bi bi-pencil-square"></i></a>
+                                    <a class="btn btn-sm btn-action-delete" href="<?= e(base_url('admin/delete/' . $entity . '/' . $row['id'])) ?>" onclick="return confirm('Delete item?')" title="Delete"><i class="bi bi-trash"></i></a>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>

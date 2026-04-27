@@ -10,6 +10,7 @@
     <?php if ($msg = flash('success')): ?><div class="alert alert-success"><?= e($msg) ?></div><?php endif; ?>
     <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= e($msg) ?></div><?php endif; ?>
 
+    <?php if (Auth::canManageEntity('media')): ?>
     <form method="POST" action="<?= e(base_url('admin/media/upload')) ?>" enctype="multipart/form-data" class="settings-section-card mb-4">
       <?= csrf_field() ?>
       <h6><i class="bi bi-cloud-upload me-2"></i>Upload New Media</h6>
@@ -20,6 +21,7 @@
       </div>
       <div class="mt-3"><button class="btn btn-primary"><i class="bi bi-upload me-2"></i>Upload Media</button></div>
     </form>
+    <?php endif; ?>
 
     <div class="row g-3">
       <?php foreach ($rows as $row): ?>
@@ -31,7 +33,9 @@
             <input class="form-control form-control-sm mb-2" readonly value="<?= e(base_url(ltrim((string)$row['file_path'], '/'))) ?>">
             <div class="action-buttons">
               <a class="btn btn-sm btn-action-view" href="<?= e(base_url(ltrim((string)$row['file_path'], '/'))) ?>" target="_blank" title="View"><i class="bi bi-eye"></i></a>
+              <?php if (Auth::canManageEntity('media')): ?>
               <a class="btn btn-sm btn-action-delete" href="<?= e(base_url('admin/media/delete/' . (int)$row['id'])) ?>" onclick="return confirm('Delete this media file?')" title="Delete"><i class="bi bi-trash"></i></a>
+              <?php endif; ?>
             </div>
           </article>
         </div>

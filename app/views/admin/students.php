@@ -5,12 +5,14 @@
                 <h1 class="h4 fw-bold mb-1">Student Accounts</h1>
                 <p class="text-muted mb-0">Assign or generate admission numbers for student portal access.</p>
             </div>
+            <?php if (Auth::canManageEntity('students')): ?>
             <form method="POST" action="<?= e(base_url('admin/students/bulk-assign')) ?>">
                 <?= csrf_field() ?>
                 <button class="btn btn-primary">
                     <i class="bi bi-magic me-1"></i>Generate Missing Admission Numbers
                 </button>
             </form>
+            <?php endif; ?>
         </div>
         <?php if ($msg = flash('success')): ?><div class="alert alert-success"><?= e($msg) ?></div><?php endif; ?>
         <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= e($msg) ?></div><?php endif; ?>
@@ -38,12 +40,14 @@
                             <td class="col-md" title="<?= e((string)($row['admission_number'] ?? 'Not assigned')) ?>"><strong><?= e((string)($row['admission_number'] ?? 'Not assigned')) ?></strong></td>
                             <td class="col-actions">
                                 <div class="action-buttons">
+                                    <?php if (Auth::canManageEntity('students')): ?>
                                     <button class="btn btn-sm btn-action-reset" data-bs-toggle="modal" data-bs-target="#resetPasswordModal" data-student-id="<?= (int)$row['id'] ?>" data-student-name="<?= e((string)$row['name']) ?>" data-student-email="<?= e((string)$row['email']) ?>" title="Reset Password">
                                         <i class="bi bi-key"></i>
                                     </button>
                                     <button class="btn btn-sm btn-action-edit" data-bs-toggle="modal" data-bs-target="#assignAdmissionModal" data-student-id="<?= (int)$row['id'] ?>" data-admission-number="<?= e((string)($row['admission_number'] ?? '')) ?>" title="Assign Admission Number">
                                         <i class="bi bi-person-badge"></i>
                                     </button>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
