@@ -799,10 +799,13 @@ class AdminContentController extends Controller
 
     private function collectSettingsFromRequest(): array
     {
+        $current = (new ContentModel($this->config))->getSettings();
         $settings = [];
 
         foreach (self::SETTINGS_TEXT_FIELDS as $field) {
-            $settings[$field] = $_POST[$field] ?? '';
+            $settings[$field] = array_key_exists($field, $_POST)
+                ? (string)$_POST[$field]
+                : (string)($current[$field] ?? '');
         }
 
         foreach (self::SETTINGS_TOGGLE_FIELDS as $field) {

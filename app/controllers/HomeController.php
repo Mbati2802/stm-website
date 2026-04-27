@@ -396,10 +396,6 @@ class HomeController extends Controller
             unset($byKey[$key]);
         }
 
-        foreach ($byKey as $remaining) {
-            $ordered[] = $remaining;
-        }
-
         return $ordered;
     }
 }

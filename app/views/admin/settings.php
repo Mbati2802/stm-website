@@ -352,49 +352,114 @@ usort($defaultSnapshotCards, static function (array $a, array $b) use ($layoutMa
                     <div class="soft-card p-4 settings-card" data-settings-section="general">
                         <h2 class="h6 text-uppercase text-primary settings-card-header mb-3">Role Access Matrix (View vs Manage)</h2>
                         <p class="small text-muted mb-3">Super Admin can define what each role can <strong>see</strong> in admin versus what they can <strong>edit/manage</strong>.</p>
+                        <input type="hidden" id="senior_view_permissions_input" name="junior_admin_view_permissions" value="<?= e($settings['junior_admin_view_permissions'] ?? '') ?>">
+                        <input type="hidden" id="senior_manage_permissions_input" name="junior_admin_manage_permissions" value="<?= e($settings['junior_admin_manage_permissions'] ?? $settings['junior_admin_permissions'] ?? '') ?>">
+                        <input type="hidden" id="editor_view_permissions_input" name="editor_view_permissions" value="<?= e($settings['editor_view_permissions'] ?? '') ?>">
+                        <input type="hidden" id="editor_manage_permissions_input" name="editor_manage_permissions" value="<?= e($settings['editor_manage_permissions'] ?? '') ?>">
+                        <input type="hidden" id="viewer_view_permissions_input" name="viewer_view_permissions" value="<?= e($settings['viewer_view_permissions'] ?? '') ?>">
+                        <input type="hidden" id="viewer_manage_permissions_input" name="viewer_manage_permissions" value="<?= e($settings['viewer_manage_permissions'] ?? '') ?>">
+                        <input type="hidden" id="registrar_view_permissions_input" name="registrar_view_permissions" value="<?= e($settings['registrar_view_permissions'] ?? '') ?>">
+                        <input type="hidden" id="registrar_manage_permissions_input" name="registrar_manage_permissions" value="<?= e($settings['registrar_manage_permissions'] ?? '') ?>">
+                        <input type="hidden" id="teacher_view_permissions_input" name="teacher_view_permissions" value="<?= e($settings['teacher_view_permissions'] ?? '') ?>">
+                        <input type="hidden" id="teacher_manage_permissions_input" name="teacher_manage_permissions" value="<?= e($settings['teacher_manage_permissions'] ?? $settings['teacher_permissions'] ?? '') ?>">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Senior Admin View Permissions</label>
-                                <input id="senior_view_permissions_input" name="junior_admin_view_permissions" class="form-control" value="<?= e($settings['junior_admin_view_permissions'] ?? '') ?>" placeholder="programmes,events,messages">
+                                <div class="border rounded p-3 h-100">
+                                    <h3 class="h6 mb-2">Senior Admin</h3>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="small text-muted text-uppercase mb-1">View</div>
+                                            <?php foreach ($manageableEntities as $entityKey => $entityLabel): ?>
+                                                <label class="form-check permission-item"><input class="form-check-input permission-checkbox" data-target-input="senior_view_permissions_input" type="checkbox" value="<?= e($entityKey) ?>" <?= in_array($entityKey, $selectedSeniorViewPermissions, true) ? 'checked' : '' ?>><span class="form-check-label"><?= e($entityLabel) ?></span></label>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="small text-muted text-uppercase mb-1">Manage</div>
+                                            <?php foreach ($manageableEntities as $entityKey => $entityLabel): ?>
+                                                <label class="form-check permission-item"><input class="form-check-input permission-checkbox" data-target-input="senior_manage_permissions_input" type="checkbox" value="<?= e($entityKey) ?>" <?= in_array($entityKey, $selectedSeniorManagePermissions, true) ? 'checked' : '' ?>><span class="form-check-label"><?= e($entityLabel) ?></span></label>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Senior Admin Manage Permissions</label>
-                                <input id="senior_manage_permissions_input" name="junior_admin_manage_permissions" class="form-control" value="<?= e($settings['junior_admin_manage_permissions'] ?? $settings['junior_admin_permissions'] ?? '') ?>" placeholder="programmes,events,messages">
+                                <div class="border rounded p-3 h-100">
+                                    <h3 class="h6 mb-2">Editor</h3>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="small text-muted text-uppercase mb-1">View</div>
+                                            <?php foreach ($manageableEntities as $entityKey => $entityLabel): ?>
+                                                <label class="form-check permission-item"><input class="form-check-input permission-checkbox" data-target-input="editor_view_permissions_input" type="checkbox" value="<?= e($entityKey) ?>" <?= in_array($entityKey, $selectedEditorViewPermissions, true) ? 'checked' : '' ?>><span class="form-check-label"><?= e($entityLabel) ?></span></label>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="small text-muted text-uppercase mb-1">Manage</div>
+                                            <?php foreach ($manageableEntities as $entityKey => $entityLabel): ?>
+                                                <label class="form-check permission-item"><input class="form-check-input permission-checkbox" data-target-input="editor_manage_permissions_input" type="checkbox" value="<?= e($entityKey) ?>" <?= in_array($entityKey, $selectedEditorManagePermissions, true) ? 'checked' : '' ?>><span class="form-check-label"><?= e($entityLabel) ?></span></label>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Editor View Permissions</label>
-                                <input id="editor_view_permissions_input" name="editor_view_permissions" class="form-control" value="<?= e($settings['editor_view_permissions'] ?? '') ?>" placeholder="news,events,pages,social_updates">
+                                <div class="border rounded p-3 h-100">
+                                    <h3 class="h6 mb-2">Viewer</h3>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="small text-muted text-uppercase mb-1">View</div>
+                                            <?php foreach ($manageableEntities as $entityKey => $entityLabel): ?>
+                                                <label class="form-check permission-item"><input class="form-check-input permission-checkbox" data-target-input="viewer_view_permissions_input" type="checkbox" value="<?= e($entityKey) ?>" <?= in_array($entityKey, $selectedViewerViewPermissions, true) ? 'checked' : '' ?>><span class="form-check-label"><?= e($entityLabel) ?></span></label>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="small text-muted text-uppercase mb-1">Manage</div>
+                                            <?php foreach ($manageableEntities as $entityKey => $entityLabel): ?>
+                                                <label class="form-check permission-item"><input class="form-check-input permission-checkbox" data-target-input="viewer_manage_permissions_input" type="checkbox" value="<?= e($entityKey) ?>" <?= in_array($entityKey, $selectedViewerManagePermissions, true) ? 'checked' : '' ?>><span class="form-check-label"><?= e($entityLabel) ?></span></label>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Editor Manage Permissions</label>
-                                <input id="editor_manage_permissions_input" name="editor_manage_permissions" class="form-control" value="<?= e($settings['editor_manage_permissions'] ?? '') ?>" placeholder="news,events,pages,social_updates">
+                                <div class="border rounded p-3 h-100">
+                                    <h3 class="h6 mb-2">Registrar</h3>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="small text-muted text-uppercase mb-1">View</div>
+                                            <?php foreach ($manageableEntities as $entityKey => $entityLabel): ?>
+                                                <label class="form-check permission-item"><input class="form-check-input permission-checkbox" data-target-input="registrar_view_permissions_input" type="checkbox" value="<?= e($entityKey) ?>" <?= in_array($entityKey, $selectedRegistrarViewPermissions, true) ? 'checked' : '' ?>><span class="form-check-label"><?= e($entityLabel) ?></span></label>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="small text-muted text-uppercase mb-1">Manage</div>
+                                            <?php foreach ($manageableEntities as $entityKey => $entityLabel): ?>
+                                                <label class="form-check permission-item"><input class="form-check-input permission-checkbox" data-target-input="registrar_manage_permissions_input" type="checkbox" value="<?= e($entityKey) ?>" <?= in_array($entityKey, $selectedRegistrarManagePermissions, true) ? 'checked' : '' ?>><span class="form-check-label"><?= e($entityLabel) ?></span></label>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Viewer View Permissions</label>
-                                <input id="viewer_view_permissions_input" name="viewer_view_permissions" class="form-control" value="<?= e($settings['viewer_view_permissions'] ?? '') ?>" placeholder="programmes,events,messages,students">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Viewer Manage Permissions</label>
-                                <input id="viewer_manage_permissions_input" name="viewer_manage_permissions" class="form-control" value="<?= e($settings['viewer_manage_permissions'] ?? '') ?>" placeholder="(usually empty)">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Registrar View Permissions</label>
-                                <input id="registrar_view_permissions_input" name="registrar_view_permissions" class="form-control" value="<?= e($settings['registrar_view_permissions'] ?? '') ?>" placeholder="students,messages,events">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Registrar Manage Permissions</label>
-                                <input id="registrar_manage_permissions_input" name="registrar_manage_permissions" class="form-control" value="<?= e($settings['registrar_manage_permissions'] ?? '') ?>" placeholder="students,messages,events">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Teacher View Permissions</label>
-                                <input id="teacher_view_permissions_input" name="teacher_view_permissions" class="form-control" value="<?= e($settings['teacher_view_permissions'] ?? '') ?>" placeholder="portal_courses,course_grades,study_materials">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Teacher Manage Permissions</label>
-                                <input id="teacher_manage_permissions_input" name="teacher_manage_permissions" class="form-control" value="<?= e($settings['teacher_manage_permissions'] ?? $settings['teacher_permissions'] ?? '') ?>" placeholder="portal_courses,course_grades,study_materials">
+                                <div class="border rounded p-3 h-100">
+                                    <h3 class="h6 mb-2">Teacher</h3>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="small text-muted text-uppercase mb-1">View</div>
+                                            <?php foreach ($manageableEntities as $entityKey => $entityLabel): ?>
+                                                <label class="form-check permission-item"><input class="form-check-input permission-checkbox" data-target-input="teacher_view_permissions_input" type="checkbox" value="<?= e($entityKey) ?>" <?= in_array($entityKey, $selectedTeacherViewPermissions, true) ? 'checked' : '' ?>><span class="form-check-label"><?= e($entityLabel) ?></span></label>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="small text-muted text-uppercase mb-1">Manage</div>
+                                            <?php foreach ($manageableEntities as $entityKey => $entityLabel): ?>
+                                                <label class="form-check permission-item"><input class="form-check-input permission-checkbox" data-target-input="teacher_manage_permissions_input" type="checkbox" value="<?= e($entityKey) ?>" <?= in_array($entityKey, $selectedTeacherManagePermissions, true) ? 'checked' : '' ?>><span class="form-check-label"><?= e($entityLabel) ?></span></label>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-12">
-                                <small class="text-muted">Use comma-separated module keys, e.g. <code>programmes,events,social_updates</code>. Leaving empty falls back to defaults for that role.</small>
+                                <small class="text-muted">Use checkboxes to control role access. Values are saved as permission keys internally.</small>
                             </div>
                         </div>
                     </div>
@@ -799,6 +864,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (inputId) syncPermissionInput(inputId);
         });
     });
+    const permissionInputIds = Array.from(document.querySelectorAll('.permission-checkbox'))
+        .map((el) => el.getAttribute('data-target-input') || '')
+        .filter(Boolean)
+        .filter((value, index, arr) => arr.indexOf(value) === index);
+    permissionInputIds.forEach((inputId) => syncPermissionInput(inputId));
 
     const previewBtn = document.getElementById('preview-reply-template-btn');
     const previewFrame = document.getElementById('reply-template-preview-frame');
