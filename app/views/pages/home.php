@@ -319,6 +319,16 @@ foreach ($bannerCandidates as $candidate) {
         $socialUpdates = array_slice($socialUpdates, 0, $suLimit);
     }
     $hasMore = count($socialUpdates) >= ($suRows > 0 ? $suRows * $suCols : 999);
+    // DEBUG: Check first item - temporarily enabled for diagnostics
+    echo '<div style="background:#fff;padding:10px;margin:10px;border:2px solid red;z-index:9999;position:relative;font-family:monospace">';
+    echo '<strong>DEBUG:</strong> Show Images: ' . ($suShowImages ? 'YES' : 'NO') . "<br>";
+    if (!empty($socialUpdates)) {
+        echo 'First item ID: ' . ($socialUpdates[0]['id'] ?? 'N/A') . "<br>";
+        echo 'First item external_id: ' . ($socialUpdates[0]['external_id'] ?? 'N/A') . "<br>";
+        echo 'First item image_path: ' . (empty($socialUpdates[0]['image_path']) ? 'EMPTY/NULL' : htmlspecialchars(substr($socialUpdates[0]['image_path'], 0, 100))) . "<br>";
+        echo 'First item source: ' . ($socialUpdates[0]['source'] ?? 'N/A') . "<br>";
+    }
+    echo '</div>';
 ?>
 <section class="section-stack social-updates-section" style="--su-bg:<?= e($suBgColor) ?>;--su-card-bg:<?= e($suCardBg) ?>;--su-accent:<?= e($suAccent) ?>">
     <div class="site-width boxed-section" data-aos="fade-up" style="background:var(--su-bg)">
