@@ -225,7 +225,13 @@ $snapshotColClass = $snapshotCols === 4 ? 'col-md-6 col-lg-3' : ($snapshotCols =
 <?php if ($sv['testimonials'] && $testimonials !== []): ?>
 <section class="section-stack testimonials-section testimonials-template-<?= e($testimonialTemplate) ?> testimonials-card-<?= e($testimonialCardStyle) ?>" style="--testimonial-accent: <?= e($validHexAccent) ?>; --testimonial-bg: <?= e($validHexBg) ?>;">
     <div class="site-width boxed-section testimonials-box">
-        <h2 class="h3 fw-bold mb-4" data-aos="fade-up">Student Testimonials</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-up">
+            <h2 class="h3 fw-bold mb-0 split-title">
+                <span class="title-primary">Student</span> |
+                <span class="title-secondary">Testimonials</span>
+            </h2>
+            <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('testimonials')) ?>">View All Testimonials</a>
+        </div>
 
         <?php if ($testimonialTemplate === 'carousel'): ?>
             <?php $carouselChunks = array_chunk($testimonials, $testimonialItemsPerSlide); ?>
@@ -303,9 +309,6 @@ $snapshotColClass = $snapshotCols === 4 ? 'col-md-6 col-lg-3' : ($snapshotCols =
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
-        <div class="text-center mt-4">
-            <a class="btn btn-outline-primary" href="<?= e(base_url('testimonials')) ?>">View All Testimonials <i class="bi bi-arrow-right ms-1"></i></a>
-        </div>
     </div>
 </section>
 <?php endif; ?>
@@ -313,7 +316,10 @@ $snapshotColClass = $snapshotCols === 4 ? 'col-md-6 col-lg-3' : ($snapshotCols =
 <?php if ($sv['events']): ?>
 <section class="section-stack">
     <div class="site-width boxed-section events-section" data-aos="fade-up">
-        <h2 class="h4 fw-bold mb-4 split-title"><span class="title-primary">Upcoming</span> <span class="title-secondary">Events</span></h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4 fw-bold mb-0 split-title"><span class="title-primary">Upcoming</span> <span class="title-secondary">Events</span></h2>
+            <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('events')) ?>">View All Events</a>
+        </div>
         <?php foreach ($events as $event): ?>
             <?php
             $startsAt = (string)($event['starts_at'] ?? '');
@@ -334,9 +340,6 @@ $snapshotColClass = $snapshotCols === 4 ? 'col-md-6 col-lg-3' : ($snapshotCols =
                 </div>
             </a>
         <?php endforeach; ?>
-        <div class="mt-3">
-            <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('events')) ?>">View all events</a>
-        </div>
     </div>
 </section>
 <?php endif; ?>

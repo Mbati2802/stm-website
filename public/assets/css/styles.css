@@ -182,10 +182,15 @@ a{text-decoration:none}
     width:100%;
 }
 .testimonials-section{--testimonial-accent:#5fc7e7;--testimonial-bg:#f5f7fa}
-.testimonials-section .boxed-section{background:var(--testimonial-bg)}
+.testimonials-section .boxed-section{
+    background:#fff;
+    border-top:4px solid var(--testimonial-accent);
+}
 .testimonials-box{padding-left:1.2rem;padding-right:1.2rem;min-height:auto}
 .testimonials-template-carousel .testimonials-box{min-height:460px}
 .testimonials-section .carousel-inner{min-height:300px}
+.testimonials-section .split-title .title-primary{color:var(--primary)!important}
+.testimonials-section .split-title .title-secondary{color:var(--secondary)!important}
 .testimonial-card{
     text-align:center;
     border-radius:14px;
