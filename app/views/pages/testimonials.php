@@ -27,11 +27,13 @@ include __DIR__ . '/../partials/page_hero.php';
     <div class="site-width boxed-section">
         <div class="row g-4">
             <div class="col-lg-8">
-                <h1 class="split-title mb-3">
-                    <span class="title-primary">Student</span>
-                    <span class="title-secondary">Testimonials</span>
-                </h1>
-                <p class="text-muted mb-4">Hear directly from our students, alumni, parents and guardians about their experience at St. Mary's College of Health Sciences.</p>
+                <div class="mb-3">
+                    <h1 class="split-title mb-1">
+                        <span class="title-primary">Student</span> |
+                        <span class="title-secondary">Testimonials</span>
+                    </h1>
+                    <p class="section-subtitle-standard">Hear directly from our students, alumni, parents and guardians about their experience at St. Mary's College of Health Sciences.</p>
+                </div>
 
                 <div class="row g-4">
                     <?php foreach ($testimonials as $testimonial): ?>
