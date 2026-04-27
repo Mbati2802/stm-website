@@ -3,12 +3,12 @@ RewriteEngine On
 RewriteBase /
 
 # Backward-compatible uploads fallback:
-# if /uploads/* is not found in public/uploads, try ../uploads/*
+# if /uploads/* is not found in public/uploads, try public/uploads/*
 RewriteCond %{REQUEST_URI} ^/uploads/(.+)$ [NC]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{DOCUMENT_ROOT}/../uploads/%1 -f
-RewriteRule ^uploads/(.+)$ ../uploads/$1 [L]
+RewriteCond %{DOCUMENT_ROOT}/public/uploads/%1 -f
+RewriteRule ^uploads/(.+)$ public/uploads/$1 [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
