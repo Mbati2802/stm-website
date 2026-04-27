@@ -169,6 +169,15 @@ class HomeController extends Controller
                 'cta' => 'View Programmes',
             ],
             [
+                'key' => 'apply_section',
+                'title' => 'How to Apply Section',
+                'description' => 'View application steps, requirements, and fee/brochure guidance.',
+                'link' => 'programmes/how-to-apply',
+                'icon' => 'bi-pencil-square',
+                'badge' => 'Admissions',
+                'cta' => 'How to Apply',
+            ],
+            [
                 'key' => 'events',
                 'title' => 'Events & Activities',
                 'description' => 'Stay updated on workshops, trainings, and campus activities.',
@@ -176,6 +185,15 @@ class HomeController extends Controller
                 'icon' => 'bi-calendar-event',
                 'badge' => 'Campus',
                 'cta' => 'See Events',
+            ],
+            [
+                'key' => 'events_upcoming',
+                'title' => 'Upcoming Events Section',
+                'description' => 'Jump straight to upcoming events and registration opportunities.',
+                'link' => 'events#upcoming',
+                'icon' => 'bi-calendar2-check',
+                'badge' => 'Events',
+                'cta' => 'Open Upcoming',
             ],
             [
                 'key' => 'social_updates',

@@ -22,6 +22,19 @@ function base_url(string $path = ''): string
     return rtrim($base, '/') . '/' . ltrim($path, '/');
 }
 
+function admin_login_path(): string
+{
+    global $config;
+    $slug = trim((string)($config['admin_login_slug'] ?? 'admin/login'));
+    $slug = trim($slug, '/');
+    return $slug !== '' ? $slug : 'admin/login';
+}
+
+function admin_login_url(): string
+{
+    return base_url(admin_login_path());
+}
+
 function e(?string $value): string
 {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');

@@ -14,7 +14,7 @@ class AdminAuthController extends Controller
         $limitKey = 'admin_login_' . md5((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
         if (!rate_limit_check($limitKey, 5, 15 * 60)) {
             flash('error', 'Too many login attempts. Please wait 15 minutes and try again.');
-            $this->redirect('admin/login');
+            $this->redirect(admin_login_path());
         }
 
         $pdo = Database::getInstance($this->config['db']);
@@ -28,12 +28,12 @@ class AdminAuthController extends Controller
 
         rate_limit_increment($limitKey);
         flash('error', 'Invalid credentials.');
-        $this->redirect('admin/login');
+        $this->redirect(admin_login_path());
     }
 
     public function logout(): void
     {
         Auth::logout();
-        $this->redirect('admin/login');
+        $this->redirect(admin_login_path());
     }
 }

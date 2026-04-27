@@ -66,6 +66,7 @@ class AdminContentController extends Controller
         'home_extra_sections_json',
         'home_page_snapshots_json',
         'home_page_snapshots_layout_json',
+        'home_page_snapshots_columns',
         'banner_home',
         'banner_programmes',
         'banner_about',
@@ -106,8 +107,19 @@ class AdminContentController extends Controller
         'social_auto_fetch_enabled',
         'social_auto_fetch_last_run',
         'social_auto_fetch_cron_token',
+        'admin_login_slug',
         'junior_admin_permissions',
+        'junior_admin_view_permissions',
+        'junior_admin_manage_permissions',
         'teacher_permissions',
+        'teacher_view_permissions',
+        'teacher_manage_permissions',
+        'editor_view_permissions',
+        'editor_manage_permissions',
+        'viewer_view_permissions',
+        'viewer_manage_permissions',
+        'registrar_view_permissions',
+        'registrar_manage_permissions',
     ];
     private const SETTINGS_TOGGLE_FIELDS = [
         'show_page_about',
@@ -133,7 +145,7 @@ class AdminContentController extends Controller
     public function list(string $entity): void
     {
         Auth::requireAdmin();
-        if (!$this->canAccessEntity($entity)) {
+        if (!$this->canAccessEntity($entity, 'view')) {
             http_response_code(404);
             echo 'Invalid entity';
             return;
@@ -160,7 +172,7 @@ class AdminContentController extends Controller
     public function create(string $entity): void
     {
         Auth::requireAdmin();
-        if (!$this->canAccessEntity($entity)) {
+        if (!$this->canAccessEntity($entity, 'manage')) {
             http_response_code(404);
             echo 'Invalid entity';
             return;
@@ -178,7 +190,7 @@ class AdminContentController extends Controller
     public function store(string $entity): void
     {
         Auth::requireAdmin();
-        if (!$this->canAccessEntity($entity)) {
+        if (!$this->canAccessEntity($entity, 'manage')) {
             $this->redirect('admin');
         }
 
@@ -191,7 +203,7 @@ class AdminContentController extends Controller
     public function edit(string $entity, int $id): void
     {
         Auth::requireAdmin();
-        if (!$this->canAccessEntity($entity)) {
+        if (!$this->canAccessEntity($entity, 'view')) {
             http_response_code(404);
             echo 'Invalid entity';
             return;
@@ -215,7 +227,7 @@ class AdminContentController extends Controller
     public function update(string $entity, int $id): void
     {
         Auth::requireAdmin();
-        if (!$this->canAccessEntity($entity)) {
+        if (!$this->canAccessEntity($entity, 'manage')) {
             $this->redirect('admin');
         }
         $this->persistEntity($entity, $id);
@@ -226,7 +238,7 @@ class AdminContentController extends Controller
     public function delete(string $entity, int $id): void
     {
         Auth::requireAdmin();
-        if (!$this->canAccessEntity($entity)) {
+        if (!$this->canAccessEntity($entity, 'manage')) {
             $this->redirect('admin');
         }
         $model = new ContentModel($this->config);
@@ -249,7 +261,7 @@ class AdminContentController extends Controller
     public function toggleVisibility(string $entity, int $id): void
     {
         Auth::requireAdmin();
-        if (!$this->canAccessEntity($entity)) {
+        if (!$this->canAccessEntity($entity, 'manage')) {
             $this->redirect('admin');
         }
         $model = new ContentModel($this->config);
@@ -586,7 +598,7 @@ class AdminContentController extends Controller
         Auth::requireAdmin();
         $adminId = (int)($_SESSION['admin_id'] ?? 0);
         if ($adminId <= 0) {
-            $this->redirect('admin/login');
+            $this->redirect(admin_login_path());
         }
         $model = new ContentModel($this->config);
         $inbox = $model->getAdminInbox($adminId, 80);
@@ -605,7 +617,7 @@ class AdminContentController extends Controller
         Auth::requireAdmin();
         $senderId = (int)($_SESSION['admin_id'] ?? 0);
         if ($senderId <= 0) {
-            $this->redirect('admin/login');
+            $this->redirect(admin_login_path());
         }
         $recipientId = (int)($_POST['recipient_id'] ?? 0);
         $subject = trim((string)($_POST['subject'] ?? ''));
@@ -724,11 +736,33 @@ class AdminContentController extends Controller
             $settings = $this->collectSettingsFromRequest();
             if (Auth::isJuniorAdmin() && !Auth::isSuperAdmin()) {
                 $settings['junior_admin_permissions'] = (string)($model->getSettingValue('junior_admin_permissions') ?? '');
+                $settings['junior_admin_view_permissions'] = (string)($model->getSettingValue('junior_admin_view_permissions') ?? '');
+                $settings['junior_admin_manage_permissions'] = (string)($model->getSettingValue('junior_admin_manage_permissions') ?? '');
+                $settings['teacher_permissions'] = (string)($model->getSettingValue('teacher_permissions') ?? '');
+                $settings['teacher_view_permissions'] = (string)($model->getSettingValue('teacher_view_permissions') ?? '');
+                $settings['teacher_manage_permissions'] = (string)($model->getSettingValue('teacher_manage_permissions') ?? '');
+                $settings['editor_view_permissions'] = (string)($model->getSettingValue('editor_view_permissions') ?? '');
+                $settings['editor_manage_permissions'] = (string)($model->getSettingValue('editor_manage_permissions') ?? '');
+                $settings['viewer_view_permissions'] = (string)($model->getSettingValue('viewer_view_permissions') ?? '');
+                $settings['viewer_manage_permissions'] = (string)($model->getSettingValue('viewer_manage_permissions') ?? '');
+                $settings['registrar_view_permissions'] = (string)($model->getSettingValue('registrar_view_permissions') ?? '');
+                $settings['registrar_manage_permissions'] = (string)($model->getSettingValue('registrar_manage_permissions') ?? '');
+                $settings['admin_login_slug'] = (string)($model->getSettingValue('admin_login_slug') ?? 'admin/login');
             }
             $settings = $this->applySettingsImageUploads($settings, $model->getSettings());
             $model->saveSettings($settings);
             $_SESSION['junior_admin_permissions'] = (string)($settings['junior_admin_permissions'] ?? '');
+            $_SESSION['junior_admin_view_permissions'] = (string)($settings['junior_admin_view_permissions'] ?? '');
+            $_SESSION['junior_admin_manage_permissions'] = (string)($settings['junior_admin_manage_permissions'] ?? '');
             $_SESSION['teacher_permissions'] = (string)($settings['teacher_permissions'] ?? '');
+            $_SESSION['teacher_view_permissions'] = (string)($settings['teacher_view_permissions'] ?? '');
+            $_SESSION['teacher_manage_permissions'] = (string)($settings['teacher_manage_permissions'] ?? '');
+            $_SESSION['editor_view_permissions'] = (string)($settings['editor_view_permissions'] ?? '');
+            $_SESSION['editor_manage_permissions'] = (string)($settings['editor_manage_permissions'] ?? '');
+            $_SESSION['viewer_view_permissions'] = (string)($settings['viewer_view_permissions'] ?? '');
+            $_SESSION['viewer_manage_permissions'] = (string)($settings['viewer_manage_permissions'] ?? '');
+            $_SESSION['registrar_view_permissions'] = (string)($settings['registrar_view_permissions'] ?? '');
+            $_SESSION['registrar_manage_permissions'] = (string)($settings['registrar_manage_permissions'] ?? '');
             flash('success', 'Settings updated.');
         } catch (Throwable) {
             flash('error', 'Settings could not be saved. Please verify database schema and try again.');
@@ -1032,7 +1066,7 @@ class AdminContentController extends Controller
                     flash('error', 'Provide valid user details.');
                     $this->redirect('admin/list/users');
                 }
-                if (!in_array($role, ['super_admin', 'junior_admin', 'teacher'], true) || !Auth::canManageRole($role)) {
+                if (!in_array($role, ['super_admin', 'junior_admin', 'editor', 'viewer', 'registrar', 'teacher'], true) || !Auth::canManageRole($role)) {
                     flash('error', 'You do not have permission to assign this role.');
                     $this->redirect('admin/list/users');
                 }
@@ -1461,12 +1495,12 @@ class AdminContentController extends Controller
         return '"' . str_replace('"', '""', $value) . '"';
     }
 
-    private function canAccessEntity(string $entity): bool
+    private function canAccessEntity(string $entity, string $mode = 'manage'): bool
     {
         if (!in_array($entity, $this->entities, true)) {
             return false;
         }
-        return Auth::canManageEntity($entity);
+        return $mode === 'view' ? Auth::canViewEntity($entity) : Auth::canManageEntity($entity);
     }
 
     private function buildFormRelations(): array

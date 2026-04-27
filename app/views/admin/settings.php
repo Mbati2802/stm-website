@@ -58,10 +58,22 @@ $manageableEntities = [
 ];
 $selectedSeniorPermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['junior_admin_permissions'] ?? '')))));
 $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['teacher_permissions'] ?? '')))));
+$selectedSeniorViewPermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['junior_admin_view_permissions'] ?? '')))));
+$selectedSeniorManagePermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['junior_admin_manage_permissions'] ?? '')))));
+$selectedEditorViewPermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['editor_view_permissions'] ?? '')))));
+$selectedEditorManagePermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['editor_manage_permissions'] ?? '')))));
+$selectedViewerViewPermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['viewer_view_permissions'] ?? '')))));
+$selectedViewerManagePermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['viewer_manage_permissions'] ?? '')))));
+$selectedRegistrarViewPermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['registrar_view_permissions'] ?? '')))));
+$selectedRegistrarManagePermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['registrar_manage_permissions'] ?? '')))));
+$selectedTeacherViewPermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['teacher_view_permissions'] ?? '')))));
+$selectedTeacherManagePermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['teacher_manage_permissions'] ?? '')))));
 $defaultSnapshotCards = [
     ['key' => 'about', 'title' => 'About the College', 'icon' => 'bi-info-circle'],
     ['key' => 'programmes', 'title' => 'Programmes', 'icon' => 'bi-journal-bookmark'],
+    ['key' => 'apply_section', 'title' => 'How to Apply Section', 'icon' => 'bi-pencil-square'],
     ['key' => 'events', 'title' => 'Events & Activities', 'icon' => 'bi-calendar-event'],
+    ['key' => 'events_upcoming', 'title' => 'Upcoming Events Section', 'icon' => 'bi-calendar2-check'],
     ['key' => 'social_updates', 'title' => 'Social Updates', 'icon' => 'bi-megaphone'],
     ['key' => 'library', 'title' => 'Library Resources', 'icon' => 'bi-book'],
     ['key' => 'departments', 'title' => 'Departments', 'icon' => 'bi-diagram-3'],
@@ -227,6 +239,11 @@ usort($defaultSnapshotCards, static function (array $a, array $b) use ($layoutMa
                                 <input name="location" class="form-control" value="<?= e($settings['location'] ?? '') ?>">
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label">Hidden Admin Login Path</label>
+                                <input name="admin_login_slug" class="form-control" value="<?= e($settings['admin_login_slug'] ?? 'admin/login') ?>" placeholder="e.g. secure/admin-access-4821">
+                                <small class="text-muted">Current login URL: <code><?= e(base_url(trim((string)($settings['admin_login_slug'] ?? 'admin/login'), '/'))) ?></code></small>
+                            </div>
+                            <div class="col-md-6">
                                 <label class="form-label">Top Bar Message</label>
                                 <input name="top_message" class="form-control" value="<?= e($settings['top_message'] ?? '') ?>">
                             </div>
@@ -332,6 +349,56 @@ usort($defaultSnapshotCards, static function (array $a, array $b) use ($layoutMa
                         </div>
                     </div>
 
+                    <div class="soft-card p-4 settings-card" data-settings-section="general">
+                        <h2 class="h6 text-uppercase text-primary settings-card-header mb-3">Role Access Matrix (View vs Manage)</h2>
+                        <p class="small text-muted mb-3">Super Admin can define what each role can <strong>see</strong> in admin versus what they can <strong>edit/manage</strong>.</p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Senior Admin View Permissions</label>
+                                <input id="senior_view_permissions_input" name="junior_admin_view_permissions" class="form-control" value="<?= e($settings['junior_admin_view_permissions'] ?? '') ?>" placeholder="programmes,events,messages">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Senior Admin Manage Permissions</label>
+                                <input id="senior_manage_permissions_input" name="junior_admin_manage_permissions" class="form-control" value="<?= e($settings['junior_admin_manage_permissions'] ?? $settings['junior_admin_permissions'] ?? '') ?>" placeholder="programmes,events,messages">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Editor View Permissions</label>
+                                <input id="editor_view_permissions_input" name="editor_view_permissions" class="form-control" value="<?= e($settings['editor_view_permissions'] ?? '') ?>" placeholder="news,events,pages,social_updates">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Editor Manage Permissions</label>
+                                <input id="editor_manage_permissions_input" name="editor_manage_permissions" class="form-control" value="<?= e($settings['editor_manage_permissions'] ?? '') ?>" placeholder="news,events,pages,social_updates">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Viewer View Permissions</label>
+                                <input id="viewer_view_permissions_input" name="viewer_view_permissions" class="form-control" value="<?= e($settings['viewer_view_permissions'] ?? '') ?>" placeholder="programmes,events,messages,students">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Viewer Manage Permissions</label>
+                                <input id="viewer_manage_permissions_input" name="viewer_manage_permissions" class="form-control" value="<?= e($settings['viewer_manage_permissions'] ?? '') ?>" placeholder="(usually empty)">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Registrar View Permissions</label>
+                                <input id="registrar_view_permissions_input" name="registrar_view_permissions" class="form-control" value="<?= e($settings['registrar_view_permissions'] ?? '') ?>" placeholder="students,messages,events">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Registrar Manage Permissions</label>
+                                <input id="registrar_manage_permissions_input" name="registrar_manage_permissions" class="form-control" value="<?= e($settings['registrar_manage_permissions'] ?? '') ?>" placeholder="students,messages,events">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Teacher View Permissions</label>
+                                <input id="teacher_view_permissions_input" name="teacher_view_permissions" class="form-control" value="<?= e($settings['teacher_view_permissions'] ?? '') ?>" placeholder="portal_courses,course_grades,study_materials">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Teacher Manage Permissions</label>
+                                <input id="teacher_manage_permissions_input" name="teacher_manage_permissions" class="form-control" value="<?= e($settings['teacher_manage_permissions'] ?? $settings['teacher_permissions'] ?? '') ?>" placeholder="portal_courses,course_grades,study_materials">
+                            </div>
+                            <div class="col-12">
+                                <small class="text-muted">Use comma-separated module keys, e.g. <code>programmes,events,social_updates</code>. Leaving empty falls back to defaults for that role.</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="soft-card p-4 settings-card settings-card-home settings-card-home-vertical" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Homepage Vertical Cards</h2>
                         <label class="form-label">Cards JSON</label>
@@ -375,6 +442,17 @@ usort($defaultSnapshotCards, static function (array $a, array $b) use ($layoutMa
                         <label class="form-label">Page Snapshot Overrides JSON (optional)</label>
                         <textarea name="home_page_snapshots_json" rows="8" class="form-control" placeholder='[{"title":"Apply Online","description":"Start your admission process in minutes.","link":"programmes/apply","icon":"bi-pencil-square","badge":"Admissions"}]'><?= e($settings['home_page_snapshots_json'] ?? '') ?></textarea>
                         <small class="text-muted">Fields supported per card: <code>title</code>, <code>description</code>, <code>link</code>, <code>icon</code>, <code>badge</code>, <code>cta</code>.</small>
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <label class="form-label">Cards Per Row</label>
+                                <?php $snapshotCols = (int)($settings['home_page_snapshots_columns'] ?? 3); ?>
+                                <select name="home_page_snapshots_columns" class="form-select">
+                                    <option value="2" <?= $snapshotCols === 2 ? 'selected' : '' ?>>2 columns</option>
+                                    <option value="3" <?= $snapshotCols === 3 ? 'selected' : '' ?>>3 columns</option>
+                                    <option value="4" <?= $snapshotCols === 4 ? 'selected' : '' ?>>4 columns</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="soft-card p-4 settings-card" data-settings-section="home">

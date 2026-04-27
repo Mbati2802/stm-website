@@ -13,6 +13,10 @@ session_set_cookie_params([
 session_start();
 
 $router = new Router();
+$adminLoginSlug = trim((string)($config['admin_login_slug'] ?? 'admin/login'), '/');
+if ($adminLoginSlug === '') {
+    $adminLoginSlug = 'admin/login';
+}
 
 $router->add('GET', 'sitemap.xml', [SeoController::class, 'sitemap']);
 $router->add('GET', '', [HomeController::class, 'index']);
@@ -85,8 +89,8 @@ $router->add('POST', 'portal/support', [StudentPortalController::class, 'submitS
 $router->add('GET', 'portal/profile', [StudentPortalController::class, 'profile']);
 $router->add('GET', 'portal/settings', [StudentPortalController::class, 'settings']);
 
-$router->add('GET', 'admin/login', [AdminAuthController::class, 'login']);
-$router->add('POST', 'admin/login', [AdminAuthController::class, 'authenticate']);
+$router->add('GET', $adminLoginSlug, [AdminAuthController::class, 'login']);
+$router->add('POST', $adminLoginSlug, [AdminAuthController::class, 'authenticate']);
 $router->add('GET', 'admin/logout', [AdminAuthController::class, 'logout']);
 $router->add('GET', 'admin', [AdminDashboardController::class, 'index']);
 $router->add('GET', 'admin/list/{entity}', [AdminContentController::class, 'list']);

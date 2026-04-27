@@ -36,11 +36,14 @@ class AdminDashboardController extends Controller
         ];
 
         $users = $model->all('users');
-        $roleCounts = ['Super Admin' => 0, 'Senior Admin' => 0, 'Teacher' => 0];
+        $roleCounts = ['Super Admin' => 0, 'Senior Admin' => 0, 'Editor' => 0, 'Viewer' => 0, 'Registrar' => 0, 'Teacher' => 0];
         foreach ($users as $user) {
             $role = (string)($user['role'] ?? '');
             if ($role === 'super_admin') $roleCounts['Super Admin']++;
             if ($role === 'junior_admin') $roleCounts['Senior Admin']++;
+            if ($role === 'editor') $roleCounts['Editor']++;
+            if ($role === 'viewer') $roleCounts['Viewer']++;
+            if ($role === 'registrar') $roleCounts['Registrar']++;
             if ($role === 'teacher') $roleCounts['Teacher']++;
         }
 

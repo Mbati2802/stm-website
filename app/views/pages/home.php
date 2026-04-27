@@ -188,6 +188,10 @@ foreach ($bannerCandidates as $candidate) {
 $pageSnapshots = is_array($pageSnapshots ?? null) ? $pageSnapshots : [];
 ?>
 <?php if (($sv['page_snapshots'] ?? true) && $pageSnapshots !== []): ?>
+<?php
+$snapshotCols = max(2, min(4, (int)($settings['home_page_snapshots_columns'] ?? 3)));
+$snapshotColClass = $snapshotCols === 4 ? 'col-md-6 col-lg-3' : ($snapshotCols === 2 ? 'col-md-6 col-lg-6' : 'col-md-6 col-lg-4');
+?>
 <section class="section-stack">
     <div class="site-width boxed-section" data-aos="fade-up">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -199,7 +203,7 @@ $pageSnapshots = is_array($pageSnapshots ?? null) ? $pageSnapshots : [];
         </div>
         <div class="row g-4">
             <?php foreach ($pageSnapshots as $snapshot): ?>
-                <div class="col-md-6 col-lg-4">
+                <div class="<?= e($snapshotColClass) ?>">
                     <article class="soft-card p-3 h-100 bg-white">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="badge bg-light text-dark"><?= e((string)($snapshot['badge'] ?? 'Explore')) ?></span>
