@@ -309,6 +309,9 @@ class SocialFetcher
         if ($root === false) {
             $root = __DIR__ . '/../../..';
         }
+        if (is_dir($root . DIRECTORY_SEPARATOR . 'public')) {
+            return $root . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads';
+        }
         return $root . DIRECTORY_SEPARATOR . 'uploads';
     }
 

@@ -397,7 +397,7 @@ class AdminContentController extends Controller
             . '</div></div></body></html>';
         $attachmentPath = $this->uploadFile('reply_attachment', ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'], 'message-replies');
         if ($attachmentPath !== '') {
-            $absolute = $this->webRootPath() . DIRECTORY_SEPARATOR . ltrim(str_replace('/', DIRECTORY_SEPARATOR, $attachmentPath), DIRECTORY_SEPARATOR);
+            $absolute = $this->resolveStoredFilePath($attachmentPath);
             $attachmentName = basename($absolute);
             $attachmentMime = mime_content_type($absolute) ?: 'application/octet-stream';
             $attachmentContent = @file_get_contents($absolute);
@@ -1347,7 +1347,7 @@ class AdminContentController extends Controller
             $row = $stmt->fetch() ?: null;
             if ($row && isset($row['file_path'])) {
                 $relative = ltrim((string)$row['file_path'], '/');
-                $absolute = $this->webRootPath() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative);
+                $absolute = $this->resolveStoredFilePath('/' . $relative);
                 if (is_file($absolute)) {
                     @unlink($absolute);
                 }
@@ -1430,7 +1430,24 @@ class AdminContentController extends Controller
 
     private function uploadsRootPath(): string
     {
-        return $this->webRootPath() . DIRECTORY_SEPARATOR . 'uploads';
+        $root = $this->webRootPath();
+        $publicUploads = $root . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads';
+        $legacyUploads = $root . DIRECTORY_SEPARATOR . 'uploads';
+        if (is_dir($root . DIRECTORY_SEPARATOR . 'public')) {
+            return $publicUploads;
+        }
+        return $legacyUploads;
+    }
+
+    private function resolveStoredFilePath(string $publicPath): string
+    {
+        $relative = ltrim(str_replace('/', DIRECTORY_SEPARATOR, (string)$publicPath), DIRECTORY_SEPARATOR);
+        $root = $this->webRootPath();
+        $publicCandidate = $root . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $relative;
+        if (is_file($publicCandidate)) {
+            return $publicCandidate;
+        }
+        return $root . DIRECTORY_SEPARATOR . $relative;
     }
 
     private function cleanExportValue(string $value): string
