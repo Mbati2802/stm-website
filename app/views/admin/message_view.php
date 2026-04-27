@@ -22,17 +22,6 @@
             </div>
         </div>
 
-        <?php if (!empty($message['replied_at'])): ?>
-        <div class="soft-card p-4 mb-3 border-start border-4 border-success">
-            <h2 class="h6 text-uppercase text-success mb-3"><i class="bi bi-check-circle me-1"></i>Replied on <?= e((string)$message['replied_at']) ?></h2>
-            <?php if (!empty($message['reply_subject'])): ?>
-                <div class="mb-2"><strong>Subject:</strong> <?= e((string)$message['reply_subject']) ?></div>
-            <?php endif; ?>
-            <div class="p-3 border rounded bg-light mb-2"><?= nl2br(e((string)($message['reply_body'] ?? ''))) ?></div>
-            <small class="text-muted">Reply is saved. You can send another reply below if needed.</small>
-        </div>
-        <?php endif; ?>
-
         <form method="POST" action="<?= e(base_url('admin/messages/reply/' . (int)($message['id'] ?? 0))) ?>" enctype="multipart/form-data" class="soft-card p-4">
             <?= csrf_field() ?>
             <h2 class="h6 text-uppercase text-muted mb-3">Send Reply</h2>
