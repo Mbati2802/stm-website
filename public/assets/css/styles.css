@@ -184,8 +184,8 @@ a{text-decoration:none}
 .testimonials-section{--testimonial-accent:#5fc7e7;--testimonial-bg:#f5f7fa}
 .testimonials-section .boxed-section{
     background:#fff;
-    border-top:4px solid var(--testimonial-accent);
 }
+.home-testimonials-section .boxed-section{background:var(--testimonial-bg)}
 .testimonials-box{padding-left:2.5rem;padding-right:2.5rem;min-height:auto}
 .testimonials-template-carousel .testimonials-box{min-height:460px}
 .testimonials-section .carousel-inner{min-height:300px}

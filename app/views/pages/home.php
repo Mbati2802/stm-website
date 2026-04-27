@@ -228,7 +228,7 @@ $snapshotColClass = $snapshotCols === 4 ? 'col-md-6 col-lg-3' : ($snapshotCols =
 <?php endif; ?>
 
 <?php if ($sv['testimonials'] && $testimonials !== []): ?>
-<section class="section-stack testimonials-section testimonials-template-<?= e($testimonialTemplate) ?> testimonials-card-<?= e($testimonialCardStyle) ?>" style="--testimonial-accent: <?= e($validHexAccent) ?>; --testimonial-bg: <?= e($validHexBg) ?>;">
+<section class="section-stack testimonials-section home-testimonials-section testimonials-template-<?= e($testimonialTemplate) ?> testimonials-card-<?= e($testimonialCardStyle) ?>" style="--testimonial-accent: <?= e($validHexAccent) ?>; --testimonial-bg: <?= e($validHexBg) ?>;">
     <div class="site-width boxed-section testimonials-box">
         <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-up">
             <h2 class="h3 fw-bold mb-0 split-title">
