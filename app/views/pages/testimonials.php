@@ -2,9 +2,7 @@
 $testimonialTemplate = (string)($settings['testimonial_template'] ?? 'cards');
 $testimonialCardStyle = (string)($settings['testimonial_card_style'] ?? 'centered');
 $testimonialAccent = (string)($settings['testimonial_accent_color'] ?? '#5fc7e7');
-$testimonialBg = (string)($settings['testimonial_bg_color'] ?? '#f5f7fa');
 $validHexAccent = preg_match('/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/', $testimonialAccent) ? $testimonialAccent : '#5fc7e7';
-$validHexBg = preg_match('/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/', $testimonialBg) ? $testimonialBg : '#f5f7fa';
 $gridCount = max(2, min(5, (int)($settings['testimonial_grid_count'] ?? 3)));
 $colClass = match ($gridCount) {
     2 => 'col-md-6',
@@ -25,8 +23,8 @@ $heroSecondaryLink = 'contact';
 include __DIR__ . '/../partials/page_hero.php';
 ?>
 
-<section class="section-stack testimonials-section testimonials-template-cards testimonials-card-<?= e($testimonialCardStyle) ?>" style="--testimonial-accent: <?= e($validHexAccent) ?>; --testimonial-bg: <?= e($validHexBg) ?>;">
-    <div class="site-width boxed-section" style="background:var(--testimonial-bg)">
+<section class="section-stack testimonials-section testimonials-template-cards testimonials-card-<?= e($testimonialCardStyle) ?>" style="--testimonial-accent: <?= e($validHexAccent) ?>;">
+    <div class="site-width boxed-section">
         <div class="row g-4">
             <div class="col-lg-8">
                 <h1 class="split-title mb-3">
