@@ -149,30 +149,53 @@ class SocialFetcher
     private function httpGetJson(string $url): array
     {
         $ch = curl_init($url);
-        curl_setopt_array($ch, [
+        $opts = [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 20,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
             CURLOPT_USERAGENT => 'STM-Website/1.0',
-        ]);
+        ];
+        // cPanel shared hosting: try common CA bundle paths
+        foreach (['/etc/ssl/certs/ca-certificates.crt', '/etc/pki/tls/certs/ca-bundle.crt', '/etc/ssl/cert.pem'] as $ca) {
+            if (file_exists($ca)) {
+                $opts[CURLOPT_CAINFO] = $ca;
+                break;
+            }
+        }
+        curl_setopt_array($ch, $opts);
         $body = curl_exec($ch);
         $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $err = curl_error($ch);
+        $errno = curl_errno($ch);
+
+        // SSL handshake failure fallback: retry without peer verification
+        if ($body === false && in_array($errno, [CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, CURLE_PEER_FAILED_VERIFICATION, 60, 77], true)) {
+            $this->errors[] = 'SSL verify failed, retrying without verify: ' . $err;
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            $body = curl_exec($ch);
+            $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $err = curl_error($ch);
+        }
+
         curl_close($ch);
         if ($body === false) {
-            throw new RuntimeException('HTTP error: ' . $err);
+            throw new RuntimeException('cURL error (' . $errno . '): ' . $err);
         }
         $json = json_decode((string)$body, true);
         if (!is_array($json)) {
-            throw new RuntimeException('Invalid JSON response (HTTP ' . $code . ')');
+            throw new RuntimeException('Invalid JSON response (HTTP ' . $code . '): ' . mb_substr((string)$body, 0, 200));
         }
         if (isset($json['error'])) {
             $msg = (string)($json['error']['message'] ?? 'Graph API error');
-            throw new RuntimeException($msg . ' (code ' . (int)($json['error']['code'] ?? 0) . ')');
+            $type = (string)($json['error']['type'] ?? '');
+            throw new RuntimeException($msg . ' [' . $type . '] (code ' . (int)($json['error']['code'] ?? 0) . ')');
         }
         if ($code >= 400) {
-            throw new RuntimeException('HTTP ' . $code);
+            throw new RuntimeException('HTTP ' . $code . ': ' . mb_substr((string)$body, 0, 200));
         }
         return $json;
     }

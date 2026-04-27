@@ -966,7 +966,7 @@ class ContentModel
         if ($visibleOnly) {
             $sql .= ' WHERE is_visible = 1';
         }
-        $sql .= ' ORDER BY is_pinned DESC, created_at DESC';
+        $sql .= ' ORDER BY is_pinned DESC, COALESCE(posted_at, created_at) DESC';
         if ($limit > 0) {
             $sql .= ' LIMIT ' . (int)$limit;
         }

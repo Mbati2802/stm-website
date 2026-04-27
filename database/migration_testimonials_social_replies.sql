@@ -40,10 +40,28 @@ CREATE TABLE IF NOT EXISTS social_updates (
     source VARCHAR(50) DEFAULT 'general',
     is_pinned TINYINT(1) DEFAULT 0,
     is_visible TINYINT(1) DEFAULT 1,
+    external_id VARCHAR(255) NULL,
+    external_source VARCHAR(50) NULL,
+    auto_fetched TINYINT(1) DEFAULT 0,
+    posted_at DATETIME NULL,
+    fetched_at DATETIME NULL,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_social_visible (is_visible),
-    INDEX idx_social_pinned (is_pinned)
+    INDEX idx_social_pinned (is_pinned),
+    UNIQUE INDEX idx_social_external (external_source, external_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 3b. Add missing columns to social_updates if table already exists (safe to re-run)
+ALTER TABLE social_updates ADD COLUMN IF NOT EXISTS external_id VARCHAR(255) NULL;
+ALTER TABLE social_updates ADD COLUMN IF NOT EXISTS external_source VARCHAR(50) NULL;
+ALTER TABLE social_updates ADD COLUMN IF NOT EXISTS auto_fetched TINYINT(1) DEFAULT 0;
+ALTER TABLE social_updates ADD COLUMN IF NOT EXISTS posted_at DATETIME NULL;
+ALTER TABLE social_updates ADD COLUMN IF NOT EXISTS fetched_at DATETIME NULL;
+
+-- Add unique index for upsert (ignore error if already exists)
+-- MySQL/MariaDB: CREATE UNIQUE INDEX IF NOT EXISTS requires MariaDB 10.1.4+
+-- If this fails, run manually: ALTER TABLE social_updates ADD UNIQUE INDEX idx_social_external (external_source, external_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_social_external ON social_updates (external_source, external_id);
 
 -- 4. Seed default testimonials (matching current JSON defaults)
 -- Safe to skip if you already have testimonials in the table.
