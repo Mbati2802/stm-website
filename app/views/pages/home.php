@@ -319,16 +319,7 @@ foreach ($bannerCandidates as $candidate) {
         $socialUpdates = array_slice($socialUpdates, 0, $suLimit);
     }
     $hasMore = count($socialUpdates) >= ($suRows > 0 ? $suRows * $suCols : 999);
-    // DEBUG: Check first item - temporarily enabled for diagnostics
-    echo '<div style="background:#fff;padding:10px;margin:10px;border:2px solid red;z-index:9999;position:relative;font-family:monospace">';
-    echo '<strong>DEBUG:</strong> Show Images: ' . ($suShowImages ? 'YES' : 'NO') . "<br>";
-    if (!empty($socialUpdates)) {
-        echo 'First item ID: ' . ($socialUpdates[0]['id'] ?? 'N/A') . "<br>";
-        echo 'First item external_id: ' . ($socialUpdates[0]['external_id'] ?? 'N/A') . "<br>";
-        echo 'First item image_path: ' . (empty($socialUpdates[0]['image_path']) ? 'EMPTY/NULL' : htmlspecialchars(substr($socialUpdates[0]['image_path'], 0, 100))) . "<br>";
-        echo 'First item source: ' . ($socialUpdates[0]['source'] ?? 'N/A') . "<br>";
-    }
-    echo '</div>';
+    // DEBUG removed - images confirmed in DB
 ?>
 <section class="section-stack social-updates-section" style="--su-bg:<?= e($suBgColor) ?>;--su-card-bg:<?= e($suCardBg) ?>;--su-accent:<?= e($suAccent) ?>">
     <div class="site-width boxed-section" data-aos="fade-up" style="background:var(--su-bg)">
@@ -353,7 +344,7 @@ foreach ($bannerCandidates as $candidate) {
             <div class="col-12">
                 <div class="d-flex align-items-center p-2 border rounded mb-1" style="background:var(--su-card-bg)">
                     <?php if ($suShowImages && !empty($update['image_path'])): ?>
-                    <img src="<?= e((string)$update['image_path']) ?>" alt="" class="rounded me-2" style="width:60px;height:60px;object-fit:cover;flex-shrink:0" loading="lazy">
+                    <img src="<?= e((string)$update['image_path']) ?>" alt="" class="rounded me-2" style="width:60px;height:60px;object-fit:cover;flex-shrink:0" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
                     <?php endif; ?>
                     <div class="flex-grow-1 min-w-0">
                         <div class="social-feed-content<?= $suContentLines > 0 ? '' : ' social-feed-content-expanded' ?>" style="<?= $suContentLines > 0 ? '-webkit-line-clamp:' . $suContentLines . ';line-clamp:' . $suContentLines : '' ?>"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
@@ -378,7 +369,7 @@ foreach ($bannerCandidates as $candidate) {
                             <span class="social-feed-source" style="color:var(--su-accent)"><i class="bi bi-<?= $update['source'] === 'instagram' ? 'instagram' : ($update['source'] === 'facebook' ? 'facebook' : 'tag') ?> me-1"></i><?= e(ucfirst((string)$update['source'])) ?></span>
                         <?php endif; ?>
                         <?php if ($suShowImages && !empty($update['image_path'])): ?>
-                            <img src="<?= e((string)$update['image_path']) ?>" alt="" class="social-feed-image" loading="lazy">
+                            <img src="<?= e((string)$update['image_path']) ?>" alt="" class="social-feed-image" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">
                         <?php endif; ?>
                         <div class="social-feed-content<?= $suContentLines > 0 ? '' : ' social-feed-content-expanded' ?>" style="<?= $suContentLines > 0 ? '-webkit-line-clamp:' . $suContentLines . ';line-clamp:' . $suContentLines : '' ?>"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
                         <div class="social-feed-meta">
