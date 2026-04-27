@@ -62,12 +62,21 @@ $defaultSnapshotCards = [
     ['key' => 'about', 'title' => 'About the College', 'icon' => 'bi-info-circle'],
     ['key' => 'programmes', 'title' => 'Programmes', 'icon' => 'bi-journal-bookmark'],
     ['key' => 'events', 'title' => 'Events & Activities', 'icon' => 'bi-calendar-event'],
+    ['key' => 'social_updates', 'title' => 'Social Updates', 'icon' => 'bi-megaphone'],
     ['key' => 'library', 'title' => 'Library Resources', 'icon' => 'bi-book'],
+    ['key' => 'departments', 'title' => 'Departments', 'icon' => 'bi-diagram-3'],
     ['key' => 'media', 'title' => 'Media & News', 'icon' => 'bi-newspaper'],
+    ['key' => 'gallery', 'title' => 'Campus Gallery', 'icon' => 'bi-images'],
     ['key' => 'testimonials', 'title' => 'Testimonials', 'icon' => 'bi-chat-quote'],
     ['key' => 'faqs', 'title' => 'FAQs', 'icon' => 'bi-question-circle'],
+    ['key' => 'principal', 'title' => 'Principal’s Office', 'icon' => 'bi-person-badge'],
+    ['key' => 'registrar', 'title' => 'Registrar Desk', 'icon' => 'bi-folder-check'],
+    ['key' => 'uniqueness', 'title' => 'What Makes Us Unique', 'icon' => 'bi-stars'],
     ['key' => 'portal', 'title' => 'Student Portal', 'icon' => 'bi-person-workspace'],
     ['key' => 'contact', 'title' => 'Contact Us', 'icon' => 'bi-envelope-open'],
+    ['key' => 'contact_admissions', 'title' => 'Admissions Contact', 'icon' => 'bi-telephone-forward'],
+    ['key' => 'contact_registrar', 'title' => 'Registrar Contact', 'icon' => 'bi-telephone'],
+    ['key' => 'portals', 'title' => 'All Portals', 'icon' => 'bi-box-arrow-in-right'],
 ];
 $layoutSettingsRaw = (string)($settings['home_page_snapshots_layout_json'] ?? '');
 $layoutSettings = json_decode($layoutSettingsRaw, true);
@@ -335,16 +344,21 @@ usort($defaultSnapshotCards, static function (array $a, array $b) use ($layoutMa
                         <div class="border rounded p-3 mb-3 bg-light">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <strong class="small text-uppercase text-muted">Card Visibility & Order</strong>
-                                <small class="text-muted">Drag to reorder</small>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" id="snapshot-enable-all">Enable all</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" id="snapshot-disable-all">Disable all</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2" id="snapshot-reset-default">Reset order</button>
+                                    <small class="text-muted">Drag to reorder</small>
+                                </div>
                             </div>
                             <input type="hidden" name="home_page_snapshots_layout_json" id="home_page_snapshots_layout_json" value="<?= e($settings['home_page_snapshots_layout_json'] ?? '') ?>">
                             <div id="snapshot-cards-manager" class="d-grid gap-2">
-                                <?php foreach ($defaultSnapshotCards as $card): ?>
+                                <?php foreach ($defaultSnapshotCards as $idx => $card): ?>
                                     <?php
                                     $cardKey = (string)$card['key'];
                                     $cardEnabled = $layoutMap[$cardKey]['enabled'] ?? true;
                                     ?>
-                                    <div class="d-flex align-items-center justify-content-between border rounded p-2 bg-white snapshot-item" draggable="true" data-key="<?= e($cardKey) ?>">
+                                    <div class="d-flex align-items-center justify-content-between border rounded p-2 bg-white snapshot-item" draggable="true" data-key="<?= e($cardKey) ?>" data-default-order="<?= (int)$idx ?>">
                                         <div class="d-flex align-items-center gap-2">
                                             <i class="bi bi-grip-vertical text-muted"></i>
                                             <i class="bi <?= e((string)$card['icon']) ?> text-primary"></i>
@@ -790,6 +804,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const snapshotManager = document.getElementById('snapshot-cards-manager');
     const snapshotLayoutInput = document.getElementById('home_page_snapshots_layout_json');
+    const snapshotEnableAllBtn = document.getElementById('snapshot-enable-all');
+    const snapshotDisableAllBtn = document.getElementById('snapshot-disable-all');
+    const snapshotResetBtn = document.getElementById('snapshot-reset-default');
     const syncSnapshotLayout = function () {
         if (!snapshotManager || !snapshotLayoutInput) return;
         const items = Array.from(snapshotManager.querySelectorAll('.snapshot-item')).map((el) => {
@@ -828,6 +845,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 toggle.addEventListener('change', syncSnapshotLayout);
             }
         });
+        if (snapshotEnableAllBtn) {
+            snapshotEnableAllBtn.addEventListener('click', function () {
+                snapshotManager.querySelectorAll('.snapshot-toggle').forEach((el) => { el.checked = true; });
+                syncSnapshotLayout();
+            });
+        }
+        if (snapshotDisableAllBtn) {
+            snapshotDisableAllBtn.addEventListener('click', function () {
+                snapshotManager.querySelectorAll('.snapshot-toggle').forEach((el) => { el.checked = false; });
+                syncSnapshotLayout();
+            });
+        }
+        if (snapshotResetBtn) {
+            snapshotResetBtn.addEventListener('click', function () {
+                const items = Array.from(snapshotManager.querySelectorAll('.snapshot-item'));
+                items.sort((a, b) => {
+                    const aPos = Number(a.getAttribute('data-default-order') || '9999');
+                    const bPos = Number(b.getAttribute('data-default-order') || '9999');
+                    return aPos - bPos;
+                });
+                items.forEach((item) => {
+                    snapshotManager.appendChild(item);
+                });
+                syncSnapshotLayout();
+            });
+        }
         syncSnapshotLayout();
     }
 
