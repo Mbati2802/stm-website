@@ -58,6 +58,38 @@ $manageableEntities = [
 ];
 $selectedSeniorPermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['junior_admin_permissions'] ?? '')))));
 $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explode(',', (string)($settings['teacher_permissions'] ?? '')))));
+$defaultSnapshotCards = [
+    ['key' => 'about', 'title' => 'About the College', 'icon' => 'bi-info-circle'],
+    ['key' => 'programmes', 'title' => 'Programmes', 'icon' => 'bi-journal-bookmark'],
+    ['key' => 'events', 'title' => 'Events & Activities', 'icon' => 'bi-calendar-event'],
+    ['key' => 'library', 'title' => 'Library Resources', 'icon' => 'bi-book'],
+    ['key' => 'media', 'title' => 'Media & News', 'icon' => 'bi-newspaper'],
+    ['key' => 'testimonials', 'title' => 'Testimonials', 'icon' => 'bi-chat-quote'],
+    ['key' => 'faqs', 'title' => 'FAQs', 'icon' => 'bi-question-circle'],
+    ['key' => 'portal', 'title' => 'Student Portal', 'icon' => 'bi-person-workspace'],
+    ['key' => 'contact', 'title' => 'Contact Us', 'icon' => 'bi-envelope-open'],
+];
+$layoutSettingsRaw = (string)($settings['home_page_snapshots_layout_json'] ?? '');
+$layoutSettings = json_decode($layoutSettingsRaw, true);
+$layoutMap = [];
+if (is_array($layoutSettings)) {
+    foreach ($layoutSettings as $index => $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+        $key = trim((string)($item['key'] ?? ''));
+        if ($key === '') {
+            continue;
+        }
+        $enabled = !isset($item['enabled']) || in_array(strtolower((string)$item['enabled']), ['1', 'true', 'yes', 'on'], true);
+        $layoutMap[$key] = ['enabled' => $enabled, 'position' => (int)$index];
+    }
+}
+usort($defaultSnapshotCards, static function (array $a, array $b) use ($layoutMap): int {
+    $aPos = $layoutMap[$a['key']]['position'] ?? 9999;
+    $bPos = $layoutMap[$b['key']]['position'] ?? 9999;
+    return $aPos <=> $bPos;
+});
 ?>
 
 <section class="py-4">
@@ -300,6 +332,32 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                     <div class="soft-card p-4 settings-card" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Homepage Explore Pages Snapshots</h2>
                         <p class="text-muted small mb-2">Cards are auto-generated from major pages (About, Programmes, Events, Library, Media, Testimonials, FAQs, Contact, Student Portal). You can override or add cards with JSON below.</p>
+                        <div class="border rounded p-3 mb-3 bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong class="small text-uppercase text-muted">Card Visibility & Order</strong>
+                                <small class="text-muted">Drag to reorder</small>
+                            </div>
+                            <input type="hidden" name="home_page_snapshots_layout_json" id="home_page_snapshots_layout_json" value="<?= e($settings['home_page_snapshots_layout_json'] ?? '') ?>">
+                            <div id="snapshot-cards-manager" class="d-grid gap-2">
+                                <?php foreach ($defaultSnapshotCards as $card): ?>
+                                    <?php
+                                    $cardKey = (string)$card['key'];
+                                    $cardEnabled = $layoutMap[$cardKey]['enabled'] ?? true;
+                                    ?>
+                                    <div class="d-flex align-items-center justify-content-between border rounded p-2 bg-white snapshot-item" draggable="true" data-key="<?= e($cardKey) ?>">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-grip-vertical text-muted"></i>
+                                            <i class="bi <?= e((string)$card['icon']) ?> text-primary"></i>
+                                            <span><?= e((string)$card['title']) ?></span>
+                                        </div>
+                                        <label class="form-check-label d-flex align-items-center gap-2">
+                                            <span class="small text-muted">Show</span>
+                                            <input class="form-check-input snapshot-toggle" type="checkbox" <?= $cardEnabled ? 'checked' : '' ?>>
+                                        </label>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                         <label class="form-label">Page Snapshot Overrides JSON (optional)</label>
                         <textarea name="home_page_snapshots_json" rows="8" class="form-control" placeholder='[{"title":"Apply Online","description":"Start your admission process in minutes.","link":"programmes/apply","icon":"bi-pencil-square","badge":"Admissions"}]'><?= e($settings['home_page_snapshots_json'] ?? '') ?></textarea>
                         <small class="text-muted">Fields supported per card: <code>title</code>, <code>description</code>, <code>link</code>, <code>icon</code>, <code>badge</code>, <code>cta</code>.</small>
@@ -728,6 +786,49 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (tabs[0]) {
         tabs[0].click();
+    }
+
+    const snapshotManager = document.getElementById('snapshot-cards-manager');
+    const snapshotLayoutInput = document.getElementById('home_page_snapshots_layout_json');
+    const syncSnapshotLayout = function () {
+        if (!snapshotManager || !snapshotLayoutInput) return;
+        const items = Array.from(snapshotManager.querySelectorAll('.snapshot-item')).map((el) => {
+            const key = el.getAttribute('data-key') || '';
+            const toggle = el.querySelector('.snapshot-toggle');
+            const enabled = !!(toggle && toggle.checked);
+            return { key: key, enabled: enabled };
+        }).filter((item) => item.key !== '');
+        snapshotLayoutInput.value = JSON.stringify(items);
+    };
+    if (snapshotManager && snapshotLayoutInput) {
+        let dragged = null;
+        snapshotManager.querySelectorAll('.snapshot-item').forEach((item) => {
+            item.addEventListener('dragstart', function () {
+                dragged = item;
+                item.classList.add('opacity-50');
+            });
+            item.addEventListener('dragend', function () {
+                item.classList.remove('opacity-50');
+                dragged = null;
+                syncSnapshotLayout();
+            });
+            item.addEventListener('dragover', function (event) {
+                event.preventDefault();
+            });
+            item.addEventListener('drop', function (event) {
+                event.preventDefault();
+                if (!dragged || dragged === item) return;
+                const rect = item.getBoundingClientRect();
+                const before = (event.clientY - rect.top) < (rect.height / 2);
+                snapshotManager.insertBefore(dragged, before ? item : item.nextSibling);
+                syncSnapshotLayout();
+            });
+            const toggle = item.querySelector('.snapshot-toggle');
+            if (toggle) {
+                toggle.addEventListener('change', syncSnapshotLayout);
+            }
+        });
+        syncSnapshotLayout();
     }
 
 });

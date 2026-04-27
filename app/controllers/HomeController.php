@@ -151,6 +151,7 @@ class HomeController extends Controller
     {
         $baseCards = [
             [
+                'key' => 'about',
                 'title' => 'About the College',
                 'description' => plain_text((string)($settings['about_short_tagline'] ?? $settings['about_intro'] ?? 'Discover our mission, values, and student-focused learning approach.')),
                 'link' => 'about',
@@ -159,6 +160,7 @@ class HomeController extends Controller
                 'cta' => 'Explore',
             ],
             [
+                'key' => 'programmes',
                 'title' => 'Programmes',
                 'description' => 'Browse ' . (int)$model->countAll('programmes') . ' programmes and find the right career path for you.',
                 'link' => 'programmes',
@@ -167,6 +169,7 @@ class HomeController extends Controller
                 'cta' => 'View Programmes',
             ],
             [
+                'key' => 'events',
                 'title' => 'Events & Activities',
                 'description' => 'Stay updated on workshops, trainings, and campus activities.',
                 'link' => 'events',
@@ -175,6 +178,7 @@ class HomeController extends Controller
                 'cta' => 'See Events',
             ],
             [
+                'key' => 'library',
                 'title' => 'Library Resources',
                 'description' => 'Access learning materials and downloadable study resources.',
                 'link' => 'library',
@@ -183,6 +187,7 @@ class HomeController extends Controller
                 'cta' => 'Open Library',
             ],
             [
+                'key' => 'media',
                 'title' => 'Media & News',
                 'description' => 'Catch up with campus stories, updates, and highlights.',
                 'link' => 'media',
@@ -191,6 +196,7 @@ class HomeController extends Controller
                 'cta' => 'Read Updates',
             ],
             [
+                'key' => 'testimonials',
                 'title' => 'Testimonials',
                 'description' => 'Read student and parent experiences from our community.',
                 'link' => 'testimonials',
@@ -199,6 +205,7 @@ class HomeController extends Controller
                 'cta' => 'View Testimonials',
             ],
             [
+                'key' => 'faqs',
                 'title' => 'FAQs',
                 'description' => 'Get quick answers to common admissions and campus questions.',
                 'link' => 'faqs',
@@ -207,6 +214,7 @@ class HomeController extends Controller
                 'cta' => 'Read FAQs',
             ],
             [
+                'key' => 'portal',
                 'title' => 'Student Portal',
                 'description' => 'Log in to access grades, assignments, timetable, and support.',
                 'link' => 'portal/login',
@@ -215,6 +223,7 @@ class HomeController extends Controller
                 'cta' => 'Open Portal',
             ],
             [
+                'key' => 'contact',
                 'title' => 'Contact Us',
                 'description' => 'Speak with admissions or support and get guidance quickly.',
                 'link' => 'contact',
@@ -225,34 +234,73 @@ class HomeController extends Controller
         ];
 
         $rawOverrides = (string)($settings['home_page_snapshots_json'] ?? '');
-        if (trim($rawOverrides) === '') {
-            return $baseCards;
-        }
-        $overrides = json_decode($rawOverrides, true);
-        if (!is_array($overrides)) {
-            return $baseCards;
+        $cards = $baseCards;
+        if (trim($rawOverrides) !== '') {
+            $overrides = json_decode($rawOverrides, true);
+            if (is_array($overrides)) {
+                $normalized = [];
+                foreach ($overrides as $item) {
+                    if (!is_array($item)) {
+                        continue;
+                    }
+                    $title = trim((string)($item['title'] ?? ''));
+                    $description = trim((string)($item['description'] ?? ''));
+                    $link = trim((string)($item['link'] ?? ''));
+                    if ($title === '' || $link === '') {
+                        continue;
+                    }
+                    $normalized[] = [
+                        'key' => trim((string)($item['key'] ?? slugify($title))),
+                        'title' => $title,
+                        'description' => $description !== '' ? $description : 'Learn more about this section.',
+                        'link' => $link,
+                        'icon' => trim((string)($item['icon'] ?? 'bi-link-45deg')) ?: 'bi-link-45deg',
+                        'badge' => trim((string)($item['badge'] ?? 'Explore')) ?: 'Explore',
+                        'cta' => trim((string)($item['cta'] ?? 'Open')) ?: 'Open',
+                    ];
+                }
+                if ($normalized !== []) {
+                    $cards = $normalized;
+                }
+            }
         }
 
-        $normalized = [];
-        foreach ($overrides as $item) {
+        $layout = json_decode((string)($settings['home_page_snapshots_layout_json'] ?? ''), true);
+        if (!is_array($layout) || $layout === []) {
+            return $cards;
+        }
+
+        $byKey = [];
+        foreach ($cards as $card) {
+            $key = trim((string)($card['key'] ?? ''));
+            if ($key === '') {
+                $key = slugify((string)($card['title'] ?? 'card'));
+            }
+            $card['key'] = $key;
+            $byKey[$key] = $card;
+        }
+
+        $ordered = [];
+        foreach ($layout as $item) {
             if (!is_array($item)) {
                 continue;
             }
-            $title = trim((string)($item['title'] ?? ''));
-            $description = trim((string)($item['description'] ?? ''));
-            $link = trim((string)($item['link'] ?? ''));
-            if ($title === '' || $link === '') {
+            $key = trim((string)($item['key'] ?? ''));
+            if ($key === '' || !isset($byKey[$key])) {
                 continue;
             }
-            $normalized[] = [
-                'title' => $title,
-                'description' => $description !== '' ? $description : 'Learn more about this section.',
-                'link' => $link,
-                'icon' => trim((string)($item['icon'] ?? 'bi-link-45deg')) ?: 'bi-link-45deg',
-                'badge' => trim((string)($item['badge'] ?? 'Explore')) ?: 'Explore',
-                'cta' => trim((string)($item['cta'] ?? 'Open')) ?: 'Open',
-            ];
+            $enabled = !isset($item['enabled']) || in_array(strtolower((string)$item['enabled']), ['1', 'true', 'yes', 'on'], true);
+            if (!$enabled) {
+                continue;
+            }
+            $ordered[] = $byKey[$key];
+            unset($byKey[$key]);
         }
-        return $normalized !== [] ? $normalized : $baseCards;
+
+        foreach ($byKey as $remaining) {
+            $ordered[] = $remaining;
+        }
+
+        return $ordered;
     }
 }

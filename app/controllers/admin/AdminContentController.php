@@ -65,6 +65,7 @@ class AdminContentController extends Controller
         'programme_mosaic_images_json',
         'home_extra_sections_json',
         'home_page_snapshots_json',
+        'home_page_snapshots_layout_json',
         'banner_home',
         'banner_programmes',
         'banner_about',
