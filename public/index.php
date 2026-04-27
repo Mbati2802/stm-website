@@ -110,6 +110,8 @@ $router->add('POST', 'admin/media/upload', [AdminContentController::class, 'uplo
 $router->add('GET', 'admin/media/delete/{id}', [AdminContentController::class, 'deleteMedia']);
 $router->add('GET', 'admin/settings', [AdminContentController::class, 'settings']);
 $router->add('POST', 'admin/settings', [AdminContentController::class, 'saveSettings']);
+$router->add('POST', 'admin/social-fetch/run', [AdminContentController::class, 'runSocialFetch']);
+$router->add('GET', 'cron/social-fetch', [AdminContentController::class, 'cronSocialFetch']);
 $router->add('GET', 'admin/internal-messages', [AdminContentController::class, 'internalMessages']);
 $router->add('POST', 'admin/internal-messages/send', [AdminContentController::class, 'sendInternalMessage']);
 $router->add('GET', 'admin/applications', [AdminContentController::class, 'applications']);

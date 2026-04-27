@@ -87,6 +87,12 @@ class AdminContentController extends Controller
         'testimonial_autoplay',
         'testimonial_speed',
         'social_updates_title',
+        'facebook_page_id',
+        'facebook_page_access_token',
+        'instagram_business_account_id',
+        'social_auto_fetch_enabled',
+        'social_auto_fetch_last_run',
+        'social_auto_fetch_cron_token',
         'junior_admin_permissions',
         'teacher_permissions',
     ];
@@ -1450,5 +1456,45 @@ class AdminContentController extends Controller
             return $value;
         }
         return $fallback;
+    }
+
+    public function runSocialFetch(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('social_updates')) {
+            $this->redirect('admin');
+        }
+        $fetcher = new SocialFetcher($this->config);
+        $result = $fetcher->syncAll(12);
+        if (!empty($result['errors'])) {
+            flash('error', 'Social fetch finished with issues: ' . implode(' | ', $result['errors']));
+        } else {
+            $msg = sprintf('Fetched %d posts (Facebook: %d, Instagram: %d).', (int)$result['total'], (int)$result['stats']['facebook'], (int)$result['stats']['instagram']);
+            flash('success', $msg);
+        }
+        $this->redirect('admin/list/social_updates');
+    }
+
+    public function cronSocialFetch(): void
+    {
+        // Token-protected endpoint for external cron services.
+        // Configure ?token=... matching the social_auto_fetch_cron_token setting.
+        $model = new ContentModel($this->config);
+        $settings = $model->getSettings();
+        $expected = trim((string)($settings['social_auto_fetch_cron_token'] ?? ''));
+        $given = trim((string)($_GET['token'] ?? ''));
+        header('Content-Type: application/json');
+        if ($expected === '' || !hash_equals($expected, $given)) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'Invalid token']);
+            return;
+        }
+        if (($settings['social_auto_fetch_enabled'] ?? '1') !== '1') {
+            echo json_encode(['ok' => true, 'skipped' => true, 'reason' => 'auto-fetch disabled']);
+            return;
+        }
+        $fetcher = new SocialFetcher($this->config);
+        $result = $fetcher->syncAll(12);
+        echo json_encode(['ok' => $result['success']] + $result);
     }
 }

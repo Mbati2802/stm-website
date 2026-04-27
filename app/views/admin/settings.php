@@ -372,12 +372,63 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                         <div class="mb-3">
                             <label class="form-label">Manage Updates</label>
                             <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/list/social_updates')) ?>"><i class="bi bi-megaphone me-1"></i>Manage Social Updates</a>
-                            <small class="text-muted d-block mt-1">Create and manage your own social updates feed — no third-party embeds needed.</small>
+                            <small class="text-muted d-block mt-1">Create or edit posts manually, or set up auto-fetch from Facebook/Instagram below.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Section Title</label>
                             <input name="social_updates_title" class="form-control" value="<?= e($settings['social_updates_title'] ?? 'Social Updates') ?>" placeholder="Social Updates">
                         </div>
+
+                        <hr class="my-3">
+                        <h3 class="h6 text-uppercase text-muted mb-2"><i class="bi bi-arrow-repeat me-1"></i>Auto-fetch from Facebook &amp; Instagram</h3>
+                        <p class="small text-muted mb-3">Posts from your Facebook Page and linked Instagram Business account will be pulled and shown automatically. Manually-created posts are kept untouched. Fetched posts refresh every cron run.</p>
+
+                        <div class="mb-3 form-check">
+                            <input class="form-check-input" type="checkbox" name="social_auto_fetch_enabled" value="1" id="autoFetchEnabled" <?= (($settings['social_auto_fetch_enabled'] ?? '1') === '1') ? 'checked' : '' ?>>
+                            <label class="form-check-label" for="autoFetchEnabled">Enable auto-fetch (cron will fetch new posts)</label>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Facebook Page ID <span class="text-muted">(numeric or @username)</span></label>
+                                <input name="facebook_page_id" class="form-control" value="<?= e($settings['facebook_page_id'] ?? '') ?>" placeholder="e.g. 123456789012345">
+                                <small class="text-muted">Find it at: <code>facebook.com/your-page/about</code> → "Page transparency".</small>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Facebook Page Access Token</label>
+                                <input name="facebook_page_access_token" type="password" class="form-control" value="<?= e($settings['facebook_page_access_token'] ?? '') ?>" placeholder="EAAG..." autocomplete="new-password">
+                                <small class="text-muted">Generate at <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener">Graph API Explorer</a>. Use a long-lived Page token (60 days) or System User token (no expiry). Required permissions: <code>pages_read_engagement</code>, <code>pages_show_list</code>, <code>instagram_basic</code> (for IG).</small>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Instagram Business Account ID <span class="text-muted">(optional)</span></label>
+                                <input name="instagram_business_account_id" class="form-control" value="<?= e($settings['instagram_business_account_id'] ?? '') ?>" placeholder="e.g. 17841400000000000">
+                                <small class="text-muted">Run in Graph Explorer: <code>/{your-page-id}?fields=instagram_business_account</code> to get this ID. Leave empty to skip Instagram.</small>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Cron Token</label>
+                                <?php $cronToken = (string)($settings['social_auto_fetch_cron_token'] ?? ''); ?>
+                                <input name="social_auto_fetch_cron_token" class="form-control" value="<?= e($cronToken) ?>" placeholder="auto-generated random string">
+                                <small class="text-muted">Used to protect the cron URL. Set any random string (16+ chars).</small>
+                            </div>
+                            <?php if ($cronToken !== ''): ?>
+                                <div class="col-12">
+                                    <div class="alert alert-info small mb-0">
+                                        <strong>Cron URL:</strong>
+                                        <code><?= e(base_url('cron/social-fetch?token=' . urlencode($cronToken))) ?></code>
+                                        <br>Schedule via cPanel → Cron Jobs to run every 30 minutes:
+                                        <br><code>*/30 * * * * curl -s "<?= e(base_url('cron/social-fetch?token=' . urlencode($cronToken))) ?>" &gt;/dev/null</code>
+                                        <?php if (!empty($settings['social_auto_fetch_last_run'])): ?>
+                                            <br><strong>Last run:</strong> <?= e((string)$settings['social_auto_fetch_last_run']) ?>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="mt-3 d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-success btn-sm" id="btnFetchSocialNow"><i class="bi bi-arrow-clockwise me-1"></i>Save then Fetch Now</button>
+                        </div>
+                        <form id="socialFetchNowForm" method="POST" action="<?= e(base_url('admin/social-fetch/run')) ?>" class="d-none"><?= csrf_field() ?></form>
                     </div>
 
                     <div class="soft-card p-4 settings-card settings-card-home settings-card-home-hero" data-settings-section="home">
@@ -775,5 +826,27 @@ document.addEventListener('DOMContentLoaded', function () {
     if (tabs[0]) {
         tabs[0].click();
     }
+
+    // "Save then Fetch Now" button: save settings first, then on next load
+    // (after redirect) trigger the fetch form. Uses sessionStorage flag.
+    const fetchBtn = document.getElementById('btnFetchSocialNow');
+    if (fetchBtn) {
+        fetchBtn.addEventListener('click', function () {
+            try { sessionStorage.setItem('triggerSocialFetch', '1'); } catch (e) {}
+            const mainForm = document.querySelector('form[action*="admin/settings"]');
+            if (mainForm) {
+                mainForm.submit();
+            }
+        });
+    }
+    try {
+        if (sessionStorage.getItem('triggerSocialFetch') === '1') {
+            sessionStorage.removeItem('triggerSocialFetch');
+            const fetchForm = document.getElementById('socialFetchNowForm');
+            if (fetchForm) {
+                setTimeout(function(){ fetchForm.submit(); }, 200);
+            }
+        }
+    } catch (e) {}
 });
 </script>
