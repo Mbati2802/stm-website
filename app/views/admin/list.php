@@ -167,66 +167,171 @@
 
 <?php if ($entity === 'social_updates'): ?>
 <div class="modal fade" id="entitySettingsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
-            <form method="POST" action="<?= e(base_url('admin/settings/partial')) ?>">
-                <?= csrf_field() ?>
-                <input type="hidden" name="_redirect" value="admin/list/social_updates">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-megaphone me-1"></i>Social Updates Settings</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">Section Title</label>
-                            <input name="social_updates_title" class="form-control" value="<?= e($entitySettings['social_updates_title'] ?? 'Social Updates') ?>" placeholder="Social Updates">
-                        </div>
-                        <div class="col-12"><hr class="my-1"><h6 class="text-uppercase text-muted mt-2 mb-0"><i class="bi bi-arrow-repeat me-1"></i>Auto-fetch from Facebook &amp; Instagram</h6><p class="small text-muted mb-2">Posts from your Facebook Page and linked Instagram account will be pulled automatically.</p></div>
-                        <div class="col-12">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="social_auto_fetch_enabled" value="1" <?= (($entitySettings['social_auto_fetch_enabled'] ?? '1') === '1') ? 'checked' : '' ?>>
-                                <label class="form-check-label">Enable auto-fetch</label>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Facebook Page ID</label>
-                            <input name="facebook_page_id" class="form-control" value="<?= e($entitySettings['facebook_page_id'] ?? '') ?>" placeholder="e.g. 123456789012345">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Facebook Page Access Token</label>
-                            <input name="facebook_page_access_token" type="password" class="form-control" value="<?= e($entitySettings['facebook_page_access_token'] ?? '') ?>" placeholder="EAAG..." autocomplete="new-password">
-                            <small class="text-muted">Generate at <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener">Graph API Explorer</a>. Permissions: <code>pages_read_engagement</code>, <code>pages_show_list</code>, <code>instagram_basic</code>.</small>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Instagram Business Account ID <span class="text-muted">(optional)</span></label>
-                            <input name="instagram_business_account_id" class="form-control" value="<?= e($entitySettings['instagram_business_account_id'] ?? '') ?>" placeholder="e.g. 17841400000000000">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Cron Token</label>
-                            <?php $cronToken = (string)($entitySettings['social_auto_fetch_cron_token'] ?? ''); ?>
-                            <input name="social_auto_fetch_cron_token" class="form-control" value="<?= e($cronToken) ?>" placeholder="random string 16+ chars">
-                        </div>
-                        <?php if ($cronToken !== ''): ?>
-                            <div class="col-12">
-                                <div class="alert alert-info small mb-0">
-                                    <strong>Cron URL:</strong> <code><?= e(base_url('cron/social-fetch?token=' . urlencode($cronToken))) ?></code>
-                                    <br>cPanel → Cron Jobs: <code>*/30 * * * * curl -s "<?= e(base_url('cron/social-fetch?token=' . urlencode($cronToken))) ?>" &gt;/dev/null</code>
-                                    <?php if (!empty($entitySettings['social_auto_fetch_last_run'])): ?>
-                                        <br><strong>Last run:</strong> <?= e((string)$entitySettings['social_auto_fetch_last_run']) ?>
-                                    <?php endif; ?>
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-megaphone me-1"></i>Social Updates Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" id="socialSettingsTabs">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#socialTabConfig">Configuration</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#socialTabDebug">Debug &amp; Preview</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="socialTabConfig">
+                        <form id="socialSettingsForm" method="POST" action="<?= e(base_url('admin/settings/partial')) ?>">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="_redirect" value="admin/list/social_updates">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Section Title</label>
+                                    <input name="social_updates_title" class="form-control" value="<?= e($entitySettings['social_updates_title'] ?? 'Social Updates') ?>" placeholder="Social Updates">
+                                </div>
+                                <div class="col-12"><hr class="my-1"><h6 class="text-uppercase text-muted mt-2 mb-0"><i class="bi bi-arrow-repeat me-1"></i>Auto-fetch from Facebook &amp; Instagram</h6><p class="small text-muted mb-2">Posts from your Facebook Page and linked Instagram account will be pulled automatically.</p></div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="social_auto_fetch_enabled" value="1" <?= (($entitySettings['social_auto_fetch_enabled'] ?? '1') === '1') ? 'checked' : '' ?>>
+                                        <label class="form-check-label">Enable auto-fetch</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Facebook Page ID</label>
+                                    <input name="facebook_page_id" class="form-control" value="<?= e($entitySettings['facebook_page_id'] ?? '') ?>" placeholder="e.g. 123456789012345">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Facebook Page Access Token</label>
+                                    <input name="facebook_page_access_token" type="password" class="form-control" value="<?= e($entitySettings['facebook_page_access_token'] ?? '') ?>" placeholder="EAAG..." autocomplete="new-password">
+                                    <small class="text-muted">Generate at <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener">Graph API Explorer</a>. Permissions: <code>pages_read_engagement</code>, <code>pages_show_list</code>, <code>instagram_basic</code>.</small>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Instagram Business Account ID <span class="text-muted">(optional)</span></label>
+                                    <input name="instagram_business_account_id" class="form-control" value="<?= e($entitySettings['instagram_business_account_id'] ?? '') ?>" placeholder="e.g. 17841400000000000">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Cron Token</label>
+                                    <?php $cronToken = (string)($entitySettings['social_auto_fetch_cron_token'] ?? ''); ?>
+                                    <input name="social_auto_fetch_cron_token" class="form-control" value="<?= e($cronToken) ?>" placeholder="random string 16+ chars">
+                                </div>
+                                <?php if ($cronToken !== ''): ?>
+                                    <div class="col-12">
+                                        <div class="alert alert-info small mb-0">
+                                            <strong>Cron URL:</strong> <code><?= e(base_url('cron/social-fetch?token=' . urlencode($cronToken))) ?></code>
+                                            <br>cPanel: <code>*/30 * * * * curl -s "<?= e(base_url('cron/social-fetch?token=' . urlencode($cronToken))) ?>" &gt;/dev/null</code>
+                                            <?php if (!empty($entitySettings['social_auto_fetch_last_run'])): ?>
+                                                <br><strong>Last run:</strong> <?= e((string)$entitySettings['social_auto_fetch_last_run']) ?>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="col-12 d-flex gap-2 flex-wrap">
+                                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save Settings</button>
+                                    <form id="socialFetchNowForm" method="POST" action="<?= e(base_url('admin/social-fetch/run')) ?>" class="d-inline"><?= csrf_field() ?><button type="submit" class="btn btn-success"><i class="bi bi-arrow-clockwise me-1"></i>Save &amp; Fetch Now</button></form>
                                 </div>
                             </div>
-                        <?php endif; ?>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="socialTabDebug">
+                        <p class="text-muted small mb-3">Test your API connection and preview posts that would be fetched — <strong>nothing is saved</strong> until you click "Fetch Now" on the Configuration tab.</p>
+                        <button type="button" class="btn btn-warning btn-sm mb-3" id="btnRunDebug"><i class="bi bi-bug me-1"></i>Run Debug &amp; Preview</button>
+                        <div id="debugOutput" style="display:none;">
+                            <h6 class="text-uppercase text-muted mt-2 mb-2"><i class="bi bi-wrench me-1"></i>Diagnostics</h6>
+                            <div id="debugDiag" class="bg-light p-3 rounded small mb-3" style="max-height:200px;overflow:auto;font-family:monospace;white-space:pre-wrap;"></div>
+                            <h6 class="text-uppercase text-muted mb-2"><i class="bi bi-eye me-1"></i>Preview Posts</h6>
+                            <div id="debugPosts"></div>
+                        </div>
+                        <div id="debugLoading" class="text-center py-3" style="display:none;">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <span class="ms-2 text-muted">Contacting Facebook/Instagram API...</span>
+                        </div>
+                        <div id="debugError" class="alert alert-danger small" style="display:none;"></div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save Settings</button>
-                    <form id="socialFetchNowForm" method="POST" action="<?= e(base_url('admin/social-fetch/run')) ?>" class="d-inline"><?= csrf_field() ?><button type="submit" class="btn btn-success"><i class="bi bi-arrow-clockwise me-1"></i>Fetch Now</button></form>
-                </div>
-            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var btn = document.getElementById('btnRunDebug');
+    if (!btn) return;
+    btn.addEventListener('click', function(){
+        var out = document.getElementById('debugOutput');
+        var diag = document.getElementById('debugDiag');
+        var posts = document.getElementById('debugPosts');
+        var loading = document.getElementById('debugLoading');
+        var errBox = document.getElementById('debugError');
+        out.style.display = 'none';
+        errBox.style.display = 'none';
+        loading.style.display = 'block';
+        btn.disabled = true;
+        fetch('<?= e(base_url('admin/social-fetch/debug')) ?>', {credentials:'same-origin'})
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            loading.style.display = 'none';
+            btn.disabled = false;
+            if (!data.ok && data.error) {
+                errBox.textContent = data.error + (data.trace ? ' (' + data.trace + ')' : '');
+                errBox.style.display = 'block';
+                return;
+            }
+            // Show diagnostics
+            var diagText = '';
+            if (data.config) {
+                diagText += '== Configuration ==\n';
+                diagText += 'Page ID: ' + (data.config.page_id || '(not set)') + '\n';
+                diagText += 'IG User ID: ' + (data.config.ig_user_id || '(not set)') + '\n';
+                diagText += 'Token set: ' + (data.config.token_set ? 'YES (' + data.config.token_prefix + ')' : 'NO') + '\n';
+                diagText += 'Auto-fetch: ' + (data.config.auto_fetch_enabled ? 'enabled' : 'disabled') + '\n';
+                diagText += 'Last run: ' + (data.config.last_run || 'never') + '\n';
+                diagText += 'Graph API: ' + (data.config.graph_version || '?') + '\n';
+            }
+            if (data.server) {
+                diagText += '\n== Server ==\n';
+                diagText += 'PHP: ' + data.server.php_version + '\n';
+                diagText += 'cURL: ' + data.server.curl_version + '\n';
+                diagText += 'SSL: ' + data.server.ssl_version + '\n';
+            }
+            if (data.result) {
+                diagText += '\n== Fetch Result ==\n';
+                diagText += 'Facebook posts: ' + (data.result.stats ? data.result.stats.facebook : 0) + '\n';
+                diagText += 'Instagram posts: ' + (data.result.stats ? data.result.stats.instagram : 0) + '\n';
+                diagText += 'Total: ' + (data.result.total || 0) + '\n';
+                if (data.result.errors && data.result.errors.length) {
+                    diagText += '\n== ERRORS ==\n';
+                    data.result.errors.forEach(function(e){ diagText += '⚠ ' + e + '\n'; });
+                }
+            }
+            diag.textContent = diagText;
+            // Show preview posts
+            var pp = data.preview_posts || [];
+            if (pp.length === 0) {
+                posts.innerHTML = '<div class="alert alert-warning small">No posts returned from API. Check errors above.</div>';
+            } else {
+                var html = '<div class="list-group">';
+                pp.forEach(function(p){
+                    html += '<div class="list-group-item">';
+                    html += '<div class="d-flex justify-content-between"><span class="badge bg-secondary">' + (p.source||'') + '</span><small class="text-muted">' + (p.posted_at||'') + '</small></div>';
+                    if (p.image) html += '<img src="' + p.image + '" class="mt-2 rounded" style="max-height:80px;max-width:120px;object-fit:cover;" loading="lazy">';
+                    html += '<p class="mb-1 mt-1 small">' + (p.content||'').replace(/</g,'&lt;') + '</p>';
+                    if (p.link) html += '<a href="' + p.link + '" target="_blank" class="small">View original</a>';
+                    html += '</div>';
+                });
+                html += '</div>';
+                posts.innerHTML = html;
+            }
+            out.style.display = 'block';
+        })
+        .catch(function(err){
+            loading.style.display = 'none';
+            btn.disabled = false;
+            errBox.textContent = 'Network error: ' + err.message;
+            errBox.style.display = 'block';
+        });
+    });
+});
+</script>
 <?php endif; ?>

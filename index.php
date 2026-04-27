@@ -113,6 +113,7 @@ $router->add('GET', 'admin/settings', [AdminContentController::class, 'settings'
 $router->add('POST', 'admin/settings', [AdminContentController::class, 'saveSettings']);
 $router->add('POST', 'admin/settings/partial', [AdminContentController::class, 'savePartialSettings']);
 $router->add('POST', 'admin/social-fetch/run', [AdminContentController::class, 'runSocialFetch']);
+$router->add('GET', 'admin/social-fetch/debug', [AdminContentController::class, 'debugSocialFetch']);
 $router->add('GET', 'cron/social-fetch', [AdminContentController::class, 'cronSocialFetch']);
 $router->add('GET', 'admin/internal-messages', [AdminContentController::class, 'internalMessages']);
 $router->add('POST', 'admin/internal-messages/send', [AdminContentController::class, 'sendInternalMessage']);

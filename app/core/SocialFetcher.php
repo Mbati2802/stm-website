@@ -20,6 +20,9 @@ class SocialFetcher
         $this->pdo = Database::getInstance($config['db']);
     }
 
+    private bool $dryRun = false;
+    private array $previewPosts = [];
+
     public function syncAll(int $limitPerSource = 12): array
     {
         $settings = (new ContentModel($this->config))->getSettings();
@@ -48,8 +51,45 @@ class SocialFetcher
             }
         }
 
-        $this->updateLastRun();
+        if (!$this->dryRun) {
+            $this->updateLastRun();
+        }
         return $this->result();
+    }
+
+    /**
+     * Preview mode: fetch posts from API but do NOT save to database.
+     * Returns full diagnostics + post previews.
+     */
+    public function preview(int $limitPerSource = 5): array
+    {
+        $this->dryRun = true;
+        $this->previewPosts = [];
+        $settings = (new ContentModel($this->config))->getSettings();
+
+        $diag = [
+            'config' => [
+                'page_id' => trim((string)($settings['facebook_page_id'] ?? '')),
+                'ig_user_id' => trim((string)($settings['instagram_business_account_id'] ?? '')),
+                'token_set' => trim((string)($settings['facebook_page_access_token'] ?? '')) !== '',
+                'token_prefix' => mb_substr(trim((string)($settings['facebook_page_access_token'] ?? '')), 0, 12) . '...',
+                'auto_fetch_enabled' => ($settings['social_auto_fetch_enabled'] ?? '1') === '1',
+                'last_run' => (string)($settings['social_auto_fetch_last_run'] ?? 'never'),
+                'graph_version' => self::GRAPH_VERSION,
+            ],
+            'server' => [
+                'curl_version' => function_exists('curl_version') ? curl_version()['version'] ?? 'unknown' : 'not installed',
+                'ssl_version' => function_exists('curl_version') ? curl_version()['ssl_version'] ?? 'unknown' : 'n/a',
+                'php_version' => PHP_VERSION,
+            ],
+        ];
+
+        $result = $this->syncAll($limitPerSource);
+        $diag['result'] = $result;
+        $diag['preview_posts'] = $this->previewPosts;
+
+        $this->dryRun = false;
+        return $diag;
     }
 
     private function fetchFacebookPagePosts(string $pageId, string $token, int $limit): int
@@ -116,6 +156,17 @@ class SocialFetcher
 
     private function upsert(string $externalId, string $source, string $content, string $image, string $link, ?string $postedAt): void
     {
+        if ($this->dryRun) {
+            $this->previewPosts[] = [
+                'external_id' => $externalId,
+                'source' => $source,
+                'content' => mb_substr($content, 0, 200),
+                'image' => $image,
+                'link' => $link,
+                'posted_at' => $postedAt,
+            ];
+            return;
+        }
         $sql = 'INSERT INTO social_updates
                     (content, image_path, link_url, source, is_pinned, is_visible,
                      external_id, external_source, auto_fetched, posted_at, fetched_at, created_at)

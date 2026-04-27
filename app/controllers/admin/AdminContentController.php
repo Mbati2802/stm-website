@@ -1509,6 +1509,29 @@ class AdminContentController extends Controller
         $this->redirect('admin/list/social_updates');
     }
 
+    public function debugSocialFetch(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('social_updates')) {
+            http_response_code(403);
+            header('Content-Type: application/json');
+            echo json_encode(['ok' => false, 'error' => 'Permission denied']);
+            return;
+        }
+        header('Content-Type: application/json');
+        try {
+            $fetcher = new SocialFetcher($this->config);
+            $diag = $fetcher->preview(5);
+            echo json_encode(['ok' => true] + $diag, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        } catch (\Throwable $e) {
+            echo json_encode([
+                'ok' => false,
+                'error' => $e->getMessage(),
+                'trace' => $e->getFile() . ':' . $e->getLine(),
+            ], JSON_PRETTY_PRINT);
+        }
+    }
+
     public function cronSocialFetch(): void
     {
         // Token-protected endpoint for external cron services.
