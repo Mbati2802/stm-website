@@ -64,6 +64,7 @@ class AdminContentController extends Controller
         'programme_sidebar_other_title',
         'programme_mosaic_images_json',
         'home_extra_sections_json',
+        'home_page_snapshots_json',
         'banner_home',
         'banner_programmes',
         'banner_about',
@@ -124,6 +125,8 @@ class AdminContentController extends Controller
         'show_home_events',
         'show_home_news',
         'show_home_cta',
+        'show_home_extra_sections',
+        'show_home_page_snapshots',
     ];
 
     public function list(string $entity): void

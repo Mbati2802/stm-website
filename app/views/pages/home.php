@@ -29,7 +29,7 @@ $testimonialGridCol = match ($testimonialGridCount) { 2 => 'col-md-6', 4 => 'col
 $testimonialSlideEffect = (string)($settings['testimonial_slide_effect'] ?? 'slide');
 $testimonialItemsPerSlide = max(1, min(3, (int)($settings['testimonial_items_per_slide'] ?? 1)));
 ?>
-<?php $sv = $sectionVisibility ?? ['hero'=>true,'cards'=>true,'banner'=>true,'why'=>true,'courses'=>true,'testimonials'=>true,'events'=>true,'news'=>true,'cta'=>true]; ?>
+<?php $sv = $sectionVisibility ?? ['hero'=>true,'cards'=>true,'banner'=>true,'why'=>true,'courses'=>true,'testimonials'=>true,'events'=>true,'news'=>true,'cta'=>true,'extra_sections'=>true,'page_snapshots'=>true]; ?>
 <?php if ($sv['hero']): ?>
 <section class="hero-ou-wrap">
     <div class="site-width hero-boxed">
@@ -163,7 +163,7 @@ foreach ($bannerCandidates as $candidate) {
 </section>
 <?php endif; ?>
 
-<?php if ($homeExtraSections !== []): ?>
+<?php if (($sv['extra_sections'] ?? true) && $homeExtraSections !== []): ?>
 <section class="section-stack">
     <div class="site-width boxed-section">
         <div class="row g-4">
@@ -177,6 +177,40 @@ foreach ($bannerCandidates as $candidate) {
                             <a class="btn btn-sm btn-primary" href="<?= e(base_url((string)$section['button_link'])) ?>"><?= e((string)($section['button_label'] ?? 'Learn More')) ?></a>
                         <?php endif; ?>
                     </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<?php
+$pageSnapshots = is_array($pageSnapshots ?? null) ? $pageSnapshots : [];
+?>
+<?php if (($sv['page_snapshots'] ?? true) && $pageSnapshots !== []): ?>
+<section class="section-stack">
+    <div class="site-width boxed-section" data-aos="fade-up">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3 fw-bold mb-0 split-title">
+                <span class="title-primary">Explore</span> |
+                <span class="title-secondary">More Pages</span>
+            </h2>
+            <a href="<?= e(base_url('about')) ?>" class="btn btn-sm btn-outline-primary">Discover More</a>
+        </div>
+        <div class="row g-4">
+            <?php foreach ($pageSnapshots as $snapshot): ?>
+                <div class="col-md-6 col-lg-4">
+                    <article class="soft-card p-3 h-100 bg-white">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-light text-dark"><?= e((string)($snapshot['badge'] ?? 'Explore')) ?></span>
+                            <i class="bi <?= e((string)($snapshot['icon'] ?? 'bi-link-45deg')) ?> text-primary"></i>
+                        </div>
+                        <h3 class="h5 mb-2"><?= e((string)($snapshot['title'] ?? 'Page')) ?></h3>
+                        <p class="small text-muted mb-3 line-clamp-3"><?= e((string)($snapshot['description'] ?? 'Learn more from this section.')) ?></p>
+                        <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url((string)($snapshot['link'] ?? ''))) ?>">
+                            <?= e((string)($snapshot['cta'] ?? 'Open Page')) ?>
+                        </a>
+                    </article>
                 </div>
             <?php endforeach; ?>
         </div>

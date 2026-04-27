@@ -68,6 +68,7 @@ class HomeController extends Controller
         }, $testimonialsRaw);
 
         $socialUpdates = $model->getSocialUpdates(true, 24);
+        $pageSnapshots = $this->buildPageSnapshots($model, $settings);
 
         $this->view('pages/home', [
             'metaTitle' => 'Home',
@@ -78,6 +79,7 @@ class HomeController extends Controller
             'news' => $model->latest('news', 3),
             'testimonials' => $testimonials,
             'socialUpdates' => $socialUpdates,
+            'pageSnapshots' => $pageSnapshots,
             'events' => $model->getUpcomingEvents(4),
             'sectionVisibility' => [
                 'hero' => $this->isEnabled($settings, 'show_home_hero'),
@@ -89,6 +91,8 @@ class HomeController extends Controller
                 'events' => $this->isEnabled($settings, 'show_home_events'),
                 'news' => $this->isEnabled($settings, 'show_home_news'),
                 'cta' => $this->isEnabled($settings, 'show_home_cta'),
+                'extra_sections' => $this->isEnabled($settings, 'show_home_extra_sections'),
+                'page_snapshots' => $this->isEnabled($settings, 'show_home_page_snapshots'),
             ],
         ]);
     }
@@ -141,5 +145,114 @@ class HomeController extends Controller
         }
 
         return $decoded;
+    }
+
+    private function buildPageSnapshots(ContentModel $model, array $settings): array
+    {
+        $baseCards = [
+            [
+                'title' => 'About the College',
+                'description' => plain_text((string)($settings['about_short_tagline'] ?? $settings['about_intro'] ?? 'Discover our mission, values, and student-focused learning approach.')),
+                'link' => 'about',
+                'icon' => 'bi-info-circle',
+                'badge' => 'About',
+                'cta' => 'Explore',
+            ],
+            [
+                'title' => 'Programmes',
+                'description' => 'Browse ' . (int)$model->countAll('programmes') . ' programmes and find the right career path for you.',
+                'link' => 'programmes',
+                'icon' => 'bi-journal-bookmark',
+                'badge' => 'Academics',
+                'cta' => 'View Programmes',
+            ],
+            [
+                'title' => 'Events & Activities',
+                'description' => 'Stay updated on workshops, trainings, and campus activities.',
+                'link' => 'events',
+                'icon' => 'bi-calendar-event',
+                'badge' => 'Campus',
+                'cta' => 'See Events',
+            ],
+            [
+                'title' => 'Library Resources',
+                'description' => 'Access learning materials and downloadable study resources.',
+                'link' => 'library',
+                'icon' => 'bi-book',
+                'badge' => 'Resources',
+                'cta' => 'Open Library',
+            ],
+            [
+                'title' => 'Media & News',
+                'description' => 'Catch up with campus stories, updates, and highlights.',
+                'link' => 'media',
+                'icon' => 'bi-newspaper',
+                'badge' => 'Updates',
+                'cta' => 'Read Updates',
+            ],
+            [
+                'title' => 'Testimonials',
+                'description' => 'Read student and parent experiences from our community.',
+                'link' => 'testimonials',
+                'icon' => 'bi-chat-quote',
+                'badge' => 'Voices',
+                'cta' => 'View Testimonials',
+            ],
+            [
+                'title' => 'FAQs',
+                'description' => 'Get quick answers to common admissions and campus questions.',
+                'link' => 'faqs',
+                'icon' => 'bi-question-circle',
+                'badge' => 'Help',
+                'cta' => 'Read FAQs',
+            ],
+            [
+                'title' => 'Student Portal',
+                'description' => 'Log in to access grades, assignments, timetable, and support.',
+                'link' => 'portal/login',
+                'icon' => 'bi-person-workspace',
+                'badge' => 'Portal',
+                'cta' => 'Open Portal',
+            ],
+            [
+                'title' => 'Contact Us',
+                'description' => 'Speak with admissions or support and get guidance quickly.',
+                'link' => 'contact',
+                'icon' => 'bi-envelope-open',
+                'badge' => 'Support',
+                'cta' => 'Contact',
+            ],
+        ];
+
+        $rawOverrides = (string)($settings['home_page_snapshots_json'] ?? '');
+        if (trim($rawOverrides) === '') {
+            return $baseCards;
+        }
+        $overrides = json_decode($rawOverrides, true);
+        if (!is_array($overrides)) {
+            return $baseCards;
+        }
+
+        $normalized = [];
+        foreach ($overrides as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $title = trim((string)($item['title'] ?? ''));
+            $description = trim((string)($item['description'] ?? ''));
+            $link = trim((string)($item['link'] ?? ''));
+            if ($title === '' || $link === '') {
+                continue;
+            }
+            $normalized[] = [
+                'title' => $title,
+                'description' => $description !== '' ? $description : 'Learn more about this section.',
+                'link' => $link,
+                'icon' => trim((string)($item['icon'] ?? 'bi-link-45deg')) ?: 'bi-link-45deg',
+                'badge' => trim((string)($item['badge'] ?? 'Explore')) ?: 'Explore',
+                'cta' => trim((string)($item['cta'] ?? 'Open')) ?: 'Open',
+            ];
+        }
+        return $normalized !== [] ? $normalized : $baseCards;
     }
 }

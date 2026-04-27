@@ -16,6 +16,8 @@ $toggleItems = [
     'show_home_events' => 'Show Events',
     'show_home_news' => 'Show Latest News',
     'show_home_cta' => 'Show Final CTA Block',
+    'show_home_extra_sections' => 'Show Home Extra Sections',
+    'show_home_page_snapshots' => 'Show Home Explore Pages Cards',
 ];
 $ctaPageOptions = [
     '' => 'Select a page',
@@ -295,6 +297,13 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                         <textarea name="home_value_cards" rows="12" class="form-control" placeholder='[{\"title_primary\":\"Flexibility\",\"title_secondary\":\"That Fits You\",\"text\":\"...\",\"icon\":\"bi-calendar-check\",\"cta_label\":\"Apply\",\"cta_link\":\"programmes\"}]'><?= e($settings['home_value_cards'] ?? '') ?></textarea>
                         <small class="text-muted">Use Bootstrap Icons classes like <code>bi-heart-pulse</code>, <code>bi-people</code>, <code>bi-award</code>.</small>
                     </div>
+                    <div class="soft-card p-4 settings-card" data-settings-section="home">
+                        <h2 class="h6 text-uppercase text-muted mb-3">Homepage Explore Pages Snapshots</h2>
+                        <p class="text-muted small mb-2">Cards are auto-generated from major pages (About, Programmes, Events, Library, Media, Testimonials, FAQs, Contact, Student Portal). You can override or add cards with JSON below.</p>
+                        <label class="form-label">Page Snapshot Overrides JSON (optional)</label>
+                        <textarea name="home_page_snapshots_json" rows="8" class="form-control" placeholder='[{"title":"Apply Online","description":"Start your admission process in minutes.","link":"programmes/apply","icon":"bi-pencil-square","badge":"Admissions"}]'><?= e($settings['home_page_snapshots_json'] ?? '') ?></textarea>
+                        <small class="text-muted">Fields supported per card: <code>title</code>, <code>description</code>, <code>link</code>, <code>icon</code>, <code>badge</code>, <code>cta</code>.</small>
+                    </div>
 
                     <div class="soft-card p-4 settings-card" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Testimonials</h2>
@@ -430,6 +439,7 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                         <div class="mb-3">
                             <label class="form-label">Home Extra Sections JSON</label>
                             <textarea name="home_extra_sections_json" rows="5" class="form-control" placeholder='[{"title":"Scholarships","text":"Apply for support.","button_label":"Learn More","button_link":"contact","image":"/uploads/settings/section.jpg"}]'><?= e($settings['home_extra_sections_json'] ?? '') ?></textarea>
+                            <small class="text-muted">These are custom cards that appear on Home when enabled in visibility controls.</small>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6"><label class="form-label">Banner Height (px)</label><input name="banner_default_height" class="form-control" value="<?= e($settings['banner_default_height'] ?? '300') ?>"></div>
