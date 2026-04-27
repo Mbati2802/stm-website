@@ -60,15 +60,15 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
 
 <section class="py-4">
     <div class="admin-content-wrap">
-        <div class="settings-hero mb-3">
-            <div>
-                <h1 class="h4 fw-bold mb-1">UI Content Settings</h1>
-                <p class="text-muted mb-0">Configure your public website content and role-based content governance from one place.</p>
+        <div class="settings-sticky-bar">
+            <div class="settings-hero mb-0">
+                <div>
+                    <h1 class="h4 fw-bold mb-1">UI Content Settings</h1>
+                    <p class="text-muted mb-0 d-none d-md-block">Configure your public website content and governance from one place.</p>
+                </div>
+                <button form="settings-form" class="btn btn-primary">Save Settings</button>
             </div>
-            <button form="settings-form" class="btn btn-primary">Save Settings</button>
-        </div>
-        <div class="soft-card p-3 mb-3">
-            <div class="d-flex flex-wrap gap-2" id="settings-tabs">
+            <div class="d-flex flex-wrap gap-2 mt-2" id="settings-tabs">
                 <button type="button" class="btn btn-sm btn-primary" data-settings-tab="general">General</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="home">Home</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-settings-tab="images">Programme & Banner Images</button>
@@ -296,59 +296,10 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                         <small class="text-muted">Use Bootstrap Icons classes like <code>bi-heart-pulse</code>, <code>bi-people</code>, <code>bi-award</code>.</small>
                     </div>
 
-                    <div class="soft-card p-4 settings-card settings-card-home settings-card-home-testimonials" data-settings-section="home">
-                        <h2 class="h6 text-uppercase text-muted mb-3">Homepage Testimonials</h2>
-                        <div class="mb-3">
-                            <label class="form-label">Manage Testimonials</label>
-                            <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/list/testimonials')) ?>"><i class="bi bi-people me-1"></i>Manage Testimonials</a>
-                            <small class="text-muted d-block mt-1">Add, edit, reorder, and toggle visibility for each testimonial.</small>
-                        </div>
-                        <hr class="my-3">
-                        <h3 class="h6 text-uppercase text-muted mb-3">Testimonial Appearance</h3>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Template Style</label>
-                                <select name="testimonial_template" class="form-select">
-                                    <?php $currentTemplate = $settings['testimonial_template'] ?? 'carousel'; ?>
-                                    <option value="carousel" <?= $currentTemplate === 'carousel' ? 'selected' : '' ?>>Carousel (Classic)</option>
-                                    <option value="cards" <?= $currentTemplate === 'cards' ? 'selected' : '' ?>>Card Grid</option>
-                                    <option value="minimal" <?= $currentTemplate === 'minimal' ? 'selected' : '' ?>>Minimal Quotes</option>
-                                </select>
-                                <small class="text-muted">
-                                    <strong>Carousel:</strong> One at a time with navigation arrows.<br>
-                                    <strong>Card Grid:</strong> Multiple cards in a responsive grid.<br>
-                                    <strong>Minimal Quotes:</strong> Clean text-focused layout without photos.
-                                </small>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Card Style</label>
-                                <select name="testimonial_card_style" class="form-select">
-                                    <?php $currentCardStyle = $settings['testimonial_card_style'] ?? 'centered'; ?>
-                                    <option value="centered" <?= $currentCardStyle === 'centered' ? 'selected' : '' ?>>Centered (Avatar top)</option>
-                                    <option value="left" <?= $currentCardStyle === 'left' ? 'selected' : '' ?>>Left-aligned (Avatar left)</option>
-                                    <option value="bordered" <?= $currentCardStyle === 'bordered' ? 'selected' : '' ?>>Bordered Accent</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Accent Color</label>
-                                <input name="testimonial_accent_color" class="form-control" value="<?= e($settings['testimonial_accent_color'] ?? '#5fc7e7') ?>" placeholder="#5fc7e7">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Background Color</label>
-                                <input name="testimonial_bg_color" class="form-control" value="<?= e($settings['testimonial_bg_color'] ?? '#f5f7fa') ?>" placeholder="#f5f7fa">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Autoplay Speed (ms)</label>
-                                <input name="testimonial_speed" type="number" min="2000" max="15000" step="500" class="form-control" value="<?= e($settings['testimonial_speed'] ?? '5000') ?>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Autoplay</label>
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input" type="checkbox" name="testimonial_autoplay" value="1" <?= (!isset($settings['testimonial_autoplay']) || $settings['testimonial_autoplay'] === '1') ? 'checked' : '' ?>>
-                                    <label class="form-check-label">Auto-rotate testimonials</label>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="soft-card p-4 settings-card" data-settings-section="home">
+                        <h2 class="h6 text-uppercase text-muted mb-3">Testimonials</h2>
+                        <p class="text-muted small mb-2">Manage testimonials and their appearance settings from the testimonials management page.</p>
+                        <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/list/testimonials')) ?>"><i class="bi bi-people me-1"></i>Manage Testimonials &amp; Settings</a>
                     </div>
 
                     <div class="soft-card p-4 settings-card settings-card-visibility" data-settings-section="visibility">
@@ -367,68 +318,10 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                     </div>
                 </div>
                 <div class="col-lg-6 d-grid gap-3">
-                    <div class="soft-card p-4 settings-card settings-card-home" data-settings-section="home">
+                    <div class="soft-card p-4 settings-card" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Social Updates</h2>
-                        <div class="mb-3">
-                            <label class="form-label">Manage Updates</label>
-                            <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/list/social_updates')) ?>"><i class="bi bi-megaphone me-1"></i>Manage Social Updates</a>
-                            <small class="text-muted d-block mt-1">Create or edit posts manually, or set up auto-fetch from Facebook/Instagram below.</small>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Section Title</label>
-                            <input name="social_updates_title" class="form-control" value="<?= e($settings['social_updates_title'] ?? 'Social Updates') ?>" placeholder="Social Updates">
-                        </div>
-
-                        <hr class="my-3">
-                        <h3 class="h6 text-uppercase text-muted mb-2"><i class="bi bi-arrow-repeat me-1"></i>Auto-fetch from Facebook &amp; Instagram</h3>
-                        <p class="small text-muted mb-3">Posts from your Facebook Page and linked Instagram Business account will be pulled and shown automatically. Manually-created posts are kept untouched. Fetched posts refresh every cron run.</p>
-
-                        <div class="mb-3 form-check">
-                            <input class="form-check-input" type="checkbox" name="social_auto_fetch_enabled" value="1" id="autoFetchEnabled" <?= (($settings['social_auto_fetch_enabled'] ?? '1') === '1') ? 'checked' : '' ?>>
-                            <label class="form-check-label" for="autoFetchEnabled">Enable auto-fetch (cron will fetch new posts)</label>
-                        </div>
-
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label class="form-label">Facebook Page ID <span class="text-muted">(numeric or @username)</span></label>
-                                <input name="facebook_page_id" class="form-control" value="<?= e($settings['facebook_page_id'] ?? '') ?>" placeholder="e.g. 123456789012345">
-                                <small class="text-muted">Find it at: <code>facebook.com/your-page/about</code> → "Page transparency".</small>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Facebook Page Access Token</label>
-                                <input name="facebook_page_access_token" type="password" class="form-control" value="<?= e($settings['facebook_page_access_token'] ?? '') ?>" placeholder="EAAG..." autocomplete="new-password">
-                                <small class="text-muted">Generate at <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener">Graph API Explorer</a>. Use a long-lived Page token (60 days) or System User token (no expiry). Required permissions: <code>pages_read_engagement</code>, <code>pages_show_list</code>, <code>instagram_basic</code> (for IG).</small>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Instagram Business Account ID <span class="text-muted">(optional)</span></label>
-                                <input name="instagram_business_account_id" class="form-control" value="<?= e($settings['instagram_business_account_id'] ?? '') ?>" placeholder="e.g. 17841400000000000">
-                                <small class="text-muted">Run in Graph Explorer: <code>/{your-page-id}?fields=instagram_business_account</code> to get this ID. Leave empty to skip Instagram.</small>
-                            </div>
-                            <div class="col-md-12">
-                                <label class="form-label">Cron Token</label>
-                                <?php $cronToken = (string)($settings['social_auto_fetch_cron_token'] ?? ''); ?>
-                                <input name="social_auto_fetch_cron_token" class="form-control" value="<?= e($cronToken) ?>" placeholder="auto-generated random string">
-                                <small class="text-muted">Used to protect the cron URL. Set any random string (16+ chars).</small>
-                            </div>
-                            <?php if ($cronToken !== ''): ?>
-                                <div class="col-12">
-                                    <div class="alert alert-info small mb-0">
-                                        <strong>Cron URL:</strong>
-                                        <code><?= e(base_url('cron/social-fetch?token=' . urlencode($cronToken))) ?></code>
-                                        <br>Schedule via cPanel → Cron Jobs to run every 30 minutes:
-                                        <br><code>*/30 * * * * curl -s "<?= e(base_url('cron/social-fetch?token=' . urlencode($cronToken))) ?>" &gt;/dev/null</code>
-                                        <?php if (!empty($settings['social_auto_fetch_last_run'])): ?>
-                                            <br><strong>Last run:</strong> <?= e((string)$settings['social_auto_fetch_last_run']) ?>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="mt-3 d-flex gap-2 flex-wrap">
-                            <button type="button" class="btn btn-success btn-sm" id="btnFetchSocialNow"><i class="bi bi-arrow-clockwise me-1"></i>Save then Fetch Now</button>
-                        </div>
-                        <form id="socialFetchNowForm" method="POST" action="<?= e(base_url('admin/social-fetch/run')) ?>" class="d-none"><?= csrf_field() ?></form>
+                        <p class="text-muted small mb-2">Manage posts, auto-fetch settings, and API credentials from the social updates management page.</p>
+                        <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/list/social_updates')) ?>"><i class="bi bi-megaphone me-1"></i>Manage Social Updates &amp; Settings</a>
                     </div>
 
                     <div class="soft-card p-4 settings-card settings-card-home settings-card-home-hero" data-settings-section="home">
@@ -712,25 +605,6 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
     </div>
 </div>
 <script>
-// Fetch-now button and sessionStorage trigger — independent of tabs
-document.addEventListener('DOMContentLoaded', function () {
-    const fetchBtn = document.getElementById('btnFetchSocialNow');
-    if (fetchBtn) {
-        fetchBtn.addEventListener('click', function () {
-            try { sessionStorage.setItem('triggerSocialFetch', '1'); } catch (ex) {}
-            const mainForm = document.getElementById('settings-form');
-            if (mainForm) { mainForm.submit(); }
-        });
-    }
-    try {
-        if (sessionStorage.getItem('triggerSocialFetch') === '1') {
-            sessionStorage.removeItem('triggerSocialFetch');
-            const fetchForm = document.getElementById('socialFetchNowForm');
-            if (fetchForm) { setTimeout(function () { fetchForm.submit(); }, 200); }
-        }
-    } catch (ex) {}
-});
-
 document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.querySelectorAll('[data-settings-tab]');
     const cards = document.querySelectorAll('[data-settings-section]');

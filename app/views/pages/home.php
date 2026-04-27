@@ -24,6 +24,10 @@ $testimonialSpeed = (int)($settings['testimonial_speed'] ?? 5000);
 if ($testimonialSpeed < 2000) { $testimonialSpeed = 5000; }
 $validHexAccent = preg_match('/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/', $testimonialAccent) ? $testimonialAccent : '#5fc7e7';
 $validHexBg = preg_match('/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/', $testimonialBg) ? $testimonialBg : '#f5f7fa';
+$testimonialGridCount = max(2, min(4, (int)($settings['testimonial_grid_count'] ?? 3)));
+$testimonialGridCol = match ($testimonialGridCount) { 2 => 'col-md-6', 4 => 'col-md-6 col-lg-3', default => 'col-md-6 col-lg-4' };
+$testimonialSlideEffect = (string)($settings['testimonial_slide_effect'] ?? 'slide');
+$testimonialItemsPerSlide = max(1, min(3, (int)($settings['testimonial_items_per_slide'] ?? 1)));
 ?>
 <?php $sv = $sectionVisibility ?? ['hero'=>true,'cards'=>true,'banner'=>true,'why'=>true,'courses'=>true,'testimonials'=>true,'events'=>true,'news'=>true,'cta'=>true]; ?>
 <?php if ($sv['hero']): ?>
@@ -186,12 +190,15 @@ foreach ($bannerCandidates as $candidate) {
         <h2 class="h3 fw-bold mb-4" data-aos="fade-up">Student Testimonials</h2>
 
         <?php if ($testimonialTemplate === 'carousel'): ?>
-            <div id="testimonialCarousel" class="carousel slide" <?= $testimonialAutoplay ? 'data-bs-ride="carousel"' : '' ?> data-bs-interval="<?= (int)$testimonialSpeed ?>" data-aos="fade-up">
+            <?php $carouselChunks = array_chunk($testimonials, $testimonialItemsPerSlide); ?>
+            <div id="testimonialCarousel" class="carousel slide<?= $testimonialSlideEffect === 'fade' ? ' carousel-fade' : '' ?>" <?= $testimonialAutoplay ? 'data-bs-ride="carousel"' : '' ?> data-bs-interval="<?= (int)$testimonialSpeed ?>" data-aos="fade-up">
                 <div class="carousel-inner">
-                    <?php foreach ($testimonials as $index => $testimonial): ?>
-                        <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                    <?php foreach ($carouselChunks as $ci => $chunk): ?>
+                        <div class="carousel-item <?= $ci === 0 ? 'active' : '' ?>">
                             <div class="row g-4 justify-content-center">
-                                <div class="col-md-9 col-lg-7">
+                                <?php $slideCol = $testimonialItemsPerSlide === 1 ? 'col-md-9 col-lg-7' : ($testimonialItemsPerSlide === 2 ? 'col-md-6' : 'col-md-4'); ?>
+                                <?php foreach ($chunk as $testimonial): ?>
+                                <div class="<?= $slideCol ?>">
                                     <div class="soft-card p-4 bg-white h-100 testimonial-card">
                                         <?php if (!empty($testimonial['image'])): ?>
                                             <div class="testimonial-avatar-wrap mb-3">
@@ -205,6 +212,7 @@ foreach ($bannerCandidates as $candidate) {
                                         <?php endif; ?>
                                     </div>
                                 </div>
+                                <?php endforeach; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -222,7 +230,7 @@ foreach ($bannerCandidates as $candidate) {
         <?php elseif ($testimonialTemplate === 'cards'): ?>
             <div class="row g-4" data-aos="fade-up">
                 <?php foreach ($testimonials as $testimonial): ?>
-                    <div class="col-md-6 col-lg-4">
+                    <div class="<?= e($testimonialGridCol) ?>">
                         <div class="soft-card p-4 bg-white h-100 testimonial-card">
                             <?php if (!empty($testimonial['image'])): ?>
                                 <div class="testimonial-avatar-wrap mb-3">
@@ -257,6 +265,9 @@ foreach ($bannerCandidates as $candidate) {
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
+        <div class="text-center mt-4">
+            <a class="btn btn-outline-primary" href="<?= e(base_url('testimonials')) ?>">View All Testimonials <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
     </div>
 </section>
 <?php endif; ?>

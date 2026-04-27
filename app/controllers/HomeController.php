@@ -93,6 +93,34 @@ class HomeController extends Controller
         ]);
     }
 
+    public function testimonials(): void
+    {
+        $model = new ContentModel($this->config);
+        $settings = $model->getSettings();
+        $testimonials = $model->getTestimonials(true);
+        if ($testimonials === []) {
+            $testimonials = [
+                ['name' => 'Brenda W.', 'course' => 'Prospective Student', 'message' => 'The admissions team was responsive and helped me choose the right programme path.', 'image_path' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300'],
+                ['name' => 'Daniel K.', 'course' => 'Current Student', 'message' => 'Course delivery is practical and the learning environment is supportive and well organized.', 'image_path' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300'],
+                ['name' => 'Sharon M.', 'course' => 'Parent', 'message' => 'Clear communication and professional training standards gave us confidence in the college.', 'image_path' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300'],
+            ];
+        }
+        $testimonials = array_map(static function ($t) {
+            return [
+                'name' => (string)($t['name'] ?? ''),
+                'course' => (string)($t['course'] ?? ''),
+                'message' => (string)($t['message'] ?? ''),
+                'image' => (string)($t['image_path'] ?? $t['image'] ?? ''),
+            ];
+        }, $testimonials);
+
+        $this->view('pages/testimonials', [
+            'metaTitle' => 'Testimonials',
+            'settings' => $settings,
+            'testimonials' => $testimonials,
+        ]);
+    }
+
     private function isEnabled(array $settings, string $key, bool $default = true): bool
     {
         if (!isset($settings[$key]) || $settings[$key] === '') {

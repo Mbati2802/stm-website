@@ -86,6 +86,9 @@ class AdminContentController extends Controller
         'testimonial_card_style',
         'testimonial_autoplay',
         'testimonial_speed',
+        'testimonial_items_per_slide',
+        'testimonial_slide_effect',
+        'testimonial_grid_count',
         'social_updates_title',
         'facebook_page_id',
         'facebook_page_access_token',
@@ -130,12 +133,16 @@ class AdminContentController extends Controller
         if ($entity === 'users' && Auth::isJuniorAdmin()) {
             $rows = array_values(array_filter($rows, static fn($user) => (string)($user['role'] ?? '') !== 'super_admin'));
         }
-        $this->view('admin/list', [
+        $viewData = [
             'metaTitle' => 'Manage ' . ucfirst(str_replace('_', ' ', $entity)),
             'entity' => $entity,
             'rows' => $rows,
             'hiddenIds' => $hiddenIds,
-        ]);
+        ];
+        if (in_array($entity, ['testimonials', 'social_updates'], true)) {
+            $viewData['settings'] = $model->getSettings();
+        }
+        $this->view('admin/list', $viewData);
     }
 
     public function create(string $entity): void
@@ -703,6 +710,33 @@ class AdminContentController extends Controller
             flash('error', 'Settings could not be saved. Please verify database schema and try again.');
         }
         $this->redirect('admin/settings');
+    }
+
+    public function savePartialSettings(): void
+    {
+        Auth::requireAdmin();
+        if (Auth::isTeacher()) {
+            flash('error', 'You do not have permission to update settings.');
+            $this->redirect('admin');
+        }
+        $redirect = trim((string)($_POST['_redirect'] ?? 'admin/settings'));
+        $model = new ContentModel($this->config);
+        $allowed = array_merge(self::SETTINGS_TEXT_FIELDS, self::SETTINGS_TOGGLE_FIELDS);
+        try {
+            $settings = [];
+            foreach ($_POST as $k => $v) {
+                if (in_array($k, $allowed, true)) {
+                    $settings[$k] = (string)$v;
+                }
+            }
+            if ($settings !== []) {
+                $model->saveSettings($settings);
+            }
+            flash('success', 'Settings updated.');
+        } catch (Throwable) {
+            flash('error', 'Settings could not be saved.');
+        }
+        $this->redirect($redirect);
     }
 
     private function collectSettingsFromRequest(): array

@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS social_updates (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 4. Seed default testimonials (matching current JSON defaults)
+-- Safe to skip if you already have testimonials in the table.
 INSERT INTO testimonials (name, course, message, image_path, sort_order) VALUES
 ('Brenda W.', 'Prospective Student', 'The admissions team was responsive and helped me choose the right programme path.', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300', 1),
 ('Daniel K.', 'Current Student', 'Course delivery is practical and the learning environment is supportive and well organized.', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300', 2),
@@ -53,3 +54,13 @@ INSERT INTO testimonials (name, course, message, image_path, sort_order) VALUES
 ('Ian K.', 'Applicant', 'Programme information is clear and the support team gives timely guidance on requirements.', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300', 4),
 ('Purity N.', 'Current Student', 'The timetable is practical and helps me balance learning with my other responsibilities.', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300', 5),
 ('Grace A.', 'Guardian', 'The college environment is disciplined, safe, and focused on quality healthcare training.', 'https://images.unsplash.com/photo-1554151228-14d9def656e4?w=300', 6);
+
+-- 5. Seed sample social updates so the frontend shows content immediately
+-- Safe to skip if you already have posts in the table.
+INSERT INTO social_updates (content, source, is_pinned, is_visible) VALUES
+('Welcome to our official social updates feed! Stay informed about college news, events, and announcements.', 'announcement', 1, 1),
+('Applications are now open for the upcoming academic intake. Visit our programmes page for details.', 'news', 0, 1),
+('Our students recently participated in a practical healthcare training session at the college lab.', 'general', 0, 1);
+
+-- 6. Safety fix: make all existing social updates visible
+UPDATE social_updates SET is_visible = 1 WHERE is_visible = 0;
