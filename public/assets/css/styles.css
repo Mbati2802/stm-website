@@ -137,6 +137,28 @@ a{text-decoration:none}
 .compact-programme-card .small{font-size:.78rem}
 .programme-detail-layout{background:#f8f8f8}
 .programme-detail-divider{width:86px;height:4px;background:linear-gradient(90deg,var(--primary) 0 60%, #f08a5d 60% 100%)}
+.programme-detail-bullets{
+    list-style:none;
+    padding-left:0;
+    margin-bottom:0;
+}
+.programme-detail-bullets li{
+    position:relative;
+    padding-left:1.8rem;
+    margin-bottom:.9rem;
+    color: #1f2937;
+}
+.programme-detail-bullets li::before{
+    content:'✔';
+    position:absolute;
+    left:0;
+    top:.1rem;
+    color: var(--secondary);
+    font-size:1rem;
+    line-height:1;
+}
+.programme-detail-bullets li:last-child{margin-bottom:0;}
+
 .programme-detail-wrapper{
     overflow:auto;
 }

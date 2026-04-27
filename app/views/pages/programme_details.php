@@ -111,7 +111,7 @@ if (!is_array($mosaicImages)) {
           <div class="col-lg-6">
             <h2 class="h4 fw-bold mb-3">Course Objectives</h2>
             <p>By the end of this course, students will be able to:</p>
-            <ul>
+            <ul class="programme-detail-bullets">
               <?php foreach (($objectives !== [] ? $objectives : [
                 'Understand human growth, behavior, and mental processes',
                 'Apply basic counselling skills in different settings',
@@ -127,7 +127,7 @@ if (!is_array($mosaicImages)) {
           <div class="col-lg-6">
             <h2 class="h4 fw-bold mb-3">Course Content</h2>
             <p>Key areas of study include:</p>
-            <ul>
+            <ul class="programme-detail-bullets">
               <?php foreach (($contentAreas !== [] ? $contentAreas : [
                 'Introduction to Counselling Psychology',
                 'Human Development and Behavior',
