@@ -148,7 +148,7 @@ if (!is_array($mosaicImages)) {
         <div class="soft-card p-3 h-100">
           <h2 class="h5 fw-bold mb-3">Career Opportunities</h2>
           <p class="mb-2">Graduates can work in:</p>
-          <ul class="mb-0">
+          <ul class="programme-detail-bullets mb-0">
             <?php foreach (($careerOpportunities !== [] ? $careerOpportunities : [
               'Hospitals and health centers',
               'Schools and educational institutions',
@@ -173,9 +173,11 @@ if (!is_array($mosaicImages)) {
       <div class="col-md-6 col-lg-3">
         <div class="soft-card p-3 h-100">
           <h2 class="h5 fw-bold mb-3">Why Study This Course?</h2>
-          <?php foreach ($whyList as $index => $item): ?>
-            <p class="<?= $index === count($whyList) - 1 ? 'mb-0' : 'mb-1' ?>">✔ <?= e(plain_text($item)) ?></p>
-          <?php endforeach; ?>
+          <ul class="programme-detail-bullets mb-0">
+            <?php foreach ($whyList as $item): ?>
+              <li><?= e(plain_text($item)) ?></li>
+            <?php endforeach; ?>
+          </ul>
         </div>
       </div>
       <div class="col-md-6 col-lg-3">
