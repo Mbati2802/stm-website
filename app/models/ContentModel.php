@@ -586,7 +586,8 @@ class ContentModel
             'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
             'library_resources', 'faqs', 'messages', 'pages', 'users',
             'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments',
-            'study_materials', 'grading_schemes', 'event_registrations', 'programme_applications', 'page_visits'
+            'study_materials', 'grading_schemes', 'event_registrations', 'programme_applications', 'page_visits',
+            'testimonials', 'social_updates'
         ];
         if (!in_array($table, $allowed, true)) {
             return 0;
@@ -761,7 +762,8 @@ class ContentModel
         $allowed = [
             'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
             'library_resources', 'faqs', 'messages', 'pages', 'users',
-            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials', 'grading_schemes'
+            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials', 'grading_schemes',
+            'testimonials', 'social_updates'
         ];
         if (!in_array($table, $allowed, true)) {
             return [];
@@ -778,7 +780,8 @@ class ContentModel
         $allowed = [
             'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
             'library_resources', 'faqs', 'pages', 'users', 'messages',
-            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials', 'grading_schemes'
+            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials', 'grading_schemes',
+            'testimonials', 'social_updates'
         ];
         if (!in_array($table, $allowed, true)) {
             return false;
@@ -792,7 +795,8 @@ class ContentModel
         $allowed = [
             'programmes', 'departments', 'news', 'careers', 'tenders', 'events', 'gallery',
             'library_resources', 'faqs', 'pages', 'users', 'messages',
-            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials', 'grading_schemes'
+            'portal_courses', 'programme_timetables', 'course_grades', 'course_assignments', 'study_materials', 'grading_schemes',
+            'testimonials', 'social_updates'
         ];
         if (!in_array($table, $allowed, true)) {
             return null;
@@ -926,5 +930,50 @@ class ContentModel
             $map[$slug][$metric] = $value;
         }
         return $map;
+    }
+
+    // ── Testimonials ──────────────────────────────────────────
+
+    public function getTestimonials(bool $visibleOnly = true): array
+    {
+        $sql = 'SELECT * FROM testimonials';
+        if ($visibleOnly) {
+            $sql .= ' WHERE is_visible = 1';
+        }
+        $sql .= ' ORDER BY sort_order ASC, id ASC';
+        try {
+            return $this->pdo->query($sql)->fetchAll() ?: [];
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function saveMessageReply(int $messageId, string $subject, string $body, ?int $adminId): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare('UPDATE messages SET replied_at = NOW(), reply_subject = :subject, reply_body = :body, replied_by = :admin_id WHERE id = :id');
+            return $stmt->execute(['subject' => $subject, 'body' => $body, 'admin_id' => $adminId, 'id' => $messageId]);
+        } catch (PDOException) {
+            return false;
+        }
+    }
+
+    // ── Social Updates ────────────────────────────────────────
+
+    public function getSocialUpdates(bool $visibleOnly = true, int $limit = 10): array
+    {
+        $sql = 'SELECT * FROM social_updates';
+        if ($visibleOnly) {
+            $sql .= ' WHERE is_visible = 1';
+        }
+        $sql .= ' ORDER BY is_pinned DESC, created_at DESC';
+        if ($limit > 0) {
+            $sql .= ' LIMIT ' . (int)$limit;
+        }
+        try {
+            return $this->pdo->query($sql)->fetchAll() ?: [];
+        } catch (PDOException) {
+            return [];
+        }
     }
 }

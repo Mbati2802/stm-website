@@ -89,6 +89,8 @@ if ($adminId > 0 && !str_ends_with($viewPath, 'admin/login.php')) {
                 <?php if (Auth::canManageEntity('students')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/students') ? 'active' : '' ?>" href="<?= e(base_url('admin/students')) ?>"><i class="bi bi-people"></i><span>Student Accounts</span></a><?php endif; ?>
                 <?php if (Auth::canManageEntity('media')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/media') ? 'active' : '' ?>" href="<?= e(base_url('admin/media')) ?>"><i class="bi bi-folder2-open"></i><span>Media Library</span></a><?php endif; ?>
                 <?php if (Auth::canManageEntity('events')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/event-registrations') ? 'active' : '' ?>" href="<?= e(base_url('admin/event-registrations')) ?>"><i class="bi bi-calendar2-week"></i><span>Event Registrations</span></a><?php endif; ?>
+                <?php if (Auth::canManageEntity('testimonials')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/testimonials') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/testimonials')) ?>"><i class="bi bi-chat-square-quote"></i><span>Testimonials</span></a><?php endif; ?>
+                <?php if (Auth::canManageEntity('social_updates')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/social_updates') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/social_updates')) ?>"><i class="bi bi-megaphone"></i><span>Social Updates</span></a><?php endif; ?>
             </div>
 
             <div class="admin-nav-group">

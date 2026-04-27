@@ -13,11 +13,17 @@ $homeExtraSections = json_decode((string)($settings['home_extra_sections_json'] 
 if (!is_array($homeExtraSections)) {
     $homeExtraSections = [];
 }
-$homeSocialUpdatesHtml = (string)($settings['events_social_updates_html'] ?? '');
-$homeElfsightClass = '';
-if (preg_match('/elfsight-app-[A-Za-z0-9\-]+/', $homeSocialUpdatesHtml, $match)) {
-    $homeElfsightClass = (string)($match[0] ?? '');
-}
+$socialUpdates = $socialUpdates ?? [];
+$socialUpdatesTitle = trim((string)($settings['social_updates_title'] ?? '')) !== '' ? (string)$settings['social_updates_title'] : 'Social Updates';
+$testimonialTemplate = (string)($settings['testimonial_template'] ?? 'carousel');
+$testimonialCardStyle = (string)($settings['testimonial_card_style'] ?? 'centered');
+$testimonialAccent = (string)($settings['testimonial_accent_color'] ?? '#5fc7e7');
+$testimonialBg = (string)($settings['testimonial_bg_color'] ?? '#f5f7fa');
+$testimonialAutoplay = !isset($settings['testimonial_autoplay']) || $settings['testimonial_autoplay'] === '1';
+$testimonialSpeed = (int)($settings['testimonial_speed'] ?? 5000);
+if ($testimonialSpeed < 2000) { $testimonialSpeed = 5000; }
+$validHexAccent = preg_match('/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/', $testimonialAccent) ? $testimonialAccent : '#5fc7e7';
+$validHexBg = preg_match('/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/', $testimonialBg) ? $testimonialBg : '#f5f7fa';
 ?>
 <?php $sv = $sectionVisibility ?? ['hero'=>true,'cards'=>true,'banner'=>true,'why'=>true,'courses'=>true,'testimonials'=>true,'events'=>true,'news'=>true,'cta'=>true]; ?>
 <?php if ($sv['hero']): ?>
@@ -174,39 +180,83 @@ foreach ($bannerCandidates as $candidate) {
 </section>
 <?php endif; ?>
 
-<?php if ($sv['testimonials']): ?>
-<section class="section-stack testimonials-section">
+<?php if ($sv['testimonials'] && $testimonials !== []): ?>
+<section class="section-stack testimonials-section testimonials-template-<?= e($testimonialTemplate) ?> testimonials-card-<?= e($testimonialCardStyle) ?>" style="--testimonial-accent: <?= e($validHexAccent) ?>; --testimonial-bg: <?= e($validHexBg) ?>;">
     <div class="site-width boxed-section testimonials-box">
         <h2 class="h3 fw-bold mb-4" data-aos="fade-up">Student Testimonials</h2>
-        <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel" data-aos="fade-up">
-            <div class="carousel-inner">
-                <?php $testimonialSlides = array_chunk($testimonials, 1); ?>
-                <?php foreach ($testimonialSlides as $index => $slide): ?>
-                    <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                        <div class="row g-4 justify-content-center">
-                            <?php foreach ($slide as $testimonial): ?>
-                                <div class="col-md-8 col-lg-6">
+
+        <?php if ($testimonialTemplate === 'carousel'): ?>
+            <div id="testimonialCarousel" class="carousel slide" <?= $testimonialAutoplay ? 'data-bs-ride="carousel"' : '' ?> data-bs-interval="<?= (int)$testimonialSpeed ?>" data-aos="fade-up">
+                <div class="carousel-inner">
+                    <?php foreach ($testimonials as $index => $testimonial): ?>
+                        <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                            <div class="row g-4 justify-content-center">
+                                <div class="col-md-9 col-lg-7">
                                     <div class="soft-card p-4 bg-white h-100 testimonial-card">
-                                        <div class="testimonial-avatar-wrap mb-3">
-                                            <img src="<?= e((string)($testimonial['image'] ?? 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300')) ?>" alt="<?= e((string)($testimonial['name'] ?? 'Student')) ?>" class="testimonial-avatar">
-                                        </div>
-                                        <p class="mb-3 testimonial-message">"<?= e((string)($testimonial['message'] ?? '')) ?>"</p>
-                                        <strong class="d-block testimonial-name"><?= e((string)($testimonial['name'] ?? '')) ?></strong>
-                                        <p class="mb-0 small text-muted"><?= e((string)($testimonial['course'] ?? '')) ?></p>
+                                        <?php if (!empty($testimonial['image'])): ?>
+                                            <div class="testimonial-avatar-wrap mb-3">
+                                                <img src="<?= e($testimonial['image']) ?>" alt="<?= e($testimonial['name']) ?>" class="testimonial-avatar">
+                                            </div>
+                                        <?php endif; ?>
+                                        <p class="mb-3 testimonial-message">"<?= e($testimonial['message']) ?>"</p>
+                                        <strong class="d-block testimonial-name"><?= e($testimonial['name']) ?></strong>
+                                        <?php if ($testimonial['course'] !== ''): ?>
+                                            <p class="mb-0 small text-muted"><?= e($testimonial['course']) ?></p>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
-                            <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php if (count($testimonials) > 1): ?>
+                <button class="carousel-control-prev testimonial-nav" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon testimonial-nav-icon"></span>
+                </button>
+                <button class="carousel-control-next testimonial-nav" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon testimonial-nav-icon"></span>
+                </button>
+                <?php endif; ?>
+            </div>
+
+        <?php elseif ($testimonialTemplate === 'cards'): ?>
+            <div class="row g-4" data-aos="fade-up">
+                <?php foreach ($testimonials as $testimonial): ?>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="soft-card p-4 bg-white h-100 testimonial-card">
+                            <?php if (!empty($testimonial['image'])): ?>
+                                <div class="testimonial-avatar-wrap mb-3">
+                                    <img src="<?= e($testimonial['image']) ?>" alt="<?= e($testimonial['name']) ?>" class="testimonial-avatar">
+                                </div>
+                            <?php endif; ?>
+                            <p class="mb-3 testimonial-message">"<?= e($testimonial['message']) ?>"</p>
+                            <strong class="d-block testimonial-name"><?= e($testimonial['name']) ?></strong>
+                            <?php if ($testimonial['course'] !== ''): ?>
+                                <p class="mb-0 small text-muted"><?= e($testimonial['course']) ?></p>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
             </div>
-            <button class="carousel-control-prev testimonial-nav" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon testimonial-nav-icon"></span>
-            </button>
-            <button class="carousel-control-next testimonial-nav" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon testimonial-nav-icon"></span>
-            </button>
-        </div>
+
+        <?php else: /* minimal */ ?>
+            <div class="row g-4 testimonials-minimal" data-aos="fade-up">
+                <?php foreach ($testimonials as $testimonial): ?>
+                    <div class="col-md-6">
+                        <div class="testimonial-quote-block p-4 h-100">
+                            <i class="bi bi-quote testimonial-quote-icon"></i>
+                            <p class="testimonial-message mb-3">"<?= e($testimonial['message']) ?>"</p>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <strong class="testimonial-name"><?= e($testimonial['name']) ?></strong>
+                                <?php if ($testimonial['course'] !== ''): ?>
+                                    <span class="small text-muted"><?= e($testimonial['course']) ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
     </div>
 </section>
 <?php endif; ?>
@@ -242,15 +292,32 @@ foreach ($bannerCandidates as $candidate) {
                 </div>
             </div>
             <div class="col-lg-5">
-                <h3 class="h6 text-muted mb-3">Social Updates</h3>
-                <div class="event-social-box">
-                    <?php if ($homeElfsightClass !== ''): ?>
-                        <div class="<?= e($homeElfsightClass) ?>" data-elfsight-app-lazy></div>
-                    <?php elseif (trim($homeSocialUpdatesHtml) !== ''): ?>
-                        <?= safe_html($homeSocialUpdatesHtml, ['div','iframe','a','p','br','strong','b','em','i','span','blockquote']) ?>
+                <h3 class="h6 text-muted mb-3"><?= e($socialUpdatesTitle) ?></h3>
+                <div class="event-social-box social-feed">
+                    <?php if (!empty($socialUpdates)): ?>
+                        <?php foreach ($socialUpdates as $update): ?>
+                            <article class="social-feed-item <?= !empty($update['is_pinned']) ? 'social-feed-pinned' : '' ?>">
+                                <?php if (!empty($update['is_pinned'])): ?>
+                                    <span class="badge bg-warning text-dark social-feed-pin"><i class="bi bi-pin-angle-fill me-1"></i>Pinned</span>
+                                <?php endif; ?>
+                                <?php if (!empty($update['source'])): ?>
+                                    <span class="social-feed-source"><i class="bi bi-tag me-1"></i><?= e(ucfirst((string)$update['source'])) ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($update['image_path'])): ?>
+                                    <img src="<?= e((string)$update['image_path']) ?>" alt="" class="social-feed-image">
+                                <?php endif; ?>
+                                <div class="social-feed-content"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
+                                <div class="social-feed-meta">
+                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i><?= e(date('M j, Y', strtotime((string)($update['created_at'] ?? 'now')))) ?></span>
+                                    <?php if (!empty($update['link_url'])): ?>
+                                        <a href="<?= e((string)$update['link_url']) ?>" target="_blank" rel="noopener" class="small">Read more <i class="bi bi-box-arrow-up-right"></i></a>
+                                    <?php endif; ?>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
                     <?php else: ?>
-                        <p class="mb-2 fw-semibold">Tweets / Social Feed</p>
-                        <p class="small text-muted mb-0">Embed your latest updates here from official social channels.</p>
+                        <p class="mb-2 fw-semibold">No updates yet</p>
+                        <p class="small text-muted mb-0">Add updates from the admin panel under "Social Updates".</p>
                     <?php endif; ?>
                 </div>
             </div>

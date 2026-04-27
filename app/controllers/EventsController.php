@@ -18,6 +18,8 @@ class EventsController extends Controller
             'pastGallery' => $pastGallery,
             'announcementsHtml' => (string)($settings['events_announcements'] ?? ''),
             'socialUpdatesHtml' => (string)($settings['events_social_updates_html'] ?? ''),
+            'socialUpdates' => $model->getSocialUpdates(true, 12),
+            'socialUpdatesTitle' => trim((string)($settings['social_updates_title'] ?? '')) !== '' ? (string)$settings['social_updates_title'] : 'Social Updates',
         ]);
     }
 

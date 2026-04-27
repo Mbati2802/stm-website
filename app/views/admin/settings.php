@@ -298,9 +298,57 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
 
                     <div class="soft-card p-4 settings-card settings-card-home settings-card-home-testimonials" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Homepage Testimonials</h2>
-                        <label class="form-label">Testimonials JSON</label>
-                        <textarea name="home_testimonials_json" rows="10" class="form-control" placeholder='[{"name":"Jane D.","course":"Diploma in Nursing","message":"Great college experience","image":"https://..."}]'><?= e($settings['home_testimonials_json'] ?? '') ?></textarea>
-                        <small class="text-muted">Each item: <code>name</code>, <code>course</code>, <code>message</code>, <code>image</code>.</small>
+                        <div class="mb-3">
+                            <label class="form-label">Manage Testimonials</label>
+                            <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/list/testimonials')) ?>"><i class="bi bi-people me-1"></i>Manage Testimonials</a>
+                            <small class="text-muted d-block mt-1">Add, edit, reorder, and toggle visibility for each testimonial.</small>
+                        </div>
+                        <hr class="my-3">
+                        <h3 class="h6 text-uppercase text-muted mb-3">Testimonial Appearance</h3>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Template Style</label>
+                                <select name="testimonial_template" class="form-select">
+                                    <?php $currentTemplate = $settings['testimonial_template'] ?? 'carousel'; ?>
+                                    <option value="carousel" <?= $currentTemplate === 'carousel' ? 'selected' : '' ?>>Carousel (Classic)</option>
+                                    <option value="cards" <?= $currentTemplate === 'cards' ? 'selected' : '' ?>>Card Grid</option>
+                                    <option value="minimal" <?= $currentTemplate === 'minimal' ? 'selected' : '' ?>>Minimal Quotes</option>
+                                </select>
+                                <small class="text-muted">
+                                    <strong>Carousel:</strong> One at a time with navigation arrows.<br>
+                                    <strong>Card Grid:</strong> Multiple cards in a responsive grid.<br>
+                                    <strong>Minimal Quotes:</strong> Clean text-focused layout without photos.
+                                </small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Card Style</label>
+                                <select name="testimonial_card_style" class="form-select">
+                                    <?php $currentCardStyle = $settings['testimonial_card_style'] ?? 'centered'; ?>
+                                    <option value="centered" <?= $currentCardStyle === 'centered' ? 'selected' : '' ?>>Centered (Avatar top)</option>
+                                    <option value="left" <?= $currentCardStyle === 'left' ? 'selected' : '' ?>>Left-aligned (Avatar left)</option>
+                                    <option value="bordered" <?= $currentCardStyle === 'bordered' ? 'selected' : '' ?>>Bordered Accent</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Accent Color</label>
+                                <input name="testimonial_accent_color" class="form-control" value="<?= e($settings['testimonial_accent_color'] ?? '#5fc7e7') ?>" placeholder="#5fc7e7">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Background Color</label>
+                                <input name="testimonial_bg_color" class="form-control" value="<?= e($settings['testimonial_bg_color'] ?? '#f5f7fa') ?>" placeholder="#f5f7fa">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Autoplay Speed (ms)</label>
+                                <input name="testimonial_speed" type="number" min="2000" max="15000" step="500" class="form-control" value="<?= e($settings['testimonial_speed'] ?? '5000') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Autoplay</label>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" name="testimonial_autoplay" value="1" <?= (!isset($settings['testimonial_autoplay']) || $settings['testimonial_autoplay'] === '1') ? 'checked' : '' ?>>
+                                    <label class="form-check-label">Auto-rotate testimonials</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="soft-card p-4 settings-card settings-card-visibility" data-settings-section="visibility">
@@ -319,6 +367,19 @@ $selectedTeacherPermissions = array_values(array_filter(array_map('trim', explod
                     </div>
                 </div>
                 <div class="col-lg-6 d-grid gap-3">
+                    <div class="soft-card p-4 settings-card settings-card-home" data-settings-section="home">
+                        <h2 class="h6 text-uppercase text-muted mb-3">Social Updates</h2>
+                        <div class="mb-3">
+                            <label class="form-label">Manage Updates</label>
+                            <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/list/social_updates')) ?>"><i class="bi bi-megaphone me-1"></i>Manage Social Updates</a>
+                            <small class="text-muted d-block mt-1">Create and manage your own social updates feed — no third-party embeds needed.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Section Title</label>
+                            <input name="social_updates_title" class="form-control" value="<?= e($settings['social_updates_title'] ?? 'Social Updates') ?>" placeholder="Social Updates">
+                        </div>
+                    </div>
+
                     <div class="soft-card p-4 settings-card settings-card-home settings-card-home-hero" data-settings-section="home">
                         <h2 class="h6 text-uppercase text-muted mb-3">Homepage Hero</h2>
                         <div class="mb-3">

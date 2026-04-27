@@ -48,14 +48,26 @@ class HomeController extends Controller
             ],
         ]);
 
-        $testimonials = $this->decodeList($settings['home_testimonials_json'] ?? '', [
-            ['name' => 'Brenda W.', 'course' => 'Prospective Student', 'message' => 'The admissions team was responsive and helped me choose the right programme path.', 'image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300'],
-            ['name' => 'Daniel K.', 'course' => 'Current Student', 'message' => 'Course delivery is practical and the learning environment is supportive and well organized.', 'image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300'],
-            ['name' => 'Sharon M.', 'course' => 'Parent', 'message' => 'Clear communication and professional training standards gave us confidence in the college.', 'image' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300'],
-            ['name' => 'Ian K.', 'course' => 'Applicant', 'message' => 'Programme information is clear and the support team gives timely guidance on requirements.', 'image' => 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300'],
-            ['name' => 'Purity N.', 'course' => 'Current Student', 'message' => 'The timetable is practical and helps me balance learning with my other responsibilities.', 'image' => 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300'],
-            ['name' => 'Grace A.', 'course' => 'Guardian', 'message' => 'The college environment is disciplined, safe, and focused on quality healthcare training.', 'image' => 'https://images.unsplash.com/photo-1554151228-14d9def656e4?w=300'],
-        ]);
+        // Pull testimonials from DB; fallback to defaults if table missing/empty
+        $testimonialsRaw = $model->getTestimonials(true);
+        if ($testimonialsRaw === []) {
+            $testimonialsRaw = [
+                ['name' => 'Brenda W.', 'course' => 'Prospective Student', 'message' => 'The admissions team was responsive and helped me choose the right programme path.', 'image_path' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300'],
+                ['name' => 'Daniel K.', 'course' => 'Current Student', 'message' => 'Course delivery is practical and the learning environment is supportive and well organized.', 'image_path' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300'],
+                ['name' => 'Sharon M.', 'course' => 'Parent', 'message' => 'Clear communication and professional training standards gave us confidence in the college.', 'image_path' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300'],
+            ];
+        }
+        // Normalize keys (image vs image_path) for view consumption
+        $testimonials = array_map(static function ($t) {
+            return [
+                'name' => (string)($t['name'] ?? ''),
+                'course' => (string)($t['course'] ?? ''),
+                'message' => (string)($t['message'] ?? ''),
+                'image' => (string)($t['image_path'] ?? $t['image'] ?? ''),
+            ];
+        }, $testimonialsRaw);
+
+        $socialUpdates = $model->getSocialUpdates(true, 8);
 
         $this->view('pages/home', [
             'metaTitle' => 'Home',
@@ -65,6 +77,7 @@ class HomeController extends Controller
             'featuredProgrammes' => $model->getTrendingProgrammes(8),
             'news' => $model->latest('news', 3),
             'testimonials' => $testimonials,
+            'socialUpdates' => $socialUpdates,
             'events' => $model->getUpcomingEvents(4),
             'sectionVisibility' => [
                 'hero' => $this->isEnabled($settings, 'show_home_hero'),

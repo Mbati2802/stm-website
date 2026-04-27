@@ -100,6 +100,8 @@ class Auth
                 'study_materials',
                 'users',
                 'grading_schemes',
+                'testimonials',
+                'social_updates',
             ];
             return in_array($entity, self::configuredPermissions('junior_admin_permissions', $defaults), true);
         }

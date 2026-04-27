@@ -4,6 +4,8 @@ $upcoming = is_array($upcoming ?? null) ? $upcoming : [];
 $pastGallery = is_array($pastGallery ?? null) ? $pastGallery : [];
 $announcementsHtml = (string)($announcementsHtml ?? '');
 $socialUpdatesHtml = (string)($socialUpdatesHtml ?? '');
+$socialUpdates = is_array($socialUpdates ?? null) ? $socialUpdates : [];
+$socialUpdatesTitle = $socialUpdatesTitle ?? 'Social Updates';
 $elfsightClass = '';
 if (preg_match('/elfsight-app-[A-Za-z0-9\-]+/', $socialUpdatesHtml, $match)) {
   $elfsightClass = (string)($match[0] ?? '');
@@ -78,15 +80,40 @@ include __DIR__ . '/../partials/page_hero.php';
 
 <section class="section-stack">
   <div class="site-width boxed-section" data-aos="fade-up">
-    <h2 class="split-title mb-3"><span class="title-primary">Social</span> | <span class="title-secondary">Updates Feed</span></h2>
-    <?php if ($elfsightClass !== ''): ?>
+    <h2 class="split-title mb-3"><span class="title-primary"><?= e($socialUpdatesTitle) ?></span></h2>
+    <?php if ($socialUpdates !== []): ?>
+      <div class="row g-3">
+        <?php foreach ($socialUpdates as $update): ?>
+          <div class="col-md-6 col-lg-4">
+            <article class="social-feed-item h-100 <?= !empty($update['is_pinned']) ? 'social-feed-pinned' : '' ?>">
+              <?php if (!empty($update['is_pinned'])): ?>
+                <span class="badge bg-warning text-dark social-feed-pin"><i class="bi bi-pin-angle-fill me-1"></i>Pinned</span>
+              <?php endif; ?>
+              <?php if (!empty($update['source'])): ?>
+                <span class="social-feed-source"><i class="bi bi-tag me-1"></i><?= e(ucfirst((string)$update['source'])) ?></span>
+              <?php endif; ?>
+              <?php if (!empty($update['image_path'])): ?>
+                <img src="<?= e((string)$update['image_path']) ?>" alt="" class="social-feed-image">
+              <?php endif; ?>
+              <div class="social-feed-content"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
+              <div class="social-feed-meta">
+                <span class="text-muted small"><i class="bi bi-clock me-1"></i><?= e(date('M j, Y', strtotime((string)($update['created_at'] ?? 'now')))) ?></span>
+                <?php if (!empty($update['link_url'])): ?>
+                  <a href="<?= e((string)$update['link_url']) ?>" target="_blank" rel="noopener" class="small">Read more <i class="bi bi-box-arrow-up-right"></i></a>
+                <?php endif; ?>
+              </div>
+            </article>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php elseif ($elfsightClass !== ''): ?>
       <div class="soft-card bg-white p-4">
         <div class="<?= e($elfsightClass) ?>" data-elfsight-app-lazy></div>
       </div>
     <?php elseif (trim($socialUpdatesHtml) !== ''): ?>
       <div class="soft-card bg-white p-4"><?= safe_html($socialUpdatesHtml, ['div','iframe','a','p','br','strong','b','em','i','span','blockquote']) ?></div>
     <?php else: ?>
-      <p class="text-muted mb-0">No social feed embed configured yet.</p>
+      <p class="text-muted mb-0">No social updates yet. Add them from the admin panel.</p>
     <?php endif; ?>
   </div>
 </section>
