@@ -21,7 +21,7 @@ include __DIR__ . '/../partials/page_hero.php';
 ?>
 
 <section class="section-stack testimonials-section testimonials-template-cards testimonials-card-<?= e($testimonialCardStyle) ?>" style="--testimonial-accent: <?= e($validHexAccent) ?>; --testimonial-bg: <?= e($validHexBg) ?>;">
-    <div class="site-width boxed-section">
+    <div class="site-width boxed-section" style="background:var(--testimonial-bg)">
         <div class="row g-4">
             <div class="col-lg-8">
                 <h1 class="split-title mb-3">
@@ -33,13 +33,13 @@ include __DIR__ . '/../partials/page_hero.php';
                 <div class="row g-4">
                     <?php foreach ($testimonials as $testimonial): ?>
                         <div class="<?= e($colClass) ?>">
-                            <div class="soft-card p-4 bg-white h-100 testimonial-card">
+                            <div class="soft-card p-4 h-100 testimonial-card" style="background:#fff;border-left:4px solid var(--testimonial-accent)">
                                 <?php if (!empty($testimonial['image'])): ?>
                                     <div class="testimonial-avatar-wrap mb-3">
                                         <img src="<?= e($testimonial['image']) ?>" alt="<?= e($testimonial['name']) ?>" class="testimonial-avatar" loading="lazy">
                                     </div>
                                 <?php endif; ?>
-                                <i class="bi bi-quote testimonial-quote-icon mb-2 d-block"></i>
+                                <i class="bi bi-quote testimonial-quote-icon mb-2 d-block" style="color:var(--testimonial-accent)"></i>
                                 <p class="mb-3 testimonial-message">"<?= e($testimonial['message']) ?>"</p>
                                 <strong class="d-block testimonial-name"><?= e($testimonial['name']) ?></strong>
                                 <?php if ($testimonial['course'] !== ''): ?>
@@ -53,8 +53,8 @@ include __DIR__ . '/../partials/page_hero.php';
 
             <div class="col-lg-4">
                 <div class="sticky-sidebar">
-                    <div class="soft-card p-4 mb-3">
-                        <h3 class="h6 fw-bold mb-3"><i class="bi bi-link-45deg me-1 text-primary"></i>Quick Links</h3>
+                    <div class="soft-card p-4 mb-3" style="background:#fff">
+                        <h3 class="h6 fw-bold mb-3"><i class="bi bi-link-45deg me-1" style="color:var(--testimonial-accent)"></i>Quick Links</h3>
                         <ul class="list-unstyled sidebar-links mb-0">
                             <li><a href="<?= e(base_url('programmes')) ?>"><i class="bi bi-mortarboard me-2"></i>Our Programmes</a></li>
                             <li><a href="<?= e(base_url('programmes/how-to-apply')) ?>"><i class="bi bi-file-earmark-text me-2"></i>How to Apply</a></li>
@@ -76,8 +76,8 @@ include __DIR__ . '/../partials/page_hero.php';
                         <a class="btn btn-light btn-sm" href="<?= e(base_url('programmes/apply')) ?>">Apply Now</a>
                     </div>
 
-                    <div class="soft-card p-4">
-                        <h3 class="h6 fw-bold mb-3"><i class="bi bi-telephone me-1 text-primary"></i>Get in Touch</h3>
+                    <div class="soft-card p-4" style="background:#fff">
+                        <h3 class="h6 fw-bold mb-3"><i class="bi bi-telephone me-1" style="color:var(--testimonial-accent)"></i>Get in Touch</h3>
                         <p class="small text-muted mb-2">Have questions? We're here to help.</p>
                         <div class="d-grid gap-2">
                             <a class="btn btn-outline-primary btn-sm" href="<?= e(base_url('contact')) ?>"><i class="bi bi-envelope me-1"></i>Send a Message</a>

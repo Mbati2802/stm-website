@@ -67,7 +67,7 @@ class HomeController extends Controller
             ];
         }, $testimonialsRaw);
 
-        $socialUpdates = $model->getSocialUpdates(true, 8);
+        $socialUpdates = $model->getSocialUpdates(true, 24);
 
         $this->view('pages/home', [
             'metaTitle' => 'Home',

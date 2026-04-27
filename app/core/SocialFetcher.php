@@ -96,7 +96,7 @@ class SocialFetcher
 
     private function fetchFacebookPagePosts(string $pageId, string $token, int $limit): int
     {
-        $fields = 'id,message,full_picture,permalink_url,created_time,attachments{media_type,media,url}';
+        $fields = 'id,message,full_picture,picture,permalink_url,created_time,attachments{media_type,media,url,subattachments{media_type,media,url}}';
         $url = self::GRAPH_BASE . self::GRAPH_VERSION . '/' . rawurlencode($pageId) . '/posts'
             . '?fields=' . rawurlencode($fields)
             . '&limit=' . (int)$limit
@@ -114,7 +114,19 @@ class SocialFetcher
             if ($externalId === '') {
                 continue;
             }
+            // Try full_picture first, then picture, then attachments
             $image = (string)($post['full_picture'] ?? '');
+            if ($image === '') {
+                $image = (string)($post['picture'] ?? '');
+            }
+            if ($image === '' && isset($post['attachments']['data'][0])) {
+                $att = $post['attachments']['data'][0];
+                if (!empty($att['media']['image']['src'])) {
+                    $image = (string)$att['media']['image']['src'];
+                } elseif (!empty($att['url']) && strpos($att['media_type'] ?? '', 'photo') !== false) {
+                    $image = (string)$att['url'];
+                }
+            }
             $link = (string)($post['permalink_url'] ?? '');
             $postedAt = isset($post['created_time']) ? date('Y-m-d H:i:s', strtotime((string)$post['created_time'])) : null;
             $this->upsert($externalId, 'facebook', $message, $image, $link, $postedAt);

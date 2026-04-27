@@ -84,8 +84,8 @@ include __DIR__ . '/../partials/page_hero.php';
 
 <?php endif; ?>
 
-<section class="section-stack">
-  <div class="site-width boxed-section" data-aos="fade-up">
+<section class="section-stack" id="social-updates">
+  <div class="site-width boxed-section" data-aos="fade-up" style="background:<?= e((string)($settings['social_updates_bg_color'] ?? '#ffffff')) ?>">
     <h2 class="split-title mb-3"><span class="title-primary"><?= e($socialUpdatesTitle) ?></span></h2>
     <?php if ($socialUpdates !== []):
       if ($suTemplate === 'minimal'): ?>

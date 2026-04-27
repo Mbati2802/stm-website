@@ -248,7 +248,7 @@
                             <?= csrf_field() ?>
                             <input type="hidden" name="_redirect" value="admin/list/social_updates">
                             <div class="row g-3">
-                                <div class="col-12">
+                                <div class="col-md-6">
                                     <label class="form-label fw-semibold">Display Template</label>
                                     <select name="social_updates_template" class="form-select">
                                         <?php $suTpl = (string)($entitySettings['social_updates_template'] ?? 'cards'); ?>
@@ -267,6 +267,17 @@
                                     </select>
                                 </div>
                                 <div class="col-md-6">
+                                    <label class="form-label">Rows on Home Page</label>
+                                    <select name="social_updates_rows" class="form-select">
+                                        <?php $suRows = (int)($entitySettings['social_updates_rows'] ?? 2); ?>
+                                        <option value="1" <?= $suRows === 1 ? 'selected' : '' ?>>1 row</option>
+                                        <option value="2" <?= $suRows === 2 ? 'selected' : '' ?>>2 rows</option>
+                                        <option value="3" <?= $suRows === 3 ? 'selected' : '' ?>>3 rows</option>
+                                        <option value="0" <?= $suRows === 0 ? 'selected' : '' ?>>Show all</option>
+                                    </select>
+                                    <small class="text-muted">Total items shown = rows × cards per row</small>
+                                </div>
+                                <div class="col-md-6">
                                     <label class="form-label">Content Lines</label>
                                     <select name="social_updates_content_lines" class="form-select">
                                         <?php $suLines = (int)($entitySettings['social_updates_content_lines'] ?? 3); ?>
@@ -279,9 +290,23 @@
                                 <div class="col-12">
                                     <div class="form-check">
                                         <?php $suShowImg = ($entitySettings['social_updates_show_images'] ?? '1') === '1'; ?>
-                                        <input class="form-check-input" type="checkbox" name="social_updates_show_images" value="1" <?= $suShowImg ? 'checked' : '' ?>>
-                                        <label class="form-check-label">Show images on cards</label>
+                                        <input class="form-check-input" type="checkbox" name="social_updates_show_images" value="1" <?= $suShowImg ? 'checked' : '' ?> id="chkShowImages">
+                                        <label class="form-check-label" for="chkShowImages">Show images on cards</label>
                                     </div>
+                                </div>
+                                <hr class="my-1">
+                                <div class="col-12"><label class="form-label fw-semibold">Section Colors</label></div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Background</label>
+                                    <input type="color" name="social_updates_bg_color" class="form-control form-control-color w-100" value="<?= e($entitySettings['social_updates_bg_color'] ?? '#ffffff') ?>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Card Background</label>
+                                    <input type="color" name="social_updates_card_bg" class="form-control form-control-color w-100" value="<?= e($entitySettings['social_updates_card_bg'] ?? '#ffffff') ?>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Accent</label>
+                                    <input type="color" name="social_updates_accent_color" class="form-control form-control-color w-100" value="<?= e($entitySettings['social_updates_accent_color'] ?? '#5fc7e7') ?>">
                                 </div>
                                 <div class="col-12">
                                     <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save Appearance</button>

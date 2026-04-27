@@ -308,15 +308,25 @@ foreach ($bannerCandidates as $candidate) {
     $suCols = (int)($settings['social_updates_cards_per_row'] ?? 3);
     $suShowImages = ($settings['social_updates_show_images'] ?? '1') === '1';
     $suContentLines = (int)($settings['social_updates_content_lines'] ?? 3);
+    $suRows = (int)($settings['social_updates_rows'] ?? 2);
+    $suBgColor = (string)($settings['social_updates_bg_color'] ?? '#ffffff');
+    $suCardBg = (string)($settings['social_updates_card_bg'] ?? '#ffffff');
+    $suAccent = (string)($settings['social_updates_accent_color'] ?? '#5fc7e7');
     $colClass = $suCols === 4 ? 'col-md-6 col-lg-3' : ($suCols === 2 ? 'col-md-6 col-lg-6' : 'col-md-6 col-lg-4');
+    // Limit items shown based on rows setting
+    if ($suRows > 0) {
+        $suLimit = $suRows * $suCols;
+        $socialUpdates = array_slice($socialUpdates, 0, $suLimit);
+    }
+    $hasMore = count($socialUpdates) >= ($suRows > 0 ? $suRows * $suCols : 999);
 ?>
-<section class="section-stack">
-    <div class="site-width boxed-section" data-aos="fade-up">
+<section class="section-stack social-updates-section" style="--su-bg:<?= e($suBgColor) ?>;--su-card-bg:<?= e($suCardBg) ?>;--su-accent:<?= e($suAccent) ?>">
+    <div class="site-width boxed-section" data-aos="fade-up" style="background:var(--su-bg)">
         <h2 class="h4 fw-bold mb-4 split-title"><span class="title-primary"><?= e($socialUpdatesTitle) ?></span></h2>
         <?php if ($suTemplate === 'minimal'): ?>
         <div class="list-group">
             <?php foreach ($socialUpdates as $update): ?>
-            <div class="list-group-item list-group-item-action">
+            <div class="list-group-item list-group-item-action" style="background:var(--su-card-bg)">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="social-feed-content<?= $suContentLines > 0 ? '' : ' social-feed-content-expanded' ?>" style="<?= $suContentLines > 0 ? '-webkit-line-clamp:' . $suContentLines . ';line-clamp:' . $suContentLines : '' ?>"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
                     <small class="text-muted ms-2 flex-shrink-0"><?= e(date('M j', strtotime((string)($update['posted_at'] ?? $update['created_at'] ?? 'now')))) ?></small>
@@ -331,7 +341,7 @@ foreach ($bannerCandidates as $candidate) {
         <div class="row g-2">
             <?php foreach ($socialUpdates as $update): ?>
             <div class="col-12">
-                <div class="d-flex align-items-center p-2 border rounded mb-1">
+                <div class="d-flex align-items-center p-2 border rounded mb-1" style="background:var(--su-card-bg)">
                     <?php if ($suShowImages && !empty($update['image_path'])): ?>
                     <img src="<?= e((string)$update['image_path']) ?>" alt="" class="rounded me-2" style="width:60px;height:60px;object-fit:cover;flex-shrink:0" loading="lazy">
                     <?php endif; ?>
@@ -350,12 +360,12 @@ foreach ($bannerCandidates as $candidate) {
         <div class="row g-3">
             <?php foreach ($socialUpdates as $update): ?>
                 <div class="<?= $colClass ?>">
-                    <article class="social-feed-item h-100 <?= !empty($update['is_pinned']) ? 'social-feed-pinned' : '' ?>">
+                    <article class="social-feed-item h-100 <?= !empty($update['is_pinned']) ? 'social-feed-pinned' : '' ?>" style="background:var(--su-card-bg);<?= !empty($update['is_pinned']) ? 'border-left-color:var(--su-accent)' : '' ?>">
                         <?php if (!empty($update['is_pinned'])): ?>
                             <span class="badge bg-warning text-dark social-feed-pin"><i class="bi bi-pin-angle-fill me-1"></i>Pinned</span>
                         <?php endif; ?>
                         <?php if (!empty($update['source'])): ?>
-                            <span class="social-feed-source"><i class="bi bi-<?= $update['source'] === 'instagram' ? 'instagram' : ($update['source'] === 'facebook' ? 'facebook' : 'tag') ?> me-1"></i><?= e(ucfirst((string)$update['source'])) ?></span>
+                            <span class="social-feed-source" style="color:var(--su-accent)"><i class="bi bi-<?= $update['source'] === 'instagram' ? 'instagram' : ($update['source'] === 'facebook' ? 'facebook' : 'tag') ?> me-1"></i><?= e(ucfirst((string)$update['source'])) ?></span>
                         <?php endif; ?>
                         <?php if ($suShowImages && !empty($update['image_path'])): ?>
                             <img src="<?= e((string)$update['image_path']) ?>" alt="" class="social-feed-image" loading="lazy">
@@ -370,6 +380,11 @@ foreach ($bannerCandidates as $candidate) {
                     </article>
                 </div>
             <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+        <?php if ($hasMore): ?>
+        <div class="mt-3 text-center">
+            <a href="<?= e(base_url('events')) ?>#social-updates" class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-right me-1"></i>View All Updates</a>
         </div>
         <?php endif; ?>
     </div>
