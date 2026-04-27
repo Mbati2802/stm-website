@@ -53,6 +53,7 @@ class AdminContentController extends Controller
         'admission_number_format',
         'registrar_email',
         'registrar_image',
+        'registrar_message',
         'home_programme_images_json',
         'programme_detail_image',
         'programme_sidebar_title',

@@ -845,6 +845,10 @@ usort($defaultSnapshotCards, static function (array $a, array $b) use ($layoutMa
                                 <input name="registrar_image" class="form-control" value="<?= e($settings['registrar_image'] ?? '') ?>" placeholder="/uploads/settings/registrar.jpg or https://...">
                             </div>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Registrar Message</label>
+                            <textarea name="registrar_message" rows="6" class="form-control rich-editor"><?= e($settings['registrar_message'] ?? '') ?></textarea>
+                        </div>
                     </div>
                 </div>
             </div>

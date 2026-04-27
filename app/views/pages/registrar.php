@@ -1,5 +1,6 @@
 <?php $registrarEmail = trim((string)($settings['registrar_email'] ?? 'registrar@stmarysmchmcollege.ac.ke')); ?>
 <?php $registrarImage = trim((string)($settings['registrar_image'] ?? 'https://images.unsplash.com/photo-1556157382-97eda2d62296?w=900')); ?>
+<?php $registrarMessage = trim((string)($settings['registrar_message'] ?? 'Welcome to the Registrar&rsquo;s Office at St. Mary&rsquo;s College of Health Sciences. Our role is to ensure a smooth and efficient academic process for all students&mdash;from application and admission to examination and certification. We are committed to providing timely, accurate, and supportive services to help you succeed in your academic journey.')); ?>
 <?php
 $heroTitlePrimary = 'Office of the';
 $heroTitleSecondary = 'Registrar';
@@ -32,7 +33,7 @@ include __DIR__ . '/../partials/page_hero.php';
         <h2 class="h4 mb-3">Registrar&rsquo;s Message</h2>
         <div class="soft-card p-4">
             <p class="mb-0">
-                Welcome to the Registrar&rsquo;s Office at St. Mary&rsquo;s College of Health Sciences. Our role is to ensure a smooth and efficient academic process for all students&mdash;from application and admission to examination and certification. We are committed to providing timely, accurate, and supportive services to help you succeed in your academic journey.
+                <?= $registrarMessage ?>
             </p>
         </div>
     </div>
