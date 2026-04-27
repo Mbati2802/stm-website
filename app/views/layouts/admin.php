@@ -182,6 +182,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const quills = [];
     textareas.forEach((textarea, idx) => {
+        const wasRequired = textarea.hasAttribute('required');
+        // Hidden required fields cannot be focused for native validation, so
+        // we move the required-state to the Quill editor and check it manually.
+        if (wasRequired) {
+            textarea.removeAttribute('required');
+        }
         const wrapper = document.createElement('div');
         wrapper.className = 'mb-3';
         const editor = document.createElement('div');
@@ -208,14 +214,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const current = textarea.value || '';
         quill.clipboard.dangerouslyPasteHTML(current);
-        quills.push({ textarea, quill });
+        quills.push({ textarea, quill, wasRequired, editorRoot: editor });
     });
 
     document.querySelectorAll('form').forEach((form) => {
-        form.addEventListener('submit', () => {
-            quills.forEach(({ textarea, quill }) => {
-                textarea.value = quill.root.innerHTML;
-            });
+        form.addEventListener('submit', (e) => {
+            for (const { textarea, quill, wasRequired, editorRoot } of quills) {
+                if (!form.contains(textarea)) continue;
+                const html = quill.root.innerHTML;
+                const text = (quill.getText() || '').trim();
+                textarea.value = (text === '' ? '' : html);
+                if (wasRequired && text === '') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    editorRoot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    quill.focus();
+                    editorRoot.classList.add('is-invalid');
+                    if (!editorRoot.nextElementSibling || !editorRoot.nextElementSibling.classList?.contains('quill-error')) {
+                        const err = document.createElement('div');
+                        err.className = 'invalid-feedback d-block quill-error';
+                        err.textContent = 'This field is required.';
+                        editorRoot.parentNode.insertBefore(err, editorRoot.nextSibling);
+                    }
+                    return;
+                }
+            }
         });
     });
 });
