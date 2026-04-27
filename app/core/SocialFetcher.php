@@ -170,6 +170,9 @@ class SocialFetcher
 
     private function upsert(string $externalId, string $source, string $content, string $image, string $link, ?string $postedAt): void
     {
+        if (!$this->dryRun) {
+            $image = $this->resolveImagePath($image, $externalId, $source);
+        }
         if ($this->dryRun) {
             $this->previewPosts[] = [
                 'external_id' => $externalId,
@@ -203,6 +206,110 @@ class SocialFetcher
             'external_source' => $source,
             'posted_at' => $postedAt,
         ]);
+    }
+
+    /**
+     * Convert remote social image URLs into locally cached files when possible.
+     * This avoids broken Facebook/Instagram CDN URLs and hotlink restrictions.
+     */
+    private function resolveImagePath(string $imageUrl, string $externalId, string $source): string
+    {
+        $imageUrl = trim($imageUrl);
+        if ($imageUrl === '') {
+            return '';
+        }
+
+        if (str_starts_with($imageUrl, '/uploads/')) {
+            return $imageUrl;
+        }
+
+        if (!preg_match('#^https?://#i', $imageUrl)) {
+            return $imageUrl;
+        }
+
+        $cached = $this->cacheRemoteImage($imageUrl, $externalId, $source);
+        if ($cached !== '') {
+            return $cached;
+        }
+
+        // Fallback to remote URL if caching fails.
+        return $imageUrl;
+    }
+
+    private function cacheRemoteImage(string $url, string $externalId, string $source): string
+    {
+        $uploadsDir = $this->uploadsDirectoryPath() . DIRECTORY_SEPARATOR . 'social-updates';
+        if (!is_dir($uploadsDir) && !@mkdir($uploadsDir, 0755, true) && !is_dir($uploadsDir)) {
+            $this->errors[] = 'Could not create social image cache directory.';
+            return '';
+        }
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_USERAGENT => 'STM-Website/1.0',
+        ]);
+        $body = curl_exec($ch);
+        $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $contentType = (string)curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+        $err = curl_error($ch);
+        $errno = curl_errno($ch);
+        curl_close($ch);
+
+        if (!is_string($body) || $body === '' || $httpCode >= 400) {
+            if ($errno !== 0 || $httpCode >= 400) {
+                $this->errors[] = 'Image cache failed (' . $source . ':' . $externalId . '): HTTP ' . $httpCode . ' ' . $err;
+            }
+            return '';
+        }
+
+        $extension = $this->imageExtensionFromType($contentType, $url);
+        $safeId = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $externalId) ?: (string)time();
+        $filename = $source . '_' . $safeId . '.' . $extension;
+        $absolutePath = $uploadsDir . DIRECTORY_SEPARATOR . $filename;
+
+        if (@file_put_contents($absolutePath, $body) === false) {
+            $this->errors[] = 'Image cache write failed for ' . $source . ':' . $externalId;
+            return '';
+        }
+
+        return '/uploads/social-updates/' . $filename;
+    }
+
+    private function imageExtensionFromType(string $contentType, string $url): string
+    {
+        $type = strtolower(trim(explode(';', $contentType)[0] ?? ''));
+        return match ($type) {
+            'image/jpeg', 'image/jpg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            'image/gif' => 'gif',
+            default => $this->imageExtensionFromUrl($url),
+        };
+    }
+
+    private function imageExtensionFromUrl(string $url): string
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+        $ext = strtolower((string)pathinfo((string)$path, PATHINFO_EXTENSION));
+        if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
+            return $ext === 'jpeg' ? 'jpg' : $ext;
+        }
+        return 'jpg';
+    }
+
+    private function uploadsDirectoryPath(): string
+    {
+        $root = realpath(__DIR__ . '/../../..');
+        if ($root === false) {
+            $root = __DIR__ . '/../../..';
+        }
+        return $root . DIRECTORY_SEPARATOR . 'uploads';
     }
 
     private function updateLastRun(): void
