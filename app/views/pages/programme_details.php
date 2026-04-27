@@ -58,6 +58,8 @@ if ($programmeSidebarSecondaryLink === '' || $programmeSidebarSecondaryLink === 
   $programmeSidebarSecondaryLink = 'contact-admissions';
 }
 $programmeSidebarOtherTitle = trim((string)($settings['programme_sidebar_other_title'] ?? 'Other Programmes Offered'));
+$otherProgrammes = is_array($otherProgrammes ?? null) ? $otherProgrammes : [];
+shuffle($otherProgrammes);
 $mosaicImages = json_decode((string)($settings['programme_mosaic_images_json'] ?? '[]'), true);
 if (!is_array($mosaicImages)) {
     $mosaicImages = [];
@@ -96,7 +98,6 @@ if (!is_array($mosaicImages)) {
         <div class="programme-detail-divider mb-3"></div>
 
         <div class="programme-meta-card mb-3">
-          <div><strong>Department:</strong> <?= e($departmentName) ?></div>
           <div><strong>Level:</strong> <?= e($programmeCategory) ?></div>
           <div><strong>Duration:</strong> <?= e($programmeTerms) ?> terms</div>
           <div>

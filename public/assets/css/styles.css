@@ -165,20 +165,38 @@ a{text-decoration:none}
 .programme-detail-bullets li:last-child{margin-bottom:0;}
 
 .programme-detail-wrapper{
-    overflow:auto;
+    display:flex;
+    flex-wrap:wrap;
+    gap:1.5rem;
 }
 .programme-main-content{
-    margin-right:0;
+    flex:1 1 66%;
     min-width:0;
+    order:1;
 }
 .programme-detail-cards,
 .programme-mosaic-grid{
-    clear:right;
+    clear:none;
 }
 .programme-floating-sidebar{
-    float:right;
+    flex:0 0 32%;
     width:32%;
+    order:2;
     margin:0 0 1rem 1.25rem;
+}
+@media (max-width: 991.98px) {
+    .programme-detail-wrapper{
+        flex-direction:column;
+    }
+    .programme-main-content,
+    .programme-floating-sidebar{
+        flex:1 1 100%;
+        width:100%;
+        margin:0;
+    }
+    .programme-floating-sidebar{
+        order:2;
+    }
 }
 .admissions-contact-theme{
     background:linear-gradient(145deg,#f0f7ff 0%, #ffffff 60%);
@@ -189,7 +207,7 @@ a{text-decoration:none}
 }
 .programme-meta-card{
     display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
+    grid-template-columns:repeat(3,minmax(0,1fr));
     gap:.75rem;
     background:#ececec;
     padding:1rem;
