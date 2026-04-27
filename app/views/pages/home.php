@@ -303,13 +303,53 @@ foreach ($bannerCandidates as $candidate) {
 </section>
 <?php endif; ?>
 
-<?php if (!empty($socialUpdates)): ?>
+<?php if (!empty($socialUpdates)):
+    $suTemplate = (string)($settings['social_updates_template'] ?? 'cards');
+    $suCols = (int)($settings['social_updates_cards_per_row'] ?? 3);
+    $suShowImages = ($settings['social_updates_show_images'] ?? '1') === '1';
+    $suContentLines = (int)($settings['social_updates_content_lines'] ?? 3);
+    $colClass = $suCols === 4 ? 'col-md-6 col-lg-3' : ($suCols === 2 ? 'col-md-6 col-lg-6' : 'col-md-6 col-lg-4');
+?>
 <section class="section-stack">
     <div class="site-width boxed-section" data-aos="fade-up">
         <h2 class="h4 fw-bold mb-4 split-title"><span class="title-primary"><?= e($socialUpdatesTitle) ?></span></h2>
+        <?php if ($suTemplate === 'minimal'): ?>
+        <div class="list-group">
+            <?php foreach ($socialUpdates as $update): ?>
+            <div class="list-group-item list-group-item-action">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="social-feed-content<?= $suContentLines > 0 ? '' : ' social-feed-content-expanded' ?>" style="<?= $suContentLines > 0 ? '-webkit-line-clamp:' . $suContentLines . ';line-clamp:' . $suContentLines : '' ?>"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
+                    <small class="text-muted ms-2 flex-shrink-0"><?= e(date('M j', strtotime((string)($update['posted_at'] ?? $update['created_at'] ?? 'now')))) ?></small>
+                </div>
+                <?php if (!empty($update['link_url'])): ?>
+                    <a href="<?= e((string)$update['link_url']) ?>" target="_blank" rel="noopener" class="small">View post <i class="bi bi-box-arrow-up-right"></i></a>
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php elseif ($suTemplate === 'compact'): ?>
+        <div class="row g-2">
+            <?php foreach ($socialUpdates as $update): ?>
+            <div class="col-12">
+                <div class="d-flex align-items-center p-2 border rounded mb-1">
+                    <?php if ($suShowImages && !empty($update['image_path'])): ?>
+                    <img src="<?= e((string)$update['image_path']) ?>" alt="" class="rounded me-2" style="width:60px;height:60px;object-fit:cover;flex-shrink:0" loading="lazy">
+                    <?php endif; ?>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="social-feed-content<?= $suContentLines > 0 ? '' : ' social-feed-content-expanded' ?>" style="<?= $suContentLines > 0 ? '-webkit-line-clamp:' . $suContentLines . ';line-clamp:' . $suContentLines : '' ?>"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
+                        <small class="text-muted"><?= e(date('M j, Y', strtotime((string)($update['posted_at'] ?? $update['created_at'] ?? 'now')))) ?></small>
+                    </div>
+                    <?php if (!empty($update['link_url'])): ?>
+                    <a href="<?= e((string)$update['link_url']) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary ms-2 flex-shrink-0"><i class="bi bi-box-arrow-up-right"></i></a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php else: ?>
         <div class="row g-3">
             <?php foreach ($socialUpdates as $update): ?>
-                <div class="col-md-6 col-lg-4">
+                <div class="<?= $colClass ?>">
                     <article class="social-feed-item h-100 <?= !empty($update['is_pinned']) ? 'social-feed-pinned' : '' ?>">
                         <?php if (!empty($update['is_pinned'])): ?>
                             <span class="badge bg-warning text-dark social-feed-pin"><i class="bi bi-pin-angle-fill me-1"></i>Pinned</span>
@@ -317,12 +357,12 @@ foreach ($bannerCandidates as $candidate) {
                         <?php if (!empty($update['source'])): ?>
                             <span class="social-feed-source"><i class="bi bi-<?= $update['source'] === 'instagram' ? 'instagram' : ($update['source'] === 'facebook' ? 'facebook' : 'tag') ?> me-1"></i><?= e(ucfirst((string)$update['source'])) ?></span>
                         <?php endif; ?>
-                        <?php if (!empty($update['image_path'])): ?>
-                            <img src="<?= e((string)$update['image_path']) ?>" alt="" class="social-feed-image">
+                        <?php if ($suShowImages && !empty($update['image_path'])): ?>
+                            <img src="<?= e((string)$update['image_path']) ?>" alt="" class="social-feed-image" loading="lazy">
                         <?php endif; ?>
-                        <div class="social-feed-content"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
+                        <div class="social-feed-content<?= $suContentLines > 0 ? '' : ' social-feed-content-expanded' ?>" style="<?= $suContentLines > 0 ? '-webkit-line-clamp:' . $suContentLines . ';line-clamp:' . $suContentLines : '' ?>"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
                         <div class="social-feed-meta">
-                            <span class="text-muted small"><i class="bi bi-clock me-1"></i><?= e(date('M j, Y', strtotime((string)($update['created_at'] ?? 'now')))) ?></span>
+                            <span class="text-muted small"><i class="bi bi-clock me-1"></i><?= e(date('M j, Y', strtotime((string)($update['posted_at'] ?? $update['created_at'] ?? 'now')))) ?></span>
                             <?php if (!empty($update['link_url'])): ?>
                                 <a href="<?= e((string)$update['link_url']) ?>" target="_blank" rel="noopener" class="small ms-2">View post <i class="bi bi-box-arrow-up-right"></i></a>
                             <?php endif; ?>
@@ -331,6 +371,7 @@ foreach ($bannerCandidates as $candidate) {
                 </div>
             <?php endforeach; ?>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 <?php endif; ?>

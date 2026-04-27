@@ -90,6 +90,10 @@ class AdminContentController extends Controller
         'testimonial_slide_effect',
         'testimonial_grid_count',
         'social_updates_title',
+        'social_updates_template',
+        'social_updates_cards_per_row',
+        'social_updates_show_images',
+        'social_updates_content_lines',
         'facebook_page_id',
         'facebook_page_access_token',
         'instagram_business_account_id',
@@ -241,8 +245,12 @@ class AdminContentController extends Controller
             $this->redirect('admin');
         }
         $model = new ContentModel($this->config);
+        $pdo = Database::getInstance($this->config['db']);
         $hidden = $model->getHiddenIds($entity);
-        if (in_array($id, $hidden, true)) {
+
+        // Determine new visibility state
+        $makingVisible = in_array($id, $hidden, true);
+        if ($makingVisible) {
             $hidden = array_values(array_filter($hidden, fn($v) => $v !== $id));
             flash('success', 'Item is now visible.');
         } else {
@@ -250,6 +258,14 @@ class AdminContentController extends Controller
             flash('success', 'Item hidden from public UI.');
         }
         $model->setHiddenIds($entity, $hidden);
+
+        // Also update the is_visible column for entities that use it (so frontend queries work)
+        if (in_array($entity, ['testimonials', 'social_updates'], true)) {
+            $isVisible = $makingVisible ? 1 : 0;
+            $stmt = $pdo->prepare("UPDATE {$entity} SET is_visible = :v WHERE id = :id");
+            $stmt->execute(['v' => $isVisible, 'id' => $id]);
+        }
+
         $this->redirect('admin/list/' . $entity);
     }
 

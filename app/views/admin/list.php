@@ -62,7 +62,15 @@
                             <?php endif; ?>
                         </td>
                     <?php endforeach; ?>
-                        <td class="col-sm"><?php $hiddenIds = $hiddenIds ?? []; $isVisible = !in_array((int)$row['id'], $hiddenIds, true); ?><a class="btn btn-sm btn-action-toggle" href="<?= e(base_url('admin/toggle/' . $entity . '/' . $row['id'])) ?>" title="<?= $isVisible ? 'Visible' : 'Hidden' ?>"><?= $isVisible ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>' ?></a></td>
+                        <td class="col-sm"><?php
+                            $hiddenIds = $hiddenIds ?? [];
+                            // For entities with is_visible column, use that as source of truth
+                            if (in_array($entity, ['testimonials', 'social_updates'], true) && array_key_exists('is_visible', $row)) {
+                                $isVisible = (int)$row['is_visible'] === 1;
+                            } else {
+                                $isVisible = !in_array((int)$row['id'], $hiddenIds, true);
+                            }
+                        ?><a class="btn btn-sm btn-action-toggle" href="<?= e(base_url('admin/toggle/' . $entity . '/' . $row['id'])) ?>" title="<?= $isVisible ? 'Visible' : 'Hidden' ?>"><?= $isVisible ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>' ?></a></td>
                         <td class="col-actions">
                             <div class="action-buttons">
                                 <a class="btn btn-sm btn-action-edit" href="<?= e(base_url('admin/edit/' . $entity . '/' . $row['id'])) ?>" title="Edit"><i class="bi bi-pencil-square"></i></a>
@@ -176,6 +184,7 @@
             <div class="modal-body">
                 <ul class="nav nav-tabs mb-3" id="socialSettingsTabs">
                     <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#socialTabConfig">Configuration</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#socialTabAppearance">Appearance</a></li>
                     <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#socialTabDebug">Debug &amp; Preview</a></li>
                 </ul>
                 <div class="tab-content">
@@ -233,6 +242,52 @@
                         </form>
                         <!-- Fetch Now form OUTSIDE the settings form to avoid nesting -->
                         <form id="socialFetchNowForm" method="POST" action="<?= e(base_url('admin/social-fetch/run')) ?>" style="display:none;"><?= csrf_field() ?></form>
+                    </div>
+                    <div class="tab-pane fade" id="socialTabAppearance">
+                        <form method="POST" action="<?= e(base_url('admin/settings/partial')) ?>">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="_redirect" value="admin/list/social_updates">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Display Template</label>
+                                    <select name="social_updates_template" class="form-select">
+                                        <?php $suTpl = (string)($entitySettings['social_updates_template'] ?? 'cards'); ?>
+                                        <option value="cards" <?= $suTpl === 'cards' ? 'selected' : '' ?>>Card Grid</option>
+                                        <option value="compact" <?= $suTpl === 'compact' ? 'selected' : '' ?>>Compact List</option>
+                                        <option value="minimal" <?= $suTpl === 'minimal' ? 'selected' : '' ?>>Minimal (text only)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Cards per Row</label>
+                                    <select name="social_updates_cards_per_row" class="form-select">
+                                        <?php $suCols = (int)($entitySettings['social_updates_cards_per_row'] ?? 3); ?>
+                                        <option value="2" <?= $suCols === 2 ? 'selected' : '' ?>>2 columns</option>
+                                        <option value="3" <?= $suCols === 3 ? 'selected' : '' ?>>3 columns</option>
+                                        <option value="4" <?= $suCols === 4 ? 'selected' : '' ?>>4 columns</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Content Lines</label>
+                                    <select name="social_updates_content_lines" class="form-select">
+                                        <?php $suLines = (int)($entitySettings['social_updates_content_lines'] ?? 3); ?>
+                                        <option value="2" <?= $suLines === 2 ? 'selected' : '' ?>>2 lines</option>
+                                        <option value="3" <?= $suLines === 3 ? 'selected' : '' ?>>3 lines</option>
+                                        <option value="4" <?= $suLines === 4 ? 'selected' : '' ?>>4 lines</option>
+                                        <option value="0" <?= $suLines === 0 ? 'selected' : '' ?>>Show all</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <?php $suShowImg = ($entitySettings['social_updates_show_images'] ?? '1') === '1'; ?>
+                                        <input class="form-check-input" type="checkbox" name="social_updates_show_images" value="1" <?= $suShowImg ? 'checked' : '' ?>>
+                                        <label class="form-check-label">Show images on cards</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save Appearance</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                     <div class="tab-pane fade" id="socialTabDebug">
                         <p class="text-muted small mb-3">Test your API connection and preview posts that would be fetched — <strong>nothing is saved</strong> until you click "Fetch Now" on the Configuration tab.</p>
