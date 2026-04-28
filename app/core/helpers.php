@@ -35,6 +35,55 @@ function admin_login_url(): string
     return base_url(admin_login_path());
 }
 
+function admin_login_allowed_ips(): array
+{
+    global $config;
+    $raw = trim((string)($config['admin_login_allow_ips'] ?? ''));
+    if ($raw === '') {
+        return [];
+    }
+
+    $lines = preg_split('/[\r\n,;]+/', $raw) ?: [];
+    return array_values(array_filter(array_map(static fn($item) => trim((string)$item), $lines)));
+}
+
+function admin_login_ip_allowed(): bool
+{
+    $allowedIps = admin_login_allowed_ips();
+    if ($allowedIps === []) {
+        return true;
+    }
+
+    $remoteIp = trim((string)($_SERVER['REMOTE_ADDR'] ?? ''));
+    if ($remoteIp === '') {
+        return false;
+    }
+
+    foreach ($allowedIps as $entry) {
+        if ($entry === $remoteIp) {
+            return true;
+        }
+
+        if (str_contains($entry, '/')) {
+            [$subnet, $mask] = explode('/', $entry, 2) + ['', ''];
+            $mask = (int)$mask;
+            if ($mask < 0 || $mask > 32) {
+                continue;
+            }
+            if (filter_var($remoteIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                $ipLong = ip2long($remoteIp);
+                $subnetLong = ip2long($subnet);
+                $maskLong = $mask === 0 ? 0 : ((0xFFFFFFFF << (32 - $mask)) & 0xFFFFFFFF);
+                if (($ipLong & $maskLong) === ($subnetLong & $maskLong)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 function e(?string $value): string
 {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');

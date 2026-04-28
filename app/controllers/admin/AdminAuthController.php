@@ -3,6 +3,12 @@ class AdminAuthController extends Controller
 {
     public function login(): void
     {
+        if (!admin_login_ip_allowed()) {
+            http_response_code(404);
+            echo 'Page not found';
+            exit;
+        }
+
         if (Auth::check()) {
             $this->redirect('admin');
         }
@@ -11,8 +17,17 @@ class AdminAuthController extends Controller
 
     public function authenticate(): void
     {
+        if (!admin_login_ip_allowed()) {
+            http_response_code(404);
+            echo 'Page not found';
+            exit;
+        }
+
         $limitKey = 'admin_login_' . md5((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+        $securityModel = new ContentModel($this->config);
+
         if (!rate_limit_check($limitKey, 5, 15 * 60)) {
+            $securityModel->logPageVisit('/admin/login-rate-limited', true);
             flash('error', 'Too many login attempts. Please wait 15 minutes and try again.');
             $this->redirect(admin_login_path());
         }
@@ -23,10 +38,12 @@ class AdminAuthController extends Controller
 
         if (Auth::attempt($pdo, $email, $password)) {
             rate_limit_clear($limitKey);
+            $securityModel->logPageVisit('/admin/login-success', true);
             $this->redirect('admin');
         }
 
         rate_limit_increment($limitKey);
+        $securityModel->logPageVisit('/admin/login-failed', true);
         flash('error', 'Invalid credentials.');
         $this->redirect(admin_login_path());
     }

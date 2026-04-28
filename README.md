@@ -34,6 +34,10 @@ Modern PHP MVC + MySQL website and admin CMS optimized for conversion and cPanel
 - Email: `admin@stm.ac.ke`
 - Password: `password123`
 
+> To hide the admin login URL, set `admin_login_slug` in `config/config.php` or update it from Admin → Settings. Example: `secret-admin/login`.
+>
+> Optionally restrict access further with `admin_login_allow_ips`. Use one IP or CIDR range per line, or leave blank to allow all.
+
 ## cPanel Deployment Guide
 
 1. Zip project contents and upload to your cPanel `public_html/stm` (or preferred folder).

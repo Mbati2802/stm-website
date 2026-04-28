@@ -2,6 +2,14 @@
 require_once __DIR__ . '/bootstrap.php';
 
 $config = require __DIR__ . '/config/config.php';
+try {
+    $settings = (new ContentModel($config))->getSettings();
+    if (is_array($settings)) {
+        $config = array_merge($config, $settings);
+    }
+} catch (Throwable) {
+    // Settings table may not exist yet.
+}
 session_name($config['session_name']);
 session_set_cookie_params([
     'lifetime' => 0,
@@ -58,8 +66,6 @@ $router->add('GET', 'portal/forgot-password', [StudentPortalController::class, '
 $router->add('POST', 'portal/forgot-password', [StudentPortalController::class, 'sendResetCode']);
 $router->add('GET', 'portal/reset-password', [StudentPortalController::class, 'resetPasswordForm']);
 $router->add('POST', 'portal/reset-password', [StudentPortalController::class, 'resetPassword']);
-$router->add('GET', 'staff/login', [AdminAuthController::class, 'login']);
-$router->add('POST', 'staff/login', [AdminAuthController::class, 'authenticate']);
 
 // Student Portal - Academic Section
 $router->add('GET', 'portal/courses', [StudentPortalController::class, 'courses']);

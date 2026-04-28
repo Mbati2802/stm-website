@@ -114,6 +114,7 @@ class AdminContentController extends Controller
         'social_auto_fetch_last_run',
         'social_auto_fetch_cron_token',
         'admin_login_slug',
+        'admin_login_allow_ips',
         'junior_admin_permissions',
         'junior_admin_view_permissions',
         'junior_admin_manage_permissions',

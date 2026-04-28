@@ -242,6 +242,15 @@ usort($defaultSnapshotCards, static function (array $a, array $b) use ($layoutMa
                                 <label class="form-label">Hidden Admin Login Path</label>
                                 <input name="admin_login_slug" class="form-control" value="<?= e($settings['admin_login_slug'] ?? 'admin/login') ?>" placeholder="e.g. secure/admin-access-4821">
                                 <small class="text-muted">Current login URL: <code><?= e(base_url(trim((string)($settings['admin_login_slug'] ?? 'admin/login'), '/'))) ?></code></small>
+                                <div class="mt-2 alert alert-info py-2">
+                                    <strong>Active admin login URL:</strong>
+                                    <a href="<?= e(base_url(trim((string)($settings['admin_login_slug'] ?? 'admin/login'), '/'))) ?>" target="_blank" rel="noopener noreferrer"><?= e(base_url(trim((string)($settings['admin_login_slug'] ?? 'admin/login'), '/'))) ?></a>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Allowed Admin Login IPs</label>
+                                <textarea name="admin_login_allow_ips" class="form-control" rows="3" placeholder="One IP or CIDR range per line"><?= e($settings['admin_login_allow_ips'] ?? '') ?></textarea>
+                                <small class="text-muted">Leave blank to allow all IPs. Example: <code>203.0.113.5</code> or <code>203.0.113.0/24</code>.</small>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Top Bar Message</label>
