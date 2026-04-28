@@ -103,12 +103,13 @@ $viewData = [
         // Add role-specific data
         if (Auth::isTeacher()) {
             // Teacher-specific data
-            $viewData['teacherCourses'] = array_filter($model->all('portal_courses'), function($course) {
-                return (int)($course['teacher_id'] ?? 0) === (int)($_SESSION['admin_id'] ?? 0);
+            $teacherId = (int)($_SESSION['admin_id'] ?? 0);
+            $viewData['teacherCourses'] = array_filter($model->all('portal_courses'), function($course) use ($teacherId) {
+                return (int)($course['teacher_id'] ?? 0) === $teacherId;
             });
             $viewData['teacherStats'] = [
                 'My Courses' => count($viewData['teacherCourses']),
-                'Total Students' => $portalModel->getStudentCountForTeacher((int)($_SESSION['admin_id'] ?? 0)),
+                'Total Students' => count($portalModel->allStudents()),
             ];
         } elseif (Auth::isRegistrar()) {
             // Registrar-specific data
