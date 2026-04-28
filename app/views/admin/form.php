@@ -1,5 +1,28 @@
-<?php $isEdit = $isEdit ?? false; $row = $row ?? []; $programmeContent = $programmeContent ?? []; ?>
-<section class="py-4"><div class="admin-content-wrap"><div class="admin-page-head mb-3"><h1 class="h4 fw-bold mb-0 text-capitalize"><?= $isEdit ? 'Edit' : 'Create' ?> <?= e(str_replace('_',' ', $entity)) ?></h1><a class="btn btn-outline-secondary" href="<?= e(base_url('admin/list/' . $entity)) ?>"><i class="bi bi-arrow-left me-1"></i>Back to list</a></div><form method="POST" enctype="multipart/form-data" class="soft-card p-4"><?= csrf_field() ?><div class="row g-3">
+<?php 
+$isEdit = $isEdit ?? false; 
+$row = $row ?? []; 
+$programmeContent = $programmeContent ?? []; 
+$canManage = Auth::canManageEntity($entity);
+$formDisabled = !$canManage ? 'disabled' : '';
+$formReadonly = !$canManage ? 'readonly' : '';
+?>
+<section class="py-4"><div class="admin-content-wrap"><div class="admin-page-head mb-3">
+<h1 class="h4 fw-bold mb-0 text-capitalize"><?= $isEdit ? 'Edit' : 'Create' ?> <?= e(str_replace('_',' ', $entity)) ?></h1>
+<div class="d-flex flex-wrap gap-2">
+<a class="btn btn-outline-secondary" href="<?= e(base_url('admin/list/' . $entity)) ?>"><i class="bi bi-arrow-left me-1"></i>Back to list</a>
+<?php if (!$canManage): ?>
+<span class="badge bg-warning text-dark"><i class="bi bi-eye me-1"></i>View Only Mode</span>
+<?php endif; ?>
+</div>
+</div>
+<?php if ($canManage): ?>
+<form method="POST" enctype="multipart/form-data" class="soft-card p-4">
+<?= csrf_field() ?>
+<div class="row g-3">
+<?php else: ?>
+<div class="soft-card p-4">
+<div class="row g-3">
+<?php endif; ?>
 <?php if($entity==='departments'): ?>
 <div class="col-md-6"><label class="form-label">Name</label><input name="name" class="form-control" value="<?= e($row['name'] ?? '') ?>" required></div><div class="col-12"><label class="form-label">Description</label><textarea name="description" class="form-control rich-editor"><?= e($row['description'] ?? '') ?></textarea></div>
 <?php elseif($entity==='programmes'): ?>
@@ -133,7 +156,16 @@
 <div class="col-md-6"><label class="form-label">Title</label><input name="title" class="form-control" value="<?= e($row['title'] ?? '') ?>" required></div><div class="col-12"><label class="form-label">Summary</label><textarea name="summary" class="form-control rich-editor"><?= e($row['summary'] ?? '') ?></textarea></div><div class="col-12"><label class="form-label">Body</label><textarea name="body" rows="6" class="form-control rich-editor"><?= e($row['body'] ?? '') ?></textarea></div><div class="col-12"><label class="form-label">Featured Image URL (optional)</label><input name="image_path" class="form-control" value="<?= e($row['image_path'] ?? '') ?>"></div>
 <div class="col-12"><label class="form-label">Upload Image (optional)</label><input type="file" name="image_file" accept="image/png,image/jpeg,image/webp" class="form-control"></div>
 <?php endif; ?>
-</div><div class="mt-3"><button class="btn btn-primary"><?= $isEdit ? 'Update' : 'Save' ?></button> <a class="btn btn-outline-secondary" href="<?= e(base_url('admin/list/' . $entity)) ?>">Cancel</a></div></form></div></section>
+</div><div class="mt-3">
+<?php if ($canManage): ?>
+<button class="btn btn-primary"><?= $isEdit ? 'Update' : 'Save' ?></button> 
+<?php endif; ?>
+<a class="btn btn-outline-secondary" href="<?= e(base_url('admin/list/' . $entity)) ?>">Cancel</a>
+</div>
+<?php if ($canManage): ?>
+</form>
+<?php endif; ?>
+</div></section>
 <?php if ($entity === 'events'): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function () {

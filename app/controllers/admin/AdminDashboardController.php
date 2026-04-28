@@ -10,30 +10,55 @@ class AdminDashboardController extends Controller
         $trafficHits30 = array_sum(array_map(static fn($d) => (int)($d['total'] ?? 0), $trafficTrend));
         $applicationTrend = $model->getDailyTrend('programme_applications', 30);
 
-        $stats = [
-            'Programmes' => $model->countAll('programmes'),
-            'Departments' => $model->countAll('departments'),
-            'Media Posts' => $model->countAll('news') + $model->countAll('careers') + $model->countAll('tenders'),
-            'Unread Messages' => $model->getUnreadPublicMessagesCount(),
-            'Students' => count($portalModel->allStudents()),
-            'Team Users' => $model->countAll('users'),
-            'Applications' => $model->countAll('programme_applications'),
-            'Traffic Hits' => $trafficHits30,
-        ];
+        // Build stats based on permissions
+        $stats = [];
+        if (Auth::canViewEntity('programmes')) {
+            $stats['Programmes'] = $model->countAll('programmes');
+        }
+        if (Auth::canViewEntity('departments')) {
+            $stats['Departments'] = $model->countAll('departments');
+        }
+        if (Auth::canViewEntity('news') || Auth::canViewEntity('careers') || Auth::canViewEntity('tenders')) {
+            $mediaCount = 0;
+            if (Auth::canViewEntity('news')) $mediaCount += $model->countAll('news');
+            if (Auth::canViewEntity('careers')) $mediaCount += $model->countAll('careers');
+            if (Auth::canViewEntity('tenders')) $mediaCount += $model->countAll('tenders');
+            $stats['Media Posts'] = $mediaCount;
+        }
+        if (Auth::canViewEntity('messages')) {
+            $stats['Unread Messages'] = $model->getUnreadPublicMessagesCount();
+        }
+        if (Auth::canViewEntity('students')) {
+            $stats['Students'] = count($portalModel->allStudents());
+        }
+        if (Auth::canViewEntity('users')) {
+            $stats['Team Users'] = $model->countAll('users');
+        }
+        if (Auth::canManageEntity('messages')) {
+            $stats['Applications'] = $model->countAll('programme_applications');
+        }
+        $stats['Traffic Hits'] = $trafficHits30;
 
-        $contentBreakdown = [
-            'News' => $model->countAll('news'),
-            'Careers' => $model->countAll('careers'),
-            'Tenders' => $model->countAll('tenders'),
-            'Events' => $model->countAll('events'),
-            'Gallery' => $model->countAll('gallery'),
-            'Library' => $model->countAll('library_resources'),
-        ];
-        $engagementBreakdown = [
-            'Public Messages' => $model->countAll('messages'),
-            'Support Tickets' => count($portalModel->getAllSupportTickets()),
-            'Event Registrations' => $model->countAll('event_registrations'),
-        ];
+        // Build content breakdown based on permissions
+        $contentBreakdown = [];
+        if (Auth::canViewEntity('news')) $contentBreakdown['News'] = $model->countAll('news');
+        if (Auth::canViewEntity('careers')) $contentBreakdown['Careers'] = $model->countAll('careers');
+        if (Auth::canViewEntity('tenders')) $contentBreakdown['Tenders'] = $model->countAll('tenders');
+        if (Auth::canViewEntity('events')) $contentBreakdown['Events'] = $model->countAll('events');
+        if (Auth::canViewEntity('gallery')) $contentBreakdown['Gallery'] = $model->countAll('gallery');
+        if (Auth::canViewEntity('library_resources')) $contentBreakdown['Library'] = $model->countAll('library_resources');
+        
+        // Build engagement breakdown based on permissions
+        $engagementBreakdown = [];
+        if (Auth::canViewEntity('messages')) {
+            $engagementBreakdown['Public Messages'] = $model->countAll('messages');
+        }
+        if (Auth::canViewEntity('students')) {
+            $engagementBreakdown['Support Tickets'] = count($portalModel->getAllSupportTickets());
+        }
+        if (Auth::canManageEntity('events')) {
+            $engagementBreakdown['Event Registrations'] = $model->countAll('event_registrations');
+        }
 
         $users = $model->all('users');
         $roleCounts = ['Super Admin' => 0, 'Senior Admin' => 0, 'Editor' => 0, 'Viewer' => 0, 'Registrar' => 0, 'Teacher' => 0];

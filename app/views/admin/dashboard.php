@@ -179,15 +179,31 @@
         <div class="soft-card p-3">
             <h2 class="h6 text-uppercase text-primary mb-3">Quick Actions</h2>
             <div class="admin-grid-actions">
-                <a class="btn btn-outline-primary" href="<?= e(base_url('admin/list/programmes')) ?>"><i class="bi bi-journal-text"></i>Programmes</a>
-                <a class="btn btn-outline-primary" href="<?= e(base_url('admin/list/events')) ?>"><i class="bi bi-calendar-event"></i>Events</a>
-                <a class="btn btn-outline-primary" href="<?= e(base_url('admin/event-registrations')) ?>"><i class="bi bi-calendar2-week"></i>Event Registrations</a>
-                <a class="btn btn-outline-primary" href="<?= e(base_url('admin/media')) ?>"><i class="bi bi-folder2-open"></i>Media Library</a>
-                <a class="btn btn-outline-primary" href="<?= e(base_url('admin/messages')) ?>"><i class="bi bi-envelope"></i>Messages</a>
-                <a class="btn btn-outline-primary" href="<?= e(base_url('admin/applications')) ?>"><i class="bi bi-ui-checks-grid"></i>Applications</a>
+                <?php if (Auth::canViewEntity('programmes')): ?>
+                    <a class="btn btn-outline-primary" href="<?= e(base_url('admin/list/programmes')) ?>"><i class="bi bi-journal-text"></i>Programmes</a>
+                <?php endif; ?>
+                <?php if (Auth::canViewEntity('events')): ?>
+                    <a class="btn btn-outline-primary" href="<?= e(base_url('admin/list/events')) ?>"><i class="bi bi-calendar-event"></i>Events</a>
+                <?php endif; ?>
+                <?php if (Auth::canManageEntity('events')): ?>
+                    <a class="btn btn-outline-primary" href="<?= e(base_url('admin/event-registrations')) ?>"><i class="bi bi-calendar2-week"></i>Event Registrations</a>
+                <?php endif; ?>
+                <?php if (Auth::canViewEntity('media')): ?>
+                    <a class="btn btn-outline-primary" href="<?= e(base_url('admin/media')) ?>"><i class="bi bi-folder2-open"></i>Media Library</a>
+                <?php endif; ?>
+                <?php if (Auth::canViewEntity('messages')): ?>
+                    <a class="btn btn-outline-primary" href="<?= e(base_url('admin/messages')) ?>"><i class="bi bi-envelope"></i>Messages</a>
+                <?php endif; ?>
+                <?php if (Auth::canManageEntity('messages')): ?>
+                    <a class="btn btn-outline-primary" href="<?= e(base_url('admin/applications')) ?>"><i class="bi bi-ui-checks-grid"></i>Applications</a>
+                <?php endif; ?>
                 <a class="btn btn-outline-primary" href="<?= e(base_url('admin/internal-messages')) ?>"><i class="bi bi-chat-left-dots"></i>Team Messages</a>
-                <a class="btn btn-outline-primary" href="<?= e(base_url('admin/students')) ?>"><i class="bi bi-people"></i>Students</a>
-                <a class="btn btn-primary" href="<?= e(base_url('admin/settings')) ?>"><i class="bi bi-sliders"></i>Settings</a>
+                <?php if (Auth::canViewEntity('students')): ?>
+                    <a class="btn btn-outline-primary" href="<?= e(base_url('admin/students')) ?>"><i class="bi bi-people"></i>Students</a>
+                <?php endif; ?>
+                <?php if (!Auth::isTeacher()): ?>
+                    <a class="btn btn-primary" href="<?= e(base_url('admin/settings')) ?>"><i class="bi bi-sliders"></i>Settings</a>
+                <?php endif; ?>
             </div>
         </div>
     </div>

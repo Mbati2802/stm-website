@@ -371,6 +371,12 @@ usort($defaultSnapshotCards, static function (array $a, array $b) use ($layoutMa
                         <input type="hidden" id="registrar_manage_permissions_input" name="registrar_manage_permissions" value="<?= e($settings['registrar_manage_permissions'] ?? '') ?>">
                         <input type="hidden" id="teacher_view_permissions_input" name="teacher_view_permissions" value="<?= e($settings['teacher_view_permissions'] ?? '') ?>">
                         <input type="hidden" id="teacher_manage_permissions_input" name="teacher_manage_permissions" value="<?= e($settings['teacher_manage_permissions'] ?? $settings['teacher_permissions'] ?? '') ?>">
+                        
+                        <div class="alert alert-info mb-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Dashboard Access Configuration</strong><br>
+                            Configure which roles can access the dashboard and see specific sections.
+                        </div>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="border rounded p-3 h-100">
