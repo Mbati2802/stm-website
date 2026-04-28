@@ -6,7 +6,7 @@ $appName = $this->config['app_name'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= e($metaTitle ?? 'Student Portal') ?> | <?= e($appName) ?></title>
+    <title><?= e($metaTitle ?? 'Portal') ?> | <?= e($appName) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -17,8 +17,8 @@ $appName = $this->config['app_name'];
 <body class="portal-body">
     <header class="portal-topbar">
         <div class="portal-shell d-flex align-items-center justify-content-between gap-2">
-            <a class="portal-brand" href="<?= e(base_url('portal/login')) ?>">
-                <i class="bi bi-mortarboard-fill"></i> Student Portal
+            <a class="portal-brand" href="<?= e(base_url(str_contains($viewPath, 'staff') ? 'staff/login' : 'portal/login')) ?>">
+                <i class="bi bi-<?= str_contains($viewPath, 'staff') ? 'person-badge' : 'mortarboard-fill' ?>"></i> <?= str_contains($viewPath, 'staff') ? 'Staff Portal' : 'Student Portal' ?>
             </a>
             <a class="btn btn-sm btn-outline-light" href="<?= e(base_url()) ?>">Back to Website</a>
         </div>

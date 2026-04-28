@@ -67,9 +67,9 @@ $router->add('POST', 'portal/forgot-password', [StudentPortalController::class, 
 $router->add('GET', 'portal/reset-password', [StudentPortalController::class, 'resetPasswordForm']);
 $router->add('POST', 'portal/reset-password', [StudentPortalController::class, 'resetPassword']);
 
-// Staff Portal (alias for admin login)
-$router->add('GET', 'staff/login', [AdminAuthController::class, 'login']);
-$router->add('POST', 'staff/login', [AdminAuthController::class, 'authenticate']);
+// Staff Portal (branded login page)
+$router->add('GET', 'staff/login', [StaffAuthController::class, 'login']);
+$router->add('POST', 'staff/login', [StaffAuthController::class, 'authenticate']);
 
 // Student Portal - Academic Section
 $router->add('GET', 'portal/courses', [StudentPortalController::class, 'courses']);
