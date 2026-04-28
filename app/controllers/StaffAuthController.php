@@ -4,9 +4,12 @@ class StaffAuthController extends Controller
     public function login(): void
     {
         if (Auth::check()) {
+            if (($_SESSION['login_origin'] ?? '') === 'staff') {
+                $this->redirect('staff/dashboard');
+            }
             $this->redirect('admin');
         }
-        $this->view('pages/portal_staff_login', ['metaTitle' => 'Staff Portal Login']);
+        $this->view('pages/portal_staff_login', ['metaTitle' => 'Staff Portal Login'], 'portal_staff');
     }
 
     public function authenticate(): void
@@ -25,14 +28,29 @@ class StaffAuthController extends Controller
         $password = $_POST['password'] ?? '';
 
         if (Auth::attempt($pdo, $email, $password)) {
+            $_SESSION['login_origin'] = 'staff';
             rate_limit_clear($limitKey);
             $securityModel->logPageVisit('/staff/login-success', true);
-            $this->redirect('admin');
+            $this->redirect('staff/dashboard');
         }
 
         rate_limit_increment($limitKey);
         $securityModel->logPageVisit('/staff/login-failed', true);
         flash('error', 'Invalid credentials.');
+        $this->redirect('staff/login');
+    }
+
+    public function dashboard(): void
+    {
+        if (!Auth::check()) {
+            $this->redirect('staff/login');
+        }
+        $this->view('pages/staff_dashboard', ['metaTitle' => 'Staff Portal Dashboard'], 'portal_staff');
+    }
+
+    public function logout(): void
+    {
+        Auth::logout();
         $this->redirect('staff/login');
     }
 }

@@ -70,6 +70,8 @@ $router->add('POST', 'portal/reset-password', [StudentPortalController::class, '
 // Staff Portal (branded login page)
 $router->add('GET', 'staff/login', [StaffAuthController::class, 'login']);
 $router->add('POST', 'staff/login', [StaffAuthController::class, 'authenticate']);
+$router->add('GET', 'staff/dashboard', [StaffAuthController::class, 'dashboard']);
+$router->add('GET', 'staff/logout', [StaffAuthController::class, 'logout']);
 
 // Student Portal - Academic Section
 $router->add('GET', 'portal/courses', [StudentPortalController::class, 'courses']);

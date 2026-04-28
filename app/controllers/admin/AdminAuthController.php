@@ -50,7 +50,12 @@ class AdminAuthController extends Controller
 
     public function logout(): void
     {
+        $origin = $_SESSION['login_origin'] ?? '';
         Auth::logout();
+
+        if ($origin === 'staff') {
+            $this->redirect('staff/login');
+        }
         $this->redirect(admin_login_path());
     }
 }
