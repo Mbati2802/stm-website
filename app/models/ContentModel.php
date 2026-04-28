@@ -565,6 +565,24 @@ class ContentModel
         }
     }
 
+    public function getRecentBlockedLoginAttempts(int $limit = 10): array
+    {
+        try {
+            $stmt = $this->pdo->prepare('
+                SELECT path, ip_address, user_agent, created_at
+                FROM page_visits
+                WHERE path IN (\'/admin/login-rate-limited\', \'/admin/login-failed\')
+                ORDER BY created_at DESC
+                LIMIT :lim
+            ');
+            $stmt->bindValue(':lim', max(1, min($limit, 50)), PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
     public function getTopCourseViews(int $limit = 8): array
     {
         $metrics = $this->programmeMetricsMap();

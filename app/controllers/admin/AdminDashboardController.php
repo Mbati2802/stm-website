@@ -59,6 +59,7 @@ class AdminDashboardController extends Controller
             'trafficTrend' => $trafficTrend,
             'topPages' => $model->getTopVisitedPages(8, false),
             'topCourses' => $model->getTopCourseViews(8),
+            'recentBlockedLogins' => $model->getRecentBlockedLoginAttempts(5),
         ]);
     }
 }

@@ -139,6 +139,43 @@
                 </div>
             </div>
         </div>
+        <div class="row g-3 mb-3">
+            <div class="col-lg-12">
+                <div class="soft-card p-3 h-100">
+                    <h2 class="h6 text-uppercase text-primary mb-3">Recent Blocked Login Attempts</h2>
+                    <div class="table-responsive">
+                        <table class="table table-sm admin-table mb-0">
+                            <thead><tr><th class="col-sm">Type</th><th class="col-sm">IP Address</th><th class="col-lg">User Agent</th><th class="col-sm">Date</th></tr></thead>
+                            <tbody>
+                                <?php if (empty($recentBlockedLogins)): ?>
+                                    <tr><td colspan="4" class="text-muted">No blocked login attempts recorded yet.</td></tr>
+                                <?php else: ?>
+                                    <?php foreach ($recentBlockedLogins as $row): ?>
+                                        <tr>
+                                            <td>
+                                                <?php
+                                                $path = (string)($row['path'] ?? '');
+                                                if ($path === '/admin/login-rate-limited') {
+                                                    echo '<span class="badge bg-warning">Rate Limited</span>';
+                                                } elseif ($path === '/admin/login-failed') {
+                                                    echo '<span class="badge bg-danger">Failed Login</span>';
+                                                } else {
+                                                    echo '<span class="badge bg-secondary">Unknown</span>';
+                                                }
+                                                ?>
+                                            </td>
+                                            <td title="<?= e((string)($row['ip_address'] ?? '')) ?>"><?= e((string)($row['ip_address'] ?? '')) ?></td>
+                                            <td title="<?= e((string)($row['user_agent'] ?? '')) ?>"><?= e((string)($row['user_agent'] ?? '')) ?></td>
+                                            <td><?= e((string)($row['created_at'] ?? '')) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="soft-card p-3">
             <h2 class="h6 text-uppercase text-primary mb-3">Quick Actions</h2>
             <div class="admin-grid-actions">
