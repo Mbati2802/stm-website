@@ -7,8 +7,10 @@
     --bs-primary: #185490;
     --bs-primary-rgb: 24,84,144;
     background:var(--admin-bg);
+    overflow-x:hidden;
+    max-width:100vw;
 }
-.admin-shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.admin-shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh;max-width:100vw;overflow:hidden}
 .admin-sidebar{
     background:linear-gradient(180deg,#1b3b5f 0%, #122a42 100%);
     color:#dce7f6;
@@ -16,8 +18,12 @@
     position:sticky;
     top:0;
     height:100vh;
-    overflow:auto;
+    overflow-y:auto;
+    overflow-x:hidden;
     border-right:1px solid rgba(255,255,255,.08);
+    width:280px;
+    min-width:280px;
+    max-width:280px;
 }
 .admin-sidebar-brand{
     display:flex;
@@ -99,8 +105,8 @@
     width:18px;
     text-align:center;
 }
-.admin-main{padding:1rem 1rem}
-.admin-main .container,.admin-content-wrap{max-width:none;width:100%;margin:0;padding:0}
+.admin-main{padding:1rem 1rem;overflow-x:hidden;max-width:100%;min-width:0}
+.admin-main .container,.admin-content-wrap{max-width:100%;width:100%;margin:0;padding:0;overflow-x:hidden}
 .admin-main .soft-card{
     border-radius:.8rem;
     border:1px solid var(--admin-border);
@@ -108,7 +114,7 @@
     box-shadow:0 8px 26px rgba(16,24,40,.06);
 }
 .admin-topbar{
-    max-width:none;
+    max-width:100%;
     margin:0 0 1rem;
     background:var(--secondary);
     border:1px solid var(--admin-border);
@@ -121,6 +127,9 @@
     position:sticky;
     top:.4rem;
     z-index:60;
+    overflow-x:auto;
+    overflow-y:hidden;
+    flex-wrap:nowrap;
 }
 .admin-topbar-title{
     display:flex;
@@ -156,7 +165,7 @@
     font-weight:700;
 }
 .admin-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
-.admin-table-card{border:1px solid var(--admin-border)}
+.admin-table-card{border:1px solid var(--admin-border);overflow-x:auto;max-width:100%}
 .admin-table thead th{
     background:#eef3fb;
     font-size:.8rem;
@@ -166,8 +175,8 @@
     border-bottom:1px solid var(--admin-border);
 }
 .admin-table td,.admin-table th{vertical-align:middle}
-.admin-table{table-layout:fixed;width:100%}
-.admin-table td,.admin-table th{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-table{width:100%}
+.admin-table td,.admin-table th{overflow:hidden;text-overflow:ellipsis}
 .admin-table .col-xs{max-width:7%}
 .admin-table .col-sm{max-width:11%}
 .admin-table .col-md{max-width:16%}
@@ -273,473 +282,98 @@ body.admin-sidebar-collapsed .admin-nav-group{padding:.3rem}
 }
 
 @media (max-width: 991px) {
-    /* Show mobile toggle button */
-    .admin-sidebar-toggle-btn {
-        display: block;
-    }
-    
-    /* Mobile sidebar - overlay style */
-    .admin-shell {
-        grid-template-columns: 1fr;
-        position: relative;
-    }
-    
-    .admin-sidebar {
-        position: fixed;
-        top: 0;
-        left: -280px;
-        width: 280px;
-        height: 100vh;
-        z-index: 1050;
-        transition: left 0.3s ease;
-        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        overflow-y: auto;
-    }
-    
-    .admin-sidebar.show {
-        left: 0;
-    }
-    
-    /* Mobile overlay */
-    .admin-sidebar-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        z-index: 1040;
-    }
-    
-    .admin-sidebar-overlay.show {
-        display: block;
-    }
-    
-    /* Mobile main content */
-    .admin-main {
-        margin-left: 0;
-        width: 100%;
-        padding: 0;
-    }
-    
-    /* Mobile topbar */
-    .admin-topbar {
-        position: sticky;
-        top: 0;
-        z-index: 1030;
-        padding: 0.75rem 1rem;
-        background: white;
-        border-bottom: 1px solid var(--admin-border);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .admin-topbar-title {
-        flex: 1;
-        text-align: center;
-        margin: 0 1rem;
-    }
-    
-    .admin-topbar-title strong {
-        font-size: 1rem;
-    }
-    
-    .admin-topbar-title span:last-child {
-        display: none;
-    }
-    
-    .admin-topbar-tools {
-        display: flex;
-        gap: 0.25rem;
-    }
-    
-    /* Hide collapsed sidebar state on mobile */
-    body.admin-sidebar-collapsed .admin-shell {
-        grid-template-columns: 1fr;
-    }
-    
-    /* Prevent horizontal scroll */
-    body {
-        overflow-x: hidden;
-    }
-    
-    .admin-content-wrap {
-        padding: 1rem;
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-    
-    /* Mobile dashboard */
-    .admin-page-head {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .admin-page-head h1 {
-        font-size: 1.25rem;
-        margin-bottom: 0.25rem;
-    }
-    
-    .admin-page-head p {
-        font-size: 0.85rem;
-        margin: 0;
-    }
-    
-    /* Mobile metric cards */
-    .admin-metric-card {
-        padding: 1rem;
-        text-align: center;
-        margin-bottom: 0.75rem;
-    }
-    
-    .metric-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-    }
-    
-    /* Mobile cards */
-    .soft-card {
-        margin-bottom: 1rem;
-        border-radius: 0.75rem;
-    }
-    
-    .soft-card.p-4 {
-        padding: 1rem !important;
-    }
-    
-    .soft-card.p-3 {
-        padding: 0.75rem !important;
-    }
-    
-    /* Mobile tables - make them scrollable */
-    .admin-table-card {
-        overflow-x: auto;
-        margin: 0 -1rem;
-        padding: 0 1rem;
-    }
-    
-    .admin-table {
-        min-width: 600px;
-        font-size: 0.75rem;
-    }
-    
-    .admin-table th,
-    .admin-table td {
-        padding: 0.5rem 0.25rem;
-        white-space: nowrap;
-    }
-    
-    /* Mobile forms */
-    .form-control,
-    .form-select {
-        font-size: 0.9rem;
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-    }
-    
-    .form-label {
-        font-size: 0.85rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-    
-    /* Mobile buttons */
-    .btn {
-        font-size: 0.85rem;
-        padding: 0.6rem 1rem;
-        border-radius: 0.5rem;
-    }
-    
-    .btn-sm {
-        font-size: 0.8rem;
-        padding: 0.4rem 0.75rem;
-    }
-    
-    /* Mobile dashboard grid actions */
-    .admin-grid-actions {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
-    }
-    
-    .admin-grid-actions .btn {
-        font-size: 0.8rem;
-        padding: 0.75rem 0.5rem;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    /* Mobile charts */
-    canvas {
-        max-width: 100%;
-        height: auto !important;
-    }
-    
-    .row.g-3 {
-        margin: 0 -0.5rem;
-    }
-    
-    .row.g-3 > div {
-        padding: 0 0.5rem;
-        margin-bottom: 1rem;
-    }
+    .admin-sidebar-toggle-btn{display:block}
+    .admin-shell{grid-template-columns:1fr;max-width:100vw;overflow-x:hidden}
+    .admin-sidebar{position:fixed;top:0;left:0;width:280px;min-width:280px;max-width:280px;height:100vh;z-index:1050;transform:translateX(-100%);transition:transform .3s ease;box-shadow:none}
+    .admin-sidebar.show{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.3)}
+    .admin-sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:1040}
+    .admin-sidebar-overlay.show{display:block}
+    .admin-main{margin-left:0;width:100%;max-width:100vw;padding:0;overflow-x:hidden}
+    .admin-topbar{position:sticky;top:0;z-index:1030;padding:.75rem 1rem;background:var(--secondary);border-radius:0;border:none;border-bottom:1px solid rgba(255,255,255,.2);margin:0;overflow-x:hidden}
+    .admin-topbar-title{flex:1;min-width:0}
+    .admin-topbar-title strong{font-size:1rem}
+    .admin-topbar-title .topbar-sep,.admin-topbar-title span:last-child{display:none}
+    .admin-topbar-tools{display:flex;gap:.25rem;flex-shrink:0}
+    .admin-clock{display:none}
+    body.admin-sidebar-collapsed .admin-shell{grid-template-columns:1fr}
+    .admin-content-wrap{padding:1rem;max-width:100%;overflow-x:hidden}
+    .admin-page-head{flex-direction:column;align-items:flex-start;gap:.75rem;margin-bottom:1.5rem}
+    .admin-page-head h1{font-size:1.25rem;margin-bottom:.25rem}
+    .admin-page-head p{font-size:.85rem;margin:0}
+    .admin-metric-card{padding:1rem;text-align:center}
+    .metric-value{font-size:1.5rem;font-weight:700}
+    .soft-card{margin-bottom:1rem;border-radius:.75rem;max-width:100%;overflow-x:hidden}
+    .soft-card.p-4{padding:1rem!important}
+    .soft-card.p-3{padding:.75rem!important}
+    .admin-table-card{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .admin-table{min-width:600px;font-size:.75rem}
+    .admin-table th,.admin-table td{padding:.5rem .25rem}
+    .form-control,.form-select{font-size:.9rem;padding:.75rem;border-radius:.5rem;max-width:100%}
+    .form-label{font-size:.85rem;font-weight:600;margin-bottom:.5rem}
+    .btn{font-size:.85rem;padding:.6rem 1rem;border-radius:.5rem}
+    .btn-sm{font-size:.8rem;padding:.4rem .75rem}
+    .admin-grid-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
+    .admin-grid-actions .btn{font-size:.8rem;padding:.75rem .5rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    canvas{max-width:100%;height:auto!important}
+    .row.g-3{margin:0 -.5rem}
+    .row.g-3>div{padding:0 .5rem;margin-bottom:1rem}
+    .settings-layout>[class*="col-lg-"]{flex:0 0 100%;max-width:100%}
+    .permission-grid{grid-template-columns:1fr 1fr;max-height:none}
 }
 
 @media (max-width: 767px) {
-    /* Extra small mobile improvements */
-    .admin-content-wrap {
-        padding: 0.75rem;
-    }
-    
-    .admin-page-head h1 {
-        font-size: 1.1rem;
-    }
-    
-    .admin-page-head p {
-        font-size: 0.85rem;
-    }
-    
-    /* Mobile metric cards - 2 columns */
-    .col-6.col-lg-2 {
-        flex: 0 0 50%;
-        max-width: 50%;
-    }
-    
-    .admin-metric-card {
-        padding: 0.75rem;
-        text-align: center;
-    }
-    
-    .metric-value {
-        font-size: 1.25rem;
-    }
-    
-    /* Mobile dashboard charts */
-    .row.g-3.mb-3 > div {
-        margin-bottom: 1rem;
-    }
-    
-    .soft-card.p-3 {
-        padding: 0.75rem !important;
-    }
-    
-    /* Mobile tables */
-    .admin-table td,
-    .admin-table th {
-        font-size: 0.7rem;
-        padding: 0.4rem 0.2rem;
-    }
-    
-    .action-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-    
-    /* Mobile forms */
-    .row.g-3 > div {
-        margin-bottom: 0.75rem;
-    }
-    
-    .form-label {
-        font-size: 0.85rem;
-        margin-bottom: 0.25rem;
-    }
-    
-    /* Mobile quick actions - 1 column */
-    .admin-grid-actions {
-        grid-template-columns: 1fr;
-        gap: 0.4rem;
-    }
-    
-    .admin-grid-actions .btn {
-        font-size: 0.8rem;
-        padding: 0.6rem 0.75rem;
-        text-align: left;
-        justify-content: flex-start;
-    }
-    
-    /* Mobile settings */
-    .settings-layout > [class*="col-lg-"] {
-        margin-bottom: 1rem;
-    }
-    
-    .permission-grid {
-        grid-template-columns: 1fr;
-        max-height: none;
-    }
-    
-    /* Mobile modals */
-    .modal-dialog {
-        margin: 0.5rem;
-        max-width: calc(100% - 1rem);
-    }
-    
-    .modal-body {
-        padding: 1rem;
-    }
-    
-    /* Mobile alerts */
-    .alert {
-        font-size: 0.85rem;
-        padding: 0.75rem;
-    }
-    
-    /* Mobile topbar adjustments */
-    .admin-topbar {
-        padding: 0.5rem 0.75rem;
-    }
-    
-    .admin-topbar-title strong {
-        font-size: 0.9rem;
-    }
-    
-    .admin-topbar-tools .btn {
-        padding: 0.4rem 0.5rem;
-    }
+    .admin-content-wrap{padding:.75rem}
+    .admin-page-head h1{font-size:1.1rem}
+    .admin-page-head p{font-size:.85rem}
+    .col-6.col-lg-2{flex:0 0 50%;max-width:50%}
+    .admin-metric-card{padding:.75rem;text-align:center}
+    .metric-value{font-size:1.25rem}
+    .row.g-3.mb-3>div{margin-bottom:1rem}
+    .soft-card.p-3{padding:.75rem!important}
+    .admin-table td,.admin-table th{font-size:.7rem;padding:.4rem .2rem}
+    .action-buttons{display:flex;flex-direction:column;gap:.25rem}
+    .row.g-3>div{margin-bottom:.75rem}
+    .form-label{font-size:.85rem;margin-bottom:.25rem}
+    .admin-grid-actions{grid-template-columns:1fr;gap:.4rem}
+    .admin-grid-actions .btn{font-size:.8rem;padding:.6rem .75rem;text-align:left;justify-content:flex-start}
+    .settings-layout>[class*="col-lg-"]{margin-bottom:1rem}
+    .permission-grid{grid-template-columns:1fr;max-height:none}
+    .modal-dialog{margin:.5rem;max-width:calc(100% - 1rem)}
+    .modal-body{padding:1rem}
+    .alert{font-size:.85rem;padding:.75rem}
+    .admin-topbar{padding:.5rem .75rem}
+    .admin-topbar-title strong{font-size:.9rem}
+    .admin-topbar-tools .btn{padding:.4rem .5rem}
 }
 
 @media (max-width: 575px) {
-    /* Small mobile improvements */
-    .admin-content-wrap {
-        padding: 0.5rem;
-    }
-    
-    /* Mobile sidebar adjustments */
-    .admin-sidebar {
-        width: 260px;
-        left: -260px;
-    }
-    
-    /* Mobile dashboard */
-    .admin-page-head {
-        margin-bottom: 1rem;
-    }
-    
-    .soft-card {
-        margin-bottom: 0.75rem;
-        border-radius: 0.5rem;
-    }
-    
-    /* Mobile navigation */
-    .admin-nav-group {
-        padding: 0.3rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .admin-nav-group-title {
-        font-size: 0.65rem;
-        padding: 0.25rem 0.5rem;
-    }
-    
-    .admin-sidebar .nav-link {
-        padding: 0.6rem 0.75rem;
-        font-size: 0.85rem;
-    }
-    
-    /* Mobile content */
-    h1.h4 {
-        font-size: 1rem;
-    }
-    
-    h2.h6 {
-        font-size: 0.8rem;
-    }
-    
-    .text-muted {
-        font-size: 0.75rem;
-    }
-    
-    /* Mobile metric cards - 2 columns still */
-    .col-6.col-lg-2 {
-        flex: 0 0 50%;
-        max-width: 50%;
-    }
-    
-    .admin-metric-card {
-        padding: 0.5rem;
-    }
-    
-    .metric-value {
-        font-size: 1.1rem;
-    }
-    
-    /* Mobile buttons */
-    .btn {
-        font-size: 0.75rem;
-        padding: 0.5rem 0.75rem;
-    }
-    
-    .btn-sm {
-        font-size: 0.7rem;
-        padding: 0.3rem 0.5rem;
-    }
-    
-    /* Mobile tables - more compact */
-    .admin-table-card {
-        margin: 0 -0.5rem;
-        padding: 0 0.5rem;
-    }
-    
-    .admin-table {
-        font-size: 0.65rem;
-        min-width: 500px;
-    }
-    
-    .admin-table td,
-    .admin-table th {
-        padding: 0.3rem 0.2rem;
-        word-break: break-word;
-    }
-    
-    /* Mobile forms */
-    .form-control,
-    .form-select {
-        font-size: 0.85rem;
-        padding: 0.5rem 0.75rem;
-    }
-    
-    .form-check {
-        margin-bottom: 0.5rem;
-    }
-    
-    /* Mobile charts container */
-    .soft-card.p-3.h-100 {
-        min-height: 200px;
-    }
-    
-    /* Mobile topbar - more compact */
-    .admin-topbar {
-        padding: 0.5rem;
-    }
-    
-    .admin-topbar-title {
-        margin: 0 0.5rem;
-    }
-    
-    .admin-topbar-title strong {
-        font-size: 0.85rem;
-    }
-    
-    .admin-sidebar-toggle-btn {
-        padding: 0.4rem;
-        margin-right: 0.5rem;
-    }
-    
-    /* Mobile dropdown menus */
-    .dropdown-menu {
-        font-size: 0.85rem;
-        min-width: 150px;
-    }
-    
-    .dropdown-item {
-        padding: 0.4rem 0.75rem;
-        font-size: 0.8rem;
-    }
+    .admin-content-wrap{padding:.5rem}
+    .admin-sidebar{width:260px;min-width:260px;max-width:260px}
+    .admin-page-head{margin-bottom:1rem}
+    .soft-card{margin-bottom:.75rem;border-radius:.5rem}
+    .admin-nav-group{padding:.3rem;margin-bottom:.5rem}
+    .admin-nav-group-title{font-size:.65rem;padding:.25rem .5rem}
+    .admin-sidebar .nav-link{padding:.6rem .75rem;font-size:.85rem}
+    h1.h4{font-size:1rem}
+    h2.h6{font-size:.8rem}
+    .text-muted{font-size:.75rem}
+    .col-6.col-lg-2{flex:0 0 50%;max-width:50%}
+    .admin-metric-card{padding:.5rem}
+    .metric-value{font-size:1.1rem}
+    .btn{font-size:.75rem;padding:.5rem .75rem}
+    .btn-sm{font-size:.7rem;padding:.3rem .5rem}
+    .admin-table-card{margin:0}
+    .admin-table{font-size:.65rem;min-width:500px}
+    .admin-table td,.admin-table th{padding:.3rem .2rem}
+    .form-control,.form-select{font-size:.85rem;padding:.5rem .75rem}
+    .form-check{margin-bottom:.5rem}
+    .soft-card.p-3.h-100{min-height:200px}
+    .admin-topbar{padding:.5rem}
+    .admin-topbar-title{margin:0 .5rem}
+    .admin-topbar-title strong{font-size:.85rem}
+    .admin-sidebar-toggle-btn{padding:.4rem;margin-right:.5rem}
+    .dropdown-menu{font-size:.85rem;min-width:150px}
+    .dropdown-item{padding:.4rem .75rem;font-size:.8rem}
 }
 
 @media (max-width: 1200px){

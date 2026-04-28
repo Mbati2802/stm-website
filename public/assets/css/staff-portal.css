@@ -5,12 +5,7 @@
     --portal-text: #3c1317;
 }
 * { box-sizing: border-box; }
-body.portal-body.staff-portal-body {
-    margin: 0;
-    font-family: 'Roboto', sans-serif;
-    background: linear-gradient(170deg, #fdf0f0 0%, #f7e0e0 55%, #ffffff 100%);
-    color: var(--portal-text);
-}
+body.portal-body.staff-portal-body{margin:0;font-family:'Roboto',sans-serif;background:linear-gradient(170deg,#fdf0f0 0%,#f7e0e0 55%,#ffffff 100%);color:var(--portal-text);overflow-x:hidden;max-width:100vw}
 .portal-shell { width: min(1080px, 92%); margin: 0 auto; }
 .portal-topbar.staff-topbar {
     background: linear-gradient(120deg, var(--portal-primary), #61181b);
@@ -75,290 +70,33 @@ body.portal-body.staff-portal-body {
 
 /* Mobile Responsive Styles for Staff Portal */
 @media (max-width: 768px) {
-    /* Mobile shell and layout */
-    .portal-shell {
-        width: 100%;
-        margin: 0;
-        padding: 0;
-    }
-    
-    /* Mobile topbar */
-    .portal-topbar.staff-topbar {
-        padding: 1rem;
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-    }
-    
-    .portal-brand {
-        font-size: 1.1rem;
-        gap: 0.3rem;
-    }
-    
-    .portal-brand i {
-        font-size: 1.2rem;
-    }
-    
-    /* Mobile content */
-    .portal-content {
-        padding: 1rem;
-    }
-    
-    /* Mobile cards */
-    .portal-card {
-        border-radius: 10px;
-        margin-bottom: 1rem;
-        padding: 1rem;
-    }
-    
-    /* Mobile typography */
-    .portal-title {
-        font-size: 1.5rem;
-        margin-bottom: 0.5rem;
-        text-align: center;
-    }
-    
-    .portal-subtitle {
-        font-size: 0.9rem;
-        text-align: center;
-        margin-bottom: 1.5rem;
-    }
-    
-    /* Mobile forms */
-    .portal-body .form-control,
-    .portal-body .form-select {
-        font-size: 1rem;
-        padding: 0.75rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-    }
-    
-    .form-group {
-        margin-bottom: 1rem;
-    }
-    
-    .form-label {
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-    
-    /* Mobile buttons */
-    .portal-body .btn {
-        padding: 0.75rem 1.5rem;
-        font-size: 0.9rem;
-        border-radius: 8px;
-        width: 100%;
-        margin-bottom: 0.5rem;
-        display: block;
-    }
-    
-    .portal-body .btn-sm {
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
-    }
-    
-    /* Mobile badges */
-    .portal-badge {
-        font-size: 0.75rem;
-        padding: 0.2rem 0.5rem;
-    }
-    
-    /* Mobile tables */
-    .table-responsive {
-        margin: 0 -1rem;
-        padding: 0 1rem;
-        overflow-x: auto;
-    }
-    
-    .table {
-        font-size: 0.85rem;
-        min-width: 600px;
-    }
-    
-    .table th,
-    .table td {
-        padding: 0.5rem 0.25rem;
-        word-break: break-word;
-    }
-    
-    /* Mobile alerts */
-    .alert {
-        margin-bottom: 1rem;
-        padding: 0.75rem 1rem;
-        font-size: 0.9rem;
-        border-radius: 8px;
-    }
-    
-    /* Mobile navigation */
-    .navbar {
-        padding: 0.5rem 1rem;
-    }
-    
-    .navbar-brand {
-        font-size: 1rem;
-    }
-    
-    .navbar-nav .nav-link {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.9rem;
-    }
-    
-    /* Mobile grid layouts */
-    .row {
-        margin: 0 -0.5rem;
-    }
-    
-    .row > div {
-        padding: 0 0.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    /* Mobile modals */
-    .modal-dialog {
-        margin: 0.5rem;
-        max-width: calc(100% - 1rem);
-    }
-    
-    .modal-content {
-        border-radius: 12px;
-    }
-    
-    .modal-body {
-        padding: 1rem;
-    }
-    
-    .modal-header {
-        padding: 1rem;
-        border-bottom: 1px solid rgba(123, 31, 36, 0.1);
-    }
-    
-    .modal-footer {
-        padding: 1rem;
-        border-top: 1px solid rgba(123, 31, 36, 0.1);
-    }
+    .portal-shell{width:100%;margin:0;padding:0 1rem}
+    .portal-topbar.staff-topbar{padding:.5rem 1rem}
+    .portal-brand{font-size:1rem}
+    .portal-card{border-radius:10px;padding:1rem!important}
+    .portal-title{font-size:1.3rem}
+    .portal-subtitle{font-size:.85rem}
+    .portal-badge{font-size:.7rem;padding:.2rem .5rem}
+    .portal-body .form-control,.portal-body .form-select{font-size:1rem;padding:.75rem;border-radius:8px}
+    .portal-body .btn{padding:.75rem 1rem;font-size:.9rem}
+    .portal-body .btn-sm{padding:.5rem .75rem;font-size:.85rem}
+    .portal-body .row>div{margin-bottom:1rem}
+    .portal-body .table-responsive{margin:0 -1rem;padding:0 1rem}
+    .portal-body table{font-size:.85rem}
+    .portal-body table th,.portal-body table td{padding:.5rem .25rem}
+    .portal-body .d-flex.flex-wrap{flex-direction:column;gap:1rem}
+    .portal-body .modal-dialog{margin:.5rem;max-width:calc(100% - 1rem)}
+    .portal-body .modal-body{padding:1rem}
 }
 
 @media (max-width: 575px) {
-    /* Extra small mobile adjustments */
-    .portal-topbar.staff-topbar {
-        padding: 0.75rem 1rem;
-    }
-    
-    .portal-content {
-        padding: 0.75rem;
-    }
-    
-    .portal-card {
-        padding: 0.75rem;
-        border-radius: 8px;
-    }
-    
-    .portal-title {
-        font-size: 1.25rem;
-    }
-    
-    .portal-subtitle {
-        font-size: 0.85rem;
-    }
-    
-    .portal-body .form-control,
-    .portal-body .form-select {
-        font-size: 0.9rem;
-        padding: 0.6rem;
-    }
-    
-    .portal-body .btn {
-        padding: 0.6rem 1rem;
-        font-size: 0.85rem;
-    }
-    
-    .table {
-        font-size: 0.75rem;
-    }
-    
-    .table th,
-    .table td {
-        padding: 0.4rem 0.2rem;
-    }
-    
-    .alert {
-        padding: 0.6rem 0.75rem;
-        font-size: 0.85rem;
-    }
-    
-    .modal-dialog {
-        margin: 0.25rem;
-        max-width: calc(100% - 0.5rem);
-    }
-    
-    .modal-body {
-        padding: 0.75rem;
-    }
-    
-    .modal-header,
-    .modal-footer {
-        padding: 0.75rem;
-    }
-    
-    /* Mobile specific adjustments */
-    .d-flex {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .text-center {
-        text-align: center !important;
-    }
-    
-    .mt-3, .my-3 {
-        margin-top: 1rem !important;
-    }
-    
-    .mb-3, .my-3 {
-        margin-bottom: 1rem !important;
-    }
-    
-    .pt-3, .py-3 {
-        padding-top: 1rem !important;
-    }
-    
-    .pb-3, .py-3 {
-        padding-bottom: 1rem !important;
-    }
-}
-
-@media (max-width: 480px) {
-    /* Very small mobile devices */
-    .portal-title {
-        font-size: 1.1rem;
-    }
-    
-    .portal-brand {
-        font-size: 1rem;
-    }
-    
-    .portal-body .btn {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.8rem;
-    }
-    
-    .portal-body .form-control,
-    .portal-body .form-select {
-        padding: 0.5rem;
-        font-size: 0.85rem;
-    }
-    
-    .portal-card {
-        padding: 0.5rem;
-    }
-    
-    .table {
-        font-size: 0.7rem;
-    }
-    
-    .portal-badge {
-        font-size: 0.7rem;
-        padding: 0.15rem 0.4rem;
-    }
+    .portal-shell{padding:0 .75rem}
+    .portal-topbar.staff-topbar{padding:.5rem .75rem}
+    .portal-brand{font-size:.9rem}
+    .portal-card{border-radius:8px;padding:.75rem!important}
+    .portal-title{font-size:1.1rem}
+    .portal-body .form-control,.portal-body .form-select{font-size:.9rem;padding:.6rem;border-radius:6px}
+    .portal-body .btn{padding:.6rem .75rem;font-size:.85rem}
+    .portal-body table{font-size:.75rem}
+    .portal-body table th,.portal-body table td{padding:.4rem .2rem}
 }

@@ -154,40 +154,82 @@ if ($adminId > 0 && !str_ends_with($viewPath, 'admin/login.php')) {
 document.addEventListener('DOMContentLoaded', function () {
     const sidebar = document.getElementById('adminSidebar');
     const toggle = document.getElementById('adminSidebarToggle');
-    if (sidebar && toggle) {
-        const storageKey = 'stm_admin_sidebar_collapsed';
-        try {
-            if (localStorage.getItem(storageKey) === '1') {
-                document.body.classList.add('admin-sidebar-collapsed');
-            }
-        } catch (e) {}
 
+    /* --- Mobile sidebar overlay --- */
+    const overlay = document.createElement('div');
+    overlay.className = 'admin-sidebar-overlay';
+    document.body.appendChild(overlay);
+
+    function openMobileSidebar() {
+        sidebar.classList.add('show');
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMobileSidebar() {
+        sidebar.classList.remove('show');
+        overlay.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+    function isMobile() { return window.innerWidth <= 991; }
+
+    if (toggle) {
         toggle.addEventListener('click', function () {
-            document.body.classList.toggle('admin-sidebar-collapsed');
-            try {
-                localStorage.setItem(storageKey, document.body.classList.contains('admin-sidebar-collapsed') ? '1' : '0');
-            } catch (e) {}
+            if (isMobile()) {
+                sidebar.classList.contains('show') ? closeMobileSidebar() : openMobileSidebar();
+            } else {
+                document.body.classList.toggle('admin-sidebar-collapsed');
+                try {
+                    localStorage.setItem('stm_admin_sidebar_collapsed',
+                        document.body.classList.contains('admin-sidebar-collapsed') ? '1' : '0');
+                } catch (e) {}
+            }
         });
     }
 
+    overlay.addEventListener('click', closeMobileSidebar);
+
+    /* Close sidebar on nav link click (mobile) */
+    if (sidebar) {
+        sidebar.querySelectorAll('.nav-link').forEach(function (link) {
+            link.addEventListener('click', function () {
+                if (isMobile()) closeMobileSidebar();
+            });
+        });
+    }
+
+    /* Reset on resize */
+    window.addEventListener('resize', function () {
+        if (!isMobile()) {
+            closeMobileSidebar();
+        }
+    });
+
+    /* --- Desktop collapsed state from localStorage --- */
+    if (sidebar && toggle) {
+        try {
+            if (localStorage.getItem('stm_admin_sidebar_collapsed') === '1' && !isMobile()) {
+                document.body.classList.add('admin-sidebar-collapsed');
+            }
+        } catch (e) {}
+    }
+
+    /* --- Clock --- */
     const clockEl = document.getElementById('adminClock');
     if (clockEl) {
         const tick = function () {
-            const now = new Date();
-            clockEl.textContent = now.toLocaleTimeString();
+            clockEl.textContent = new Date().toLocaleTimeString();
         };
         tick();
         window.setInterval(tick, 1000);
     }
 
+    /* --- Quill rich editor --- */
     const textareas = document.querySelectorAll('textarea.rich-editor');
     if (!textareas.length) return;
 
     const quills = [];
     textareas.forEach((textarea, idx) => {
         const wasRequired = textarea.hasAttribute('required');
-        // Hidden required fields cannot be focused for native validation, so
-        // we move the required-state to the Quill editor and check it manually.
         if (wasRequired) {
             textarea.removeAttribute('required');
         }
