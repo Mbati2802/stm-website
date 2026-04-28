@@ -7,7 +7,10 @@
             </div>
         </div>
         <div class="row g-3 mb-4">
-            <?php foreach ($stats as $label => $val): ?>
+            <?php 
+            // Use role-specific stats if available, otherwise use general stats
+            $displayStats = $teacherStats ?? $registrarStats ?? $viewerStats ?? $stats;
+            foreach ($displayStats as $label => $val): ?>
                 <div class="col-6 col-lg-2">
                     <div class="soft-card admin-metric-card h-100">
                         <p class="text-muted small mb-1"><?= e($label) ?></p>
@@ -16,6 +19,8 @@
                 </div>
             <?php endforeach; ?>
         </div>
+        
+        <?php if (!empty($contentBreakdown) && (Auth::isSuperAdmin() || Auth::isJuniorAdmin() || Auth::isEditor())): ?>
         <div class="row g-3 mb-3">
             <div class="col-lg-4">
                 <div class="soft-card p-3 h-100">
@@ -23,19 +28,25 @@
                     <canvas id="contentPie" height="220"></canvas>
                 </div>
             </div>
+            <?php if (!empty($engagementBreakdown)): ?>
             <div class="col-lg-4">
                 <div class="soft-card p-3 h-100">
                     <h2 class="h6 text-uppercase text-primary mb-3">Engagement Mix</h2>
                     <canvas id="engagementPie" height="220"></canvas>
                 </div>
             </div>
+            <?php endif; ?>
+            <?php if (!empty($roleCounts)): ?>
             <div class="col-lg-4">
                 <div class="soft-card p-3 h-100">
                     <h2 class="h6 text-uppercase text-primary mb-3">Team Roles</h2>
                     <canvas id="rolesPie" height="220"></canvas>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
+        <?php endif; ?>
+        <?php if (!empty($recentMessages) && (Auth::isSuperAdmin() || Auth::isJuniorAdmin() || Auth::isEditor())): ?>
         <div class="row g-3 mb-3">
             <div class="col-lg-6">
                 <div class="soft-card p-3 h-100">
@@ -57,6 +68,7 @@
                     </div>
                 </div>
             </div>
+            <?php if (!empty($recentEvents)): ?>
             <div class="col-lg-6">
                 <div class="soft-card p-3 h-100">
                     <h2 class="h6 text-uppercase text-primary mb-3">Recent Events</h2>
@@ -77,21 +89,31 @@
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
+        <?php endif; ?>
+        
+        <?php if (!empty($applicationTrend) && (Auth::isSuperAdmin() || Auth::isJuniorAdmin() || Auth::isEditor())): ?>
         <div class="row g-3 mb-3">
+            <?php if (!empty($applicationTrend)): ?>
             <div class="col-lg-6">
                 <div class="soft-card p-3 h-100">
                     <h2 class="h6 text-uppercase text-primary mb-3">Applications Trend</h2>
                     <canvas id="applicationsTrend" height="220"></canvas>
                 </div>
             </div>
+            <?php endif; ?>
+            <?php if (!empty($trafficTrend)): ?>
             <div class="col-lg-6">
                 <div class="soft-card p-3 h-100">
                     <h2 class="h6 text-uppercase text-primary mb-3">Website Traffic Trend</h2>
                     <canvas id="trafficTrend" height="220"></canvas>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
+        <?php endif; ?>
+        <?php if (!empty($topPages) && (Auth::isSuperAdmin() || Auth::isJuniorAdmin() || Auth::isEditor())): ?>
         <div class="row g-3 mb-3">
             <div class="col-lg-6">
                 <div class="soft-card p-3 h-100">
@@ -106,7 +128,7 @@
                                     <?php foreach ($topPages as $row): ?>
                                         <tr>
                                             <td title="<?= e((string)($row['path'] ?? '')) ?>"><?= e((string)($row['path'] ?? '')) ?></td>
-                                            <td><?= (int)($row['visits'] ?? 0) ?></td>
+                                            <td><?= (int)($row['total'] ?? 0) ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -115,21 +137,21 @@
                     </div>
                 </div>
             </div>
+            <?php if (!empty($topCourses)): ?>
             <div class="col-lg-6">
                 <div class="soft-card p-3 h-100">
                     <h2 class="h6 text-uppercase text-primary mb-3">Top Courses by Views</h2>
                     <div class="table-responsive">
                         <table class="table table-sm admin-table mb-0">
-                            <thead><tr><th class="col-md">Course Slug</th><th class="col-sm">Views</th><th class="col-sm">Applications</th></tr></thead>
+                            <thead><tr><th class="col-lg">Course</th><th class="col-sm">Views</th></tr></thead>
                             <tbody>
                                 <?php if (empty($topCourses)): ?>
-                                    <tr><td colspan="3" class="text-muted">No course engagement data yet.</td></tr>
+                                    <tr><td colspan="2" class="text-muted">No course views recorded yet.</td></tr>
                                 <?php else: ?>
                                     <?php foreach ($topCourses as $row): ?>
                                         <tr>
-                                            <td title="<?= e((string)($row['slug'] ?? '')) ?>"><?= e((string)($row['slug'] ?? '')) ?></td>
-                                            <td><?= (int)($row['views'] ?? 0) ?></td>
-                                            <td><?= (int)($row['applications'] ?? 0) ?></td>
+                                            <td title="<?= e((string)($row['title'] ?? '')) ?>"><?= e((string)($row['title'] ?? '')) ?></td>
+                                            <td><?= (int)($row['total'] ?? 0) ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -138,14 +160,17 @@
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
+        <?php endif; ?>
+        <?php if (!empty($recentBlockedLogins) && (Auth::isSuperAdmin() || Auth::isJuniorAdmin() || Auth::isEditor())): ?>
         <div class="row g-3 mb-3">
             <div class="col-lg-12">
                 <div class="soft-card p-3 h-100">
                     <h2 class="h6 text-uppercase text-primary mb-3">Recent Blocked Login Attempts</h2>
                     <div class="table-responsive">
                         <table class="table table-sm admin-table mb-0">
-                            <thead><tr><th class="col-sm">Type</th><th class="col-sm">IP Address</th><th class="col-lg">User Agent</th><th class="col-sm">Date</th></tr></thead>
+                            <thead><tr><th class="col-sm">Type</th><th class="col-md">IP Address</th><th class="col-lg">User Agent</th><th class="col-sm">Date</th></tr></thead>
                             <tbody>
                                 <?php if (empty($recentBlockedLogins)): ?>
                                     <tr><td colspan="4" class="text-muted">No blocked login attempts recorded yet.</td></tr>
@@ -176,6 +201,7 @@
                 </div>
             </div>
         </div>
+        <?php endif; ?>
         <div class="soft-card p-3">
             <h2 class="h6 text-uppercase text-primary mb-3">Quick Actions</h2>
             <div class="admin-grid-actions">
@@ -220,9 +246,15 @@ document.addEventListener('DOMContentLoaded', function () {
             options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
         });
     };
+    <?php if (!empty($contentBreakdown)): ?>
     createPie('contentPie', <?= json_encode(array_keys($contentBreakdown)) ?>, <?= json_encode(array_values($contentBreakdown)) ?>, ['#1e6fb7','#3598db','#6fc2ff','#9f8df2','#f2a65a','#7ccba2']);
+    <?php endif; ?>
+    <?php if (!empty($engagementBreakdown)): ?>
     createPie('engagementPie', <?= json_encode(array_keys($engagementBreakdown)) ?>, <?= json_encode(array_values($engagementBreakdown)) ?>, ['#ef476f','#ffd166','#06d6a0']);
+    <?php endif; ?>
+    <?php if (!empty($roleCounts)): ?>
     createPie('rolesPie', <?= json_encode(array_keys($roleCounts)) ?>, <?= json_encode(array_values($roleCounts)) ?>, ['#185490','#b45f06','#2a9d8f']);
+    <?php endif; ?>
     const createLine = function (id, raw, label, color) {
         const el = document.getElementById(id);
         if (!el || typeof Chart === 'undefined') return;
@@ -242,7 +274,11 @@ document.addEventListener('DOMContentLoaded', function () {
             options: { responsive: true, scales: { y: { beginAtZero: true } } }
         });
     };
+    <?php if (!empty($applicationTrend)): ?>
     createLine('applicationsTrend', <?= json_encode($applicationTrend) ?>, 'Applications', '#185490');
+    <?php endif; ?>
+    <?php if (!empty($trafficTrend)): ?>
     createLine('trafficTrend', <?= json_encode($trafficTrend) ?>, 'Visits', '#0aaae8');
+    <?php endif; ?>
 });
 </script>

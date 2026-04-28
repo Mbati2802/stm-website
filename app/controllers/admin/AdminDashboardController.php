@@ -72,7 +72,8 @@ class AdminDashboardController extends Controller
             if ($role === 'teacher') $roleCounts['Teacher']++;
         }
 
-        $this->view('admin/dashboard', [
+        // Filter dashboard data based on user role
+$viewData = [
             'metaTitle' => 'Admin Dashboard',
             'stats' => $stats,
             'contentBreakdown' => $contentBreakdown,
@@ -85,6 +86,44 @@ class AdminDashboardController extends Controller
             'topPages' => $model->getTopVisitedPages(8, false),
             'topCourses' => $model->getTopCourseViews(8),
             'recentBlockedLogins' => $model->getRecentBlockedLoginAttempts(5),
-        ]);
+        ];
+
+        // Hide sensitive data from non-admin roles
+        if (Auth::isTeacher() || Auth::isViewer() || Auth::isRegistrar()) {
+            unset($viewData['engagementBreakdown']);
+            unset($viewData['roleCounts']);
+            unset($viewData['recentMessages']);
+            unset($viewData['applicationTrend']);
+            unset($viewData['trafficTrend']);
+            unset($viewData['topPages']);
+            unset($viewData['topCourses']);
+            unset($viewData['recentBlockedLogins']);
+        }
+
+        // Add role-specific data
+        if (Auth::isTeacher()) {
+            // Teacher-specific data
+            $viewData['teacherCourses'] = array_filter($model->all('portal_courses'), function($course) {
+                return (int)($course['teacher_id'] ?? 0) === (int)($_SESSION['admin_id'] ?? 0);
+            });
+            $viewData['teacherStats'] = [
+                'My Courses' => count($viewData['teacherCourses']),
+                'Total Students' => $portalModel->getStudentCountForTeacher((int)($_SESSION['admin_id'] ?? 0)),
+            ];
+        } elseif (Auth::isRegistrar()) {
+            // Registrar-specific data
+            $viewData['registrarStats'] = [
+                'Pending Applications' => $model->countAll('programme_applications'),
+                'Total Students' => count($portalModel->allStudents()),
+                'Active Events' => $model->countAll('events'),
+            ];
+        } elseif (Auth::isViewer()) {
+            // Viewer gets minimal data
+            $viewData['viewerStats'] = [
+                'Total Content' => array_sum($stats),
+            ];
+        }
+
+        $this->view('admin/dashboard', $viewData);
     }
 }
