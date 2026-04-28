@@ -11,7 +11,7 @@ return [
         'charset' => 'utf8mb4',
     ],
     'session_name' => 'stm_session',
-    'admin_login_slug' => 'admin/login',
+    'admin_login_slug' => 'secure/admin/login',
     'admin_login_allow_ips' => '',
     'admin_email' => 'admin@stm.ac.ke',
     'notification_email' => 'admission@stmarysmchmcollege.ac.ke',
