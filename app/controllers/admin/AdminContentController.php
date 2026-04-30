@@ -896,11 +896,16 @@ class AdminContentController extends Controller
             'banner_media_file' => 'banner_media',
         ];
         foreach ($bannerFields as $fileField => $settingKey) {
-            $uploaded = $this->uploadFile($fileField, ['image/jpeg', 'image/png', 'image/webp'], 'banners');
-            if ($uploaded !== '') {
-                $settings[$settingKey] = $uploaded;
-            } elseif (($settings[$settingKey] ?? '') === '' && isset($currentSettings[$settingKey])) {
-                $settings[$settingKey] = $currentSettings[$settingKey];
+            $deleteFlag = (int)($_POST['delete_' . $settingKey] ?? 0);
+            if ($deleteFlag === 1) {
+                $settings[$settingKey] = '';
+            } else {
+                $uploaded = $this->uploadFile($fileField, ['image/jpeg', 'image/png', 'image/webp'], 'banners');
+                if ($uploaded !== '') {
+                    $settings[$settingKey] = $uploaded;
+                } elseif (($settings[$settingKey] ?? '') === '' && isset($currentSettings[$settingKey])) {
+                    $settings[$settingKey] = $currentSettings[$settingKey];
+                }
             }
         }
 
@@ -961,14 +966,23 @@ class AdminContentController extends Controller
                 if ($isUpdate && $oldSlug !== '' && $oldSlug !== $slug) {
                     $model->deleteSetting('programme_override_' . $oldSlug);
                 }
-                $homeCardImage = $this->uploadFile('programme_home_card_image_file', ['image/jpeg', 'image/png', 'image/webp'], 'settings');
-                if ($homeCardImage !== '') {
+                $deleteHomeCardImage = (int)($_POST['programme_home_card_image_delete'] ?? 0);
+                if ($deleteHomeCardImage === 1) {
                     $existingHomeImages = json_decode((string)($model->getSettingValue('home_programme_images_json') ?? '[]'), true);
-                    if (!is_array($existingHomeImages)) {
-                        $existingHomeImages = [];
+                    if (is_array($existingHomeImages) && isset($existingHomeImages[$name])) {
+                        unset($existingHomeImages[$name]);
+                        $model->setSettingValue('home_programme_images_json', json_encode($existingHomeImages, JSON_UNESCAPED_SLASHES));
                     }
-                    $existingHomeImages[$name] = $homeCardImage;
-                    $model->setSettingValue('home_programme_images_json', json_encode($existingHomeImages, JSON_UNESCAPED_SLASHES));
+                } else {
+                    $homeCardImage = $this->uploadFile('programme_home_card_image_file', ['image/jpeg', 'image/png', 'image/webp'], 'settings');
+                    if ($homeCardImage !== '') {
+                        $existingHomeImages = json_decode((string)($model->getSettingValue('home_programme_images_json') ?? '[]'), true);
+                        if (!is_array($existingHomeImages)) {
+                            $existingHomeImages = [];
+                        }
+                        $existingHomeImages[$name] = $homeCardImage;
+                        $model->setSettingValue('home_programme_images_json', json_encode($existingHomeImages, JSON_UNESCAPED_SLASHES));
+                    }
                 }
                 break;
             case 'faqs':
