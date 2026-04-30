@@ -72,6 +72,7 @@ class HomeController extends Controller
 
         $this->view('pages/home', [
             'metaTitle' => 'Home',
+            'metaDescription' => 'St. Mary's MCHM College — accredited healthcare training in Kenya. Diploma, certificate, and artisan programmes. Apply today for career-focused medical education.',
             'settings' => $settings,
             'heroImages' => $heroImages,
             'heroCards' => $heroCards,
@@ -120,6 +121,7 @@ class HomeController extends Controller
 
         $this->view('pages/testimonials', [
             'metaTitle' => 'Testimonials',
+            'metaDescription' => 'Hear from students and alumni about their experience at our healthcare training college. Real stories of growth, career success, and community.',
             'settings' => $settings,
             'testimonials' => $testimonials,
         ]);

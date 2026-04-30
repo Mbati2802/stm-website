@@ -175,7 +175,7 @@ foreach ($bannerCandidates as $candidate) {
             <?php foreach ($homeExtraSections as $section): ?>
                 <div class="col-lg-4">
                     <div class="soft-card p-3 h-100">
-                        <?php if (!empty($section['image'])): ?><img src="<?= e((string)$section['image']) ?>" alt="" class="img-fluid mb-3"><?php endif; ?>
+                        <?php if (!empty($section['image'])): ?><img src="<?= e((string)$section['image']) ?>" alt="<?= e((string)($section['title'] ?? 'Section image')) ?>" class="img-fluid mb-3"><?php endif; ?>
                         <h3 class="h5 mb-2"><?= e((string)($section['title'] ?? 'Section')) ?></h3>
                         <p class="small text-muted mb-3"><?= e((string)($section['text'] ?? '')) ?></p>
                         <?php if (!empty($section['button_link'])): ?>
@@ -401,7 +401,7 @@ $snapshotColClass = $snapshotCols === 4 ? 'col-md-6 col-lg-3' : ($snapshotCols =
                 <div class="d-flex align-items-center p-2 border rounded mb-1" style="background:var(--su-card-bg)">
                     <?php $imgSrc = $socialImageUrl($update['image_path'] ?? ''); ?>
                     <?php if ($suShowImages && $imgSrc !== ''): ?>
-                    <img src="<?= e($imgSrc) ?>" alt="" class="rounded me-2" style="width:60px;height:60px;object-fit:cover;flex-shrink:0" loading="lazy">
+                    <img src="<?= e($imgSrc) ?>" alt="Social update image" class="rounded me-2" style="width:60px;height:60px;object-fit:cover;flex-shrink:0" loading="lazy">
                     <?php endif; ?>
                     <div class="flex-grow-1 min-w-0">
                         <div class="social-feed-content<?= $suContentLines > 0 ? '' : ' social-feed-content-expanded' ?>" style="<?= $suContentLines > 0 ? '-webkit-line-clamp:' . $suContentLines . ';line-clamp:' . $suContentLines : '' ?>"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
@@ -427,7 +427,7 @@ $snapshotColClass = $snapshotCols === 4 ? 'col-md-6 col-lg-3' : ($snapshotCols =
                         <?php endif; ?>
                         <?php $imgSrc = $socialImageUrl($update['image_path'] ?? ''); ?>
                         <?php if ($suShowImages && $imgSrc !== ''): ?>
-                            <img src="<?= e($imgSrc) ?>" alt="" class="social-feed-image" loading="lazy">
+                            <img src="<?= e($imgSrc) ?>" alt="Social update image" class="social-feed-image" loading="lazy">
                         <?php endif; ?>
                         <div class="social-feed-content<?= $suContentLines > 0 ? '' : ' social-feed-content-expanded' ?>" style="<?= $suContentLines > 0 ? '-webkit-line-clamp:' . $suContentLines . ';line-clamp:' . $suContentLines : '' ?>"><?= nl2br(e((string)($update['content'] ?? ''))) ?></div>
                         <div class="social-feed-meta">

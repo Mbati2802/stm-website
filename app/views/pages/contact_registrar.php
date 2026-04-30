@@ -22,6 +22,10 @@ include __DIR__ . '/../partials/page_hero.php';
       <div class="col-md-6">
         <form method="POST" action="<?= e(base_url('contact-registrar')) ?>" class="soft-card p-4">
           <?= csrf_field() ?>
+          <div class="hp-field" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden">
+            <label for="website_url">Website</label>
+            <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off">
+          </div>
           <div class="mb-3"><label class="form-label">Name</label><input required name="name" class="form-control"></div>
           <div class="mb-3"><label class="form-label">Email</label><input required type="email" name="email" class="form-control"></div>
           <div class="mb-3"><label class="form-label">Phone</label><input name="phone" class="form-control"></div>

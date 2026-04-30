@@ -25,6 +25,7 @@ class ProgrammesController extends Controller
 
         $this->view('pages/programmes', [
             'metaTitle' => 'Programmes',
+            'metaDescription' => 'Explore diploma, certificate, artisan, and short course programmes in healthcare and medical sciences. Apply today for career-focused training.',
             'programmes' => $programmes,
             'groupedProgrammes' => $grouped,
             'type' => $type,
@@ -60,6 +61,7 @@ class ProgrammesController extends Controller
 
         $this->view('pages/programme_details', [
             'metaTitle' => $programme['name'],
+            'metaDescription' => plain_text($programme['short_description'] ?? $programme['name'] . ' — accredited healthcare training programme. Learn more and apply today.'),
             'programme' => $programme,
             'otherProgrammes' => array_slice($otherProgrammes, 0, 8),
             'settings' => $settings,
@@ -89,6 +91,7 @@ class ProgrammesController extends Controller
 
         $this->view('pages/programme_apply', [
             'metaTitle' => 'Apply Now',
+            'metaDescription' => 'Apply online for diploma, certificate, and artisan programmes. Start your healthcare career with our accredited courses.',
             'programmes' => $programmes,
             'categories' => self::CATEGORIES,
             'selectedCourse' => $selectedCourse,
@@ -109,12 +112,20 @@ class ProgrammesController extends Controller
 
         $this->view('pages/how_to_apply', [
             'metaTitle' => 'How to Apply',
+            'metaDescription' => 'Step-by-step guide to applying for our healthcare training programmes. Learn about requirements, deadlines, and the application process.',
             'settings' => $model->getSettings(),
         ]);
     }
 
     public function submitApplication(): void
     {
+        // Honeypot anti-spam check
+        if (trim($_POST['website_url'] ?? '') !== '') {
+            flash('success', 'Application submitted successfully.');
+            $this->redirect('');
+            return;
+        }
+
         $model = new ContentModel($this->config);
 
         $name = trim($_POST['name'] ?? '');

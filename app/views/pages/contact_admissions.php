@@ -19,6 +19,10 @@ $admissionsPhone = trim((string)($settings['phone'] ?? '+254 791 309011'));
       <div class="col-lg-7">
         <form method="POST" action="<?= e(base_url('contact-admissions')) ?>" class="soft-card p-4">
           <?= csrf_field() ?>
+          <div class="hp-field" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden">
+            <label for="website_url">Website</label>
+            <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off">
+          </div>
           <h2 class="h6 text-uppercase text-muted mb-3">Send Admissions Enquiry</h2>
           <div class="row g-3">
             <div class="col-md-6">

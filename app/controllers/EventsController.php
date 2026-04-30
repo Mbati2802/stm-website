@@ -12,6 +12,7 @@ class EventsController extends Controller
 
         $this->view('pages/events', [
             'metaTitle' => 'Upcoming Events & Activities',
+            'metaDescription' => 'Discover upcoming events, open days, and activities at our healthcare training college. Register and participate in campus life.',
             'settings' => $settings,
             'featured' => $featured,
             'upcoming' => $upcoming,
@@ -35,6 +36,7 @@ class EventsController extends Controller
 
         $this->view('pages/event_details', [
             'metaTitle' => $event['title'] ?? 'Event',
+            'metaDescription' => plain_text($event['description'] ?? ($event['title'] ?? 'Event details and registration information at our college.')),
             'event' => $event,
             'settings' => $model->getSettings(),
         ]);
@@ -59,6 +61,13 @@ class EventsController extends Controller
 
     public function submitRegistration(string $slug): void
     {
+        // Honeypot anti-spam check
+        if (trim($_POST['website_url'] ?? '') !== '') {
+            flash('success', 'Registration submitted successfully.');
+            $this->redirect('events/' . $slug);
+            return;
+        }
+
         $model = new ContentModel($this->config);
         $event = $model->getEventBySlug($slug);
         if (!$event) {

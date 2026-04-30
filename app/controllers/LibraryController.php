@@ -15,6 +15,7 @@ class LibraryController extends Controller
 
         $this->view('pages/library', [
             'metaTitle' => 'Library',
+            'metaDescription' => 'Browse our library resources, academic materials, and digital references for healthcare and medical sciences students.',
             'items' => $result['data'],
             'total' => $result['total'],
             'page' => $page,

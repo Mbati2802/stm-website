@@ -29,6 +29,10 @@ $currentIntake = (string)($currentIntake ?? 'January');
       <div class="col-lg-8">
         <form id="programmeApplyForm" method="POST" action="<?= e(base_url('programmes/apply')) ?>" class="soft-card p-4 bg-white">
       <?= csrf_field() ?>
+      <div class="hp-field" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden">
+        <label for="website_url">Website</label>
+        <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off">
+      </div>
       <h2 class="h6 text-uppercase text-muted mb-3">Personal Information</h2>
       <div class="row g-3">
         <div class="col-md-6"><label class="form-label">Name</label><input required name="name" class="form-control"></div>

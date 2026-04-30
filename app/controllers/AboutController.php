@@ -18,6 +18,7 @@ class AboutController extends Controller
         }
         $this->view('pages/about', [
             'metaTitle' => 'About Us',
+            'metaDescription' => 'Learn about our mission, vision, and commitment to empowering healthcare professionals through practical, accredited training programmes in Kenya.',
             'page' => $this->model->page('about'),
             'settings' => $this->model->getSettings(),
         ]);
@@ -32,6 +33,7 @@ class AboutController extends Controller
         }
         $this->view('pages/principal', [
             'metaTitle' => 'The Principal',
+            'metaDescription' => 'Meet the Principal of our college. Leadership dedicated to academic excellence and student success in healthcare education.',
             'page' => $this->model->page('principal'),
             'settings' => $this->model->getSettings(),
         ]);
@@ -39,7 +41,7 @@ class AboutController extends Controller
 
     public function registrar(): void
     {
-        $this->view('pages/registrar', ['metaTitle' => 'Registrar', 'page' => $this->model->page('registrar'), 'settings' => $this->model->getSettings()]);
+        $this->view('pages/registrar', ['metaTitle' => 'Registrar', 'metaDescription' => 'Office of the Registrar — academic records, admissions support, and student services at our college.', 'page' => $this->model->page('registrar'), 'settings' => $this->model->getSettings()]);
     }
 
     public function uniqueness(): void
@@ -48,6 +50,7 @@ class AboutController extends Controller
         $whyItems = array_filter(array_map('trim', explode('|', (string)($settings['about_differentiators'] ?? 'Practical-Based Learning|Market-Driven Courses|Supportive Learning Environment|Affordable & Accessible Education'))));
         $this->view('pages/uniqueness', [
             'metaTitle' => 'College Uniqueness',
+            'metaDescription' => 'Discover what makes our college unique — practical-based learning, market-driven courses, and a supportive environment for healthcare professionals.',
             'settings' => $settings,
             'whyItems' => $whyItems,
         ]);
@@ -60,11 +63,18 @@ class AboutController extends Controller
             echo 'Page not available.';
             return;
         }
-        $this->view('pages/contact', ['metaTitle' => 'Contact Us', 'settings' => $this->model->getSettings()]);
+        $this->view('pages/contact', ['metaTitle' => 'Contact Us', 'metaDescription' => 'Get in touch with our admissions team. Enquire about programmes, applications, and enrolment at our healthcare training college.', 'settings' => $this->model->getSettings()]);
     }
 
     public function submitContact(): void
     {
+        // Honeypot anti-spam check
+        if (trim($_POST['website_url'] ?? '') !== '') {
+            flash('success', 'Message submitted successfully.');
+            $this->redirect('');
+            return;
+        }
+
         $name = trim($_POST['name'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
@@ -113,6 +123,7 @@ class AboutController extends Controller
         $settings = $this->model->getSettings();
         $this->view('pages/contact_registrar', [
             'metaTitle' => 'Contact Registrar',
+            'metaDescription' => 'Contact the Registrar for academic records, transcripts, enrolment verification, and student administrative services.',
             'settings' => $settings,
         ]);
     }
@@ -122,12 +133,20 @@ class AboutController extends Controller
         $settings = $this->model->getSettings();
         $this->view('pages/contact_admissions', [
             'metaTitle' => 'Contact Admissions',
+            'metaDescription' => 'Reach our admissions office for programme applications, entry requirements, and enrolment guidance.',
             'settings' => $settings,
         ]);
     }
 
     public function submitRegistrarContact(): void
     {
+        // Honeypot anti-spam check
+        if (trim($_POST['website_url'] ?? '') !== '') {
+            flash('success', 'Message submitted successfully.');
+            $this->redirect('contact-registrar');
+            return;
+        }
+
         $settings = $this->model->getSettings();
         $registrarEmail = trim((string)($settings['registrar_email'] ?? ($this->config['registrar_email'] ?? 'registrar@stmarysmchmcollege.ac.ke')));
 
@@ -181,6 +200,13 @@ class AboutController extends Controller
 
     public function submitAdmissionsContact(): void
     {
+        // Honeypot anti-spam check
+        if (trim($_POST['website_url'] ?? '') !== '') {
+            flash('success', 'Message submitted successfully.');
+            $this->redirect('contact-admissions');
+            return;
+        }
+
         $settings = $this->model->getSettings();
         $admissionsEmail = trim((string)($settings['admissions_email'] ?? ($this->config['application_notification_email'] ?? 'admission@stmarysmchmcollege.ac.ke')));
 
@@ -239,11 +265,11 @@ class AboutController extends Controller
             echo 'Page not available.';
             return;
         }
-        $this->view('pages/faqs', ['metaTitle' => 'FAQs', 'faqs' => $this->model->faqs()]);
+        $this->view('pages/faqs', ['metaTitle' => 'FAQs', 'metaDescription' => 'Frequently asked questions about admissions, programmes, fees, and student life at our healthcare training college.', 'faqs' => $this->model->faqs()]);
     }
 
     public function portals(): void
     {
-        $this->view('pages/portals', ['metaTitle' => 'Portals']);
+        $this->view('pages/portals', ['metaTitle' => 'Portals', 'metaDescription' => 'Access student and staff portals for academic resources, course management, and administrative services.', 'metaRobots' => 'noindex, follow']);
     }
 }

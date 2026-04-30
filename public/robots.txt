@@ -1,4 +1,27 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /portal/
+Disallow: /staff/
+Disallow: /cron/
+Disallow: /media/upload
+Disallow: /applications
+Disallow: /support-tickets
+Disallow: /internal-messages
+Disallow: /event-registrations
+
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /portal/
+Disallow: /staff/
+Disallow: /cron/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /portal/
+Disallow: /staff/
+Disallow: /cron/
 
 Sitemap: /sitemap.xml
