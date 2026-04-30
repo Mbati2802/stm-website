@@ -7,40 +7,45 @@
             </div>
         </div>
         <div class="row g-3 mb-4">
-            <?php 
+            <?php
             // Use role-specific stats if available, otherwise use general stats
             $displayStats = $teacherStats ?? $registrarStats ?? $viewerStats ?? $stats;
+            $faintColors = ['bg-primary bg-opacity-10', 'bg-success bg-opacity-10', 'bg-info bg-opacity-10', 'bg-warning bg-opacity-10', 'bg-danger bg-opacity-10', 'bg-secondary bg-opacity-10'];
+            $colorIndex = 0;
             foreach ($displayStats as $label => $val): ?>
-                <div class="col-6 col-lg-2">
-                    <div class="soft-card admin-metric-card h-100">
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="soft-card admin-metric-card h-100 <?= $faintColors[$colorIndex % count($faintColors)] ?>">
                         <p class="text-muted small mb-1"><?= e($label) ?></p>
-                        <div class="metric-value"><?= (int)$val ?></div>
+                        <div class="metric-value" style="font-size:1.4rem"><?= (int)$val ?></div>
                     </div>
                 </div>
+                <?php $colorIndex++; ?>
             <?php endforeach; ?>
         </div>
-        
-        <?php if (!empty($contentBreakdown) && (Auth::isSuperAdmin() || Auth::isJuniorAdmin() || Auth::isEditor())): ?>
+
+        <?php if (!empty($engagementBreakdown) && (Auth::isSuperAdmin() || Auth::isJuniorAdmin() || Auth::isEditor())): ?>
         <div class="row g-3 mb-3">
-            <div class="col-lg-4">
-                <div class="soft-card p-3 h-100">
-                    <h2 class="h6 text-uppercase text-primary mb-3">Content Distribution</h2>
-                    <canvas id="contentPie" height="220"></canvas>
-                </div>
-            </div>
             <?php if (!empty($engagementBreakdown)): ?>
             <div class="col-lg-4">
                 <div class="soft-card p-3 h-100">
                     <h2 class="h6 text-uppercase text-primary mb-3">Engagement Mix</h2>
-                    <canvas id="engagementPie" height="220"></canvas>
+                    <canvas id="engagementPie" height="200"></canvas>
                 </div>
             </div>
             <?php endif; ?>
-            <?php if (!empty($roleCounts)): ?>
+            <?php if (!empty($applicationTrend)): ?>
             <div class="col-lg-4">
                 <div class="soft-card p-3 h-100">
-                    <h2 class="h6 text-uppercase text-primary mb-3">Team Roles</h2>
-                    <canvas id="rolesPie" height="220"></canvas>
+                    <h2 class="h6 text-uppercase text-primary mb-3">Applications Trend</h2>
+                    <canvas id="applicationsTrend" height="200"></canvas>
+                </div>
+            </div>
+            <?php endif; ?>
+            <?php if (!empty($trafficTrend)): ?>
+            <div class="col-lg-4">
+                <div class="soft-card p-3 h-100">
+                    <h2 class="h6 text-uppercase text-primary mb-3">Website Traffic Trend</h2>
+                    <canvas id="trafficTrend" height="200"></canvas>
                 </div>
             </div>
             <?php endif; ?>
@@ -93,26 +98,6 @@
         </div>
         <?php endif; ?>
         
-        <?php if (!empty($applicationTrend) && (Auth::isSuperAdmin() || Auth::isJuniorAdmin() || Auth::isEditor())): ?>
-        <div class="row g-3 mb-3">
-            <?php if (!empty($applicationTrend)): ?>
-            <div class="col-lg-6">
-                <div class="soft-card p-3 h-100">
-                    <h2 class="h6 text-uppercase text-primary mb-3">Applications Trend</h2>
-                    <canvas id="applicationsTrend" height="220"></canvas>
-                </div>
-            </div>
-            <?php endif; ?>
-            <?php if (!empty($trafficTrend)): ?>
-            <div class="col-lg-6">
-                <div class="soft-card p-3 h-100">
-                    <h2 class="h6 text-uppercase text-primary mb-3">Website Traffic Trend</h2>
-                    <canvas id="trafficTrend" height="220"></canvas>
-                </div>
-            </div>
-            <?php endif; ?>
-        </div>
-        <?php endif; ?>
         <?php if (!empty($topPages) && (Auth::isSuperAdmin() || Auth::isJuniorAdmin() || Auth::isEditor())): ?>
         <div class="row g-3 mb-3">
             <div class="col-lg-6">
@@ -167,7 +152,10 @@
         <div class="row g-3 mb-3">
             <div class="col-lg-12">
                 <div class="soft-card p-3 h-100">
-                    <h2 class="h6 text-uppercase text-primary mb-3">Recent Blocked Login Attempts</h2>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h6 text-uppercase text-primary mb-0">Recent Blocked Login Attempts</h2>
+                        <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/login-trace')) ?>">View All</a>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-sm admin-table mb-0">
                             <thead><tr><th class="col-sm">Type</th><th class="col-md">IP Address</th><th class="col-lg">User Agent</th><th class="col-sm">Date</th></tr></thead>
@@ -175,7 +163,7 @@
                                 <?php if (empty($recentBlockedLogins)): ?>
                                     <tr><td colspan="4" class="text-muted">No blocked login attempts recorded yet.</td></tr>
                                 <?php else: ?>
-                                    <?php foreach ($recentBlockedLogins as $row): ?>
+                                    <?php foreach (array_slice($recentBlockedLogins, 0, 5) as $row): ?>
                                         <tr>
                                             <td>
                                                 <?php
@@ -189,8 +177,8 @@
                                                 }
                                                 ?>
                                             </td>
-                                            <td title="<?= e((string)($row['ip_address'] ?? '')) ?>"><?= e((string)($row['ip_address'] ?? '')) ?></td>
-                                            <td title="<?= e((string)($row['user_agent'] ?? '')) ?>"><?= e((string)($row['user_agent'] ?? '')) ?></td>
+                                            <td title="<?= e((string)($row['ip_address'] ?? '')) ?>"><?= e(substr((string)($row['ip_address'] ?? ''), 0, 15)) ?></td>
+                                            <td title="<?= e((string)($row['user_agent'] ?? '')) ?>"><?= e(substr((string)($row['user_agent'] ?? ''), 0, 30)) ?></td>
                                             <td><?= e((string)($row['created_at'] ?? '')) ?></td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -246,14 +234,8 @@ document.addEventListener('DOMContentLoaded', function () {
             options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
         });
     };
-    <?php if (!empty($contentBreakdown)): ?>
-    createPie('contentPie', <?= json_encode(array_keys($contentBreakdown)) ?>, <?= json_encode(array_values($contentBreakdown)) ?>, ['#1e6fb7','#3598db','#6fc2ff','#9f8df2','#f2a65a','#7ccba2']);
-    <?php endif; ?>
     <?php if (!empty($engagementBreakdown)): ?>
     createPie('engagementPie', <?= json_encode(array_keys($engagementBreakdown)) ?>, <?= json_encode(array_values($engagementBreakdown)) ?>, ['#ef476f','#ffd166','#06d6a0']);
-    <?php endif; ?>
-    <?php if (!empty($roleCounts)): ?>
-    createPie('rolesPie', <?= json_encode(array_keys($roleCounts)) ?>, <?= json_encode(array_values($roleCounts)) ?>, ['#185490','#b45f06','#2a9d8f']);
     <?php endif; ?>
     const createLine = function (id, raw, label, color) {
         const el = document.getElementById(id);
