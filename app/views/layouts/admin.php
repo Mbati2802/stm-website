@@ -61,47 +61,67 @@ if ($adminId > 0 && !str_ends_with($viewPath, 'admin/login.php')) {
             <a class="nav-link <?= $isAdminHome ? 'active' : '' ?>" href="<?= e(base_url('admin')) ?>"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
 
             <div class="admin-nav-group">
-                <div class="admin-nav-group-title">Content</div>
-                <?php if (Auth::canViewEntity('programmes')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/programmes') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/programmes')) ?>"><i class="bi bi-journal-text"></i><span>Programmes</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('departments')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/departments') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/departments')) ?>"><i class="bi bi-diagram-3"></i><span>Departments</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('news')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/news') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/news')) ?>"><i class="bi bi-newspaper"></i><span>News</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('careers')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/careers') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/careers')) ?>"><i class="bi bi-briefcase"></i><span>Careers</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('tenders')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/tenders') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/tenders')) ?>"><i class="bi bi-file-earmark-check"></i><span>Tenders</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('events')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/events') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/events')) ?>"><i class="bi bi-calendar-event"></i><span>Events</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('faqs')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/faqs') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/faqs')) ?>"><i class="bi bi-question-circle"></i><span>FAQs</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('pages')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/pages') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/pages')) ?>"><i class="bi bi-file-richtext"></i><span>Pages</span></a><?php endif; ?>
+                <div class="admin-nav-group-header" data-bs-toggle="collapse" data-bs-target="#contentGroup">
+                    <span class="admin-nav-group-title">Content</span>
+                    <i class="bi bi-chevron-down admin-nav-chevron"></i>
+                </div>
+                <div class="collapse <?= str_contains($adminPath, 'admin/list/programmes') || str_contains($adminPath, 'admin/list/departments') || str_contains($adminPath, 'admin/list/news') || str_contains($adminPath, 'admin/list/careers') || str_contains($adminPath, 'admin/list/tenders') || str_contains($adminPath, 'admin/list/events') || str_contains($adminPath, 'admin/list/faqs') || str_contains($adminPath, 'admin/list/pages') ? 'show' : '' ?>" id="contentGroup">
+                    <?php if (Auth::canViewEntity('programmes')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/programmes') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/programmes')) ?>"><i class="bi bi-journal-text"></i><span>Programmes</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('departments')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/departments') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/departments')) ?>"><i class="bi bi-diagram-3"></i><span>Departments</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('news')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/news') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/news')) ?>"><i class="bi bi-newspaper"></i><span>News</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('careers')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/careers') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/careers')) ?>"><i class="bi bi-briefcase"></i><span>Careers</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('tenders')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/tenders') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/tenders')) ?>"><i class="bi bi-file-earmark-check"></i><span>Tenders</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('events')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/events') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/events')) ?>"><i class="bi bi-calendar-event"></i><span>Events</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('faqs')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/faqs') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/faqs')) ?>"><i class="bi bi-question-circle"></i><span>FAQs</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('pages')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/pages') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/pages')) ?>"><i class="bi bi-file-richtext"></i><span>Pages</span></a><?php endif; ?>
+                </div>
             </div>
 
             <div class="admin-nav-group">
-                <div class="admin-nav-group-title">Academic Portal</div>
-                <?php if (Auth::canViewEntity('portal_courses')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/portal_courses') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/portal_courses')) ?>"><i class="bi bi-journal-code"></i><span>Portal Courses</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('programme_timetables')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/programme_timetables') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/programme_timetables')) ?>"><i class="bi bi-calendar3"></i><span>Programme Timetables</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('course_grades')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/course_grades') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/course_grades')) ?>"><i class="bi bi-award"></i><span>Course Grades</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('grading_schemes')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/grading_schemes') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/grading_schemes')) ?>"><i class="bi bi-sliders2"></i><span>Grading Schemes</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('course_assignments')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/course_assignments') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/course_assignments')) ?>"><i class="bi bi-file-earmark-text"></i><span>Assignments</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('study_materials')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/study_materials') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/study_materials')) ?>"><i class="bi bi-folder"></i><span>Study Materials</span></a><?php endif; ?>
+                <div class="admin-nav-group-header" data-bs-toggle="collapse" data-bs-target="#academicGroup">
+                    <span class="admin-nav-group-title">Academic Portal</span>
+                    <i class="bi bi-chevron-down admin-nav-chevron"></i>
+                </div>
+                <div class="collapse <?= str_contains($adminPath, 'admin/list/portal_courses') || str_contains($adminPath, 'admin/list/programme_timetables') || str_contains($adminPath, 'admin/list/course_grades') || str_contains($adminPath, 'admin/list/grading_schemes') || str_contains($adminPath, 'admin/list/course_assignments') || str_contains($adminPath, 'admin/list/study_materials') ? 'show' : '' ?>" id="academicGroup">
+                    <?php if (Auth::canViewEntity('portal_courses')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/portal_courses') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/portal_courses')) ?>"><i class="bi bi-journal-code"></i><span>Portal Courses</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('programme_timetables')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/programme_timetables') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/programme_timetables')) ?>"><i class="bi bi-calendar3"></i><span>Programme Timetables</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('course_grades')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/course_grades') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/course_grades')) ?>"><i class="bi bi-award"></i><span>Course Grades</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('grading_schemes')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/grading_schemes') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/grading_schemes')) ?>"><i class="bi bi-sliders2"></i><span>Grading Schemes</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('course_assignments')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/course_assignments') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/course_assignments')) ?>"><i class="bi bi-file-earmark-text"></i><span>Assignments</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('study_materials')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/study_materials') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/study_materials')) ?>"><i class="bi bi-folder"></i><span>Study Materials</span></a><?php endif; ?>
+                </div>
             </div>
 
             <div class="admin-nav-group">
-                <div class="admin-nav-group-title">Media and Communication</div>
-                <?php if (Auth::canViewEntity('gallery')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/gallery') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/gallery')) ?>"><i class="bi bi-images"></i><span>Gallery</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('library_resources')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/library_resources') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/library_resources')) ?>"><i class="bi bi-book"></i><span>Library Materials</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('messages')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/messages') ? 'active' : '' ?>" href="<?= e(base_url('admin/messages')) ?>"><i class="bi bi-envelope"></i><span>Messages</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('messages')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/applications') ? 'active' : '' ?>" href="<?= e(base_url('admin/applications')) ?>"><i class="bi bi-ui-checks-grid"></i><span>Applications</span></a><?php endif; ?>
-                <a class="nav-link <?= str_contains($adminPath, 'admin/internal-messages') ? 'active' : '' ?>" href="<?= e(base_url('admin/internal-messages')) ?>"><i class="bi bi-chat-left-dots"></i><span>Team Messages</span><?php if ($unreadTeamMessages > 0): ?><span class="badge rounded-pill text-bg-warning ms-auto"><?= (int)$unreadTeamMessages ?></span><?php endif; ?></a>
-                <?php if (Auth::canViewEntity('students')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/support-tickets') ? 'active' : '' ?>" href="<?= e(base_url('admin/support-tickets')) ?>"><i class="bi bi-headset"></i><span>Support Tickets</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('students')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/students') ? 'active' : '' ?>" href="<?= e(base_url('admin/students')) ?>"><i class="bi bi-people"></i><span>Student Accounts</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('media')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/media') ? 'active' : '' ?>" href="<?= e(base_url('admin/media')) ?>"><i class="bi bi-folder2-open"></i><span>Media Library</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('events')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/event-registrations') ? 'active' : '' ?>" href="<?= e(base_url('admin/event-registrations')) ?>"><i class="bi bi-calendar2-week"></i><span>Event Registrations</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('testimonials')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/testimonials') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/testimonials')) ?>"><i class="bi bi-chat-square-quote"></i><span>Testimonials</span></a><?php endif; ?>
-                <?php if (Auth::canViewEntity('social_updates')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/social_updates') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/social_updates')) ?>"><i class="bi bi-megaphone"></i><span>Social Updates</span></a><?php endif; ?>
+                <div class="admin-nav-group-header" data-bs-toggle="collapse" data-bs-target="#mediaGroup">
+                    <span class="admin-nav-group-title">Media and Communication</span>
+                    <i class="bi bi-chevron-down admin-nav-chevron"></i>
+                </div>
+                <div class="collapse <?= str_contains($adminPath, 'admin/list/gallery') || str_contains($adminPath, 'admin/list/library_resources') || str_contains($adminPath, 'admin/messages') || str_contains($adminPath, 'admin/applications') || str_contains($adminPath, 'admin/internal-messages') || str_contains($adminPath, 'admin/support-tickets') || str_contains($adminPath, 'admin/students') || str_contains($adminPath, 'admin/media') || str_contains($adminPath, 'admin/event-registrations') || str_contains($adminPath, 'admin/list/testimonials') || str_contains($adminPath, 'admin/list/social_updates') ? 'show' : '' ?>" id="mediaGroup">
+                    <?php if (Auth::canViewEntity('gallery')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/gallery') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/gallery')) ?>"><i class="bi bi-images"></i><span>Gallery</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('library_resources')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/library_resources') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/library_resources')) ?>"><i class="bi bi-book"></i><span>Library Materials</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('messages')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/messages') ? 'active' : '' ?>" href="<?= e(base_url('admin/messages')) ?>"><i class="bi bi-envelope"></i><span>Messages</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('messages')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/applications') ? 'active' : '' ?>" href="<?= e(base_url('admin/applications')) ?>"><i class="bi bi-ui-checks-grid"></i><span>Applications</span></a><?php endif; ?>
+                    <a class="nav-link <?= str_contains($adminPath, 'admin/internal-messages') ? 'active' : '' ?>" href="<?= e(base_url('admin/internal-messages')) ?>"><i class="bi bi-chat-left-dots"></i><span>Team Messages</span><?php if ($unreadTeamMessages > 0): ?><span class="badge rounded-pill text-bg-warning ms-auto"><?= (int)$unreadTeamMessages ?></span><?php endif; ?></a>
+                    <?php if (Auth::canViewEntity('students')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/support-tickets') ? 'active' : '' ?>" href="<?= e(base_url('admin/support-tickets')) ?>"><i class="bi bi-headset"></i><span>Support Tickets</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('students')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/students') ? 'active' : '' ?>" href="<?= e(base_url('admin/students')) ?>"><i class="bi bi-people"></i><span>Student Accounts</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('media')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/media') ? 'active' : '' ?>" href="<?= e(base_url('admin/media')) ?>"><i class="bi bi-folder2-open"></i><span>Media Library</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('events')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/event-registrations') ? 'active' : '' ?>" href="<?= e(base_url('admin/event-registrations')) ?>"><i class="bi bi-calendar2-week"></i><span>Event Registrations</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('testimonials')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/testimonials') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/testimonials')) ?>"><i class="bi bi-chat-square-quote"></i><span>Testimonials</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('social_updates')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/social_updates') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/social_updates')) ?>"><i class="bi bi-megaphone"></i><span>Social Updates</span></a><?php endif; ?>
+                </div>
             </div>
 
             <div class="admin-nav-group">
-                <div class="admin-nav-group-title">System</div>
-                <?php if (Auth::canViewEntity('users')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/users') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/users')) ?>"><i class="bi bi-person-badge"></i><span>Staff Users</span></a><?php endif; ?>
-                <?php if (!Auth::isTeacher()): ?><a class="nav-link <?= str_contains($adminPath, 'admin/settings') ? 'active' : '' ?>" href="<?= e(base_url('admin/settings')) ?>"><i class="bi bi-sliders"></i><span>UI Content Settings</span></a><?php endif; ?>
-                <a class="nav-link text-danger" href="<?= e(base_url('admin/logout')) ?>"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+                <div class="admin-nav-group-header" data-bs-toggle="collapse" data-bs-target="#systemGroup">
+                    <span class="admin-nav-group-title">System</span>
+                    <i class="bi bi-chevron-down admin-nav-chevron"></i>
+                </div>
+                <div class="collapse <?= str_contains($adminPath, 'admin/list/users') || str_contains($adminPath, 'admin/settings') ? 'show' : '' ?>" id="systemGroup">
+                    <?php if (Auth::canViewEntity('users')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/users') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/users')) ?>"><i class="bi bi-person-badge"></i><span>Staff Users</span></a><?php endif; ?>
+                    <?php if (!Auth::isTeacher()): ?><a class="nav-link <?= str_contains($adminPath, 'admin/settings') ? 'active' : '' ?>" href="<?= e(base_url('admin/settings')) ?>"><i class="bi bi-sliders"></i><span>UI Content Settings</span></a><?php endif; ?>
+                    <a class="nav-link text-danger" href="<?= e(base_url('admin/logout')) ?>"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+                </div>
             </div>
         </nav>
     </aside>
@@ -285,6 +305,36 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
             }
+        });
+    });
+
+    /* --- Sidebar accordion behavior --- */
+    const navGroupHeaders = document.querySelectorAll('.admin-nav-group-header');
+    navGroupHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-bs-target');
+            if (!targetId) return;
+            const targetCollapse = document.querySelector(targetId);
+            if (!targetCollapse) return;
+
+            if (targetCollapse.classList.contains('show')) {
+                return;
+            }
+
+            navGroupHeaders.forEach(otherHeader => {
+                if (otherHeader === header) return;
+                const otherTargetId = otherHeader.getAttribute('data-bs-target');
+                if (!otherTargetId) return;
+                const otherCollapse = document.querySelector(otherTargetId);
+                if (otherCollapse && otherCollapse.classList.contains('show')) {
+                    const bsCollapse = bootstrap.Collapse.getInstance(otherCollapse);
+                    if (bsCollapse) {
+                        bsCollapse.hide();
+                    } else {
+                        otherCollapse.classList.remove('show');
+                    }
+                }
+            });
         });
     });
 });

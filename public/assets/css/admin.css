@@ -102,6 +102,25 @@
     letter-spacing:.06em;
     padding:.3rem .45rem .35rem;
 }
+.admin-nav-group-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    cursor:pointer;
+    padding:.3rem .45rem;
+    border-radius:.4rem;
+    transition:background-color .2s;
+}
+.admin-nav-group-header:hover{
+    background-color:rgba(255,255,255,.08);
+}
+.admin-nav-chevron{
+    font-size:.75rem;
+    transition:transform .3s ease;
+}
+.admin-nav-group-header[aria-expanded="true"] .admin-nav-chevron{
+    transform:rotate(180deg);
+}
 .admin-sidebar .nav-link i{
     width:18px;
     text-align:center;
