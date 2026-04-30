@@ -72,7 +72,7 @@ class HomeController extends Controller
 
         $this->view('pages/home', [
             'metaTitle' => 'Home',
-            'metaDescription' => 'St. Mary's MCHM College — accredited healthcare training in Kenya. Diploma, certificate, and artisan programmes. Apply today for career-focused medical education.',
+            'metaDescription' => "St. Mary's MCHM College — accredited healthcare training in Kenya. Diploma, certificate, and artisan programmes. Apply today for career-focused medical education.",
             'settings' => $settings,
             'heroImages' => $heroImages,
             'heroCards' => $heroCards,
