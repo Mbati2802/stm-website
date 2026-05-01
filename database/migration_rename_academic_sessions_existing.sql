@@ -2,16 +2,20 @@
 -- This script handles all possible states of the database gracefully
 
 -- Step 1: Handle academic_years table
--- Drop academic_years if it exists (in case of previous failed migration)
-DROP TABLE IF EXISTS `academic_years`;
+-- Check if academic_years already exists (from previous migration)
+-- If it exists, skip the rename step. If not, rename academic_sessions to academic_years
+SET @academic_years_exists = 0;
+SELECT COUNT(*) INTO @academic_years_exists FROM information_schema.tables 
+WHERE table_schema = DATABASE() AND table_name = 'academic_years';
 
--- Rename academic_sessions to academic_years only if academic_sessions still exists
--- If academic_sessions doesn't exist, the table might already be renamed or data is in academic_years
-SET @table_exists = 0;
-SELECT COUNT(*) INTO @table_exists FROM information_schema.tables 
+SET @academic_sessions_exists = 0;
+SELECT COUNT(*) INTO @academic_sessions_exists FROM information_schema.tables 
 WHERE table_schema = DATABASE() AND table_name = 'academic_sessions';
 
-SET @sql = IF(@table_exists > 0, 'RENAME TABLE academic_sessions TO academic_years', 'SELECT ''Table already renamed or does not exist''');
+-- Only rename if academic_years doesn't exist and academic_sessions does
+SET @sql = IF(@academic_years_exists = 0 AND @academic_sessions_exists > 0, 
+    'RENAME TABLE academic_sessions TO academic_years',
+    'SELECT ''Tables already in correct state or do not exist''');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
