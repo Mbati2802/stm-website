@@ -867,30 +867,14 @@ class AdminContentController extends Controller
             $stmt->execute([$preferredIntake]);
             $intake = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            // Determine session based on term (simplified logic - assign Session 1 for Term 1, Session 2 for Term 2, etc.)
-            if ($currentTerm) {
-                // Get term sequence from current term
-                $stmt = $pdo->prepare('SELECT t.*, ay.name as year_name FROM terms t LEFT JOIN academic_years ay ON t.academic_session_id = ay.id WHERE t.id = ?');
-                $stmt->execute([$currentTerm['id']]);
-                $termData = $stmt->fetch(PDO::FETCH_ASSOC);
-                
-                // Determine session based on term (this is a simplified logic - you may need to adjust based on your requirements)
-                // For now, we'll assign based on term code
-                $sessionCode = 'S1';
-                if ($termData && str_contains(strtolower($termData['code'] ?? ''), 't2')) {
-                    $sessionCode = 'S2';
-                } elseif ($termData && str_contains(strtolower($termData['code'] ?? ''), 't3')) {
-                    $sessionCode = 'S3';
-                }
-                
-                $stmt = $pdo->prepare('SELECT id FROM sessions WHERE code = ? LIMIT 1');
-                $stmt->execute([$sessionCode]);
-                $session = $stmt->fetch(PDO::FETCH_ASSOC);
-                
-                if ($currentYear && $currentTerm && $intake && $session) {
-                    $enrollmentStmt = $pdo->prepare('INSERT INTO student_enrollments (student_id, academic_session_id, term_id, intake_id, programme_id, session_id, enrollment_date, status) VALUES (?, ?, ?, ?, ?, ?, CURDATE(), ?)');
-                    $enrollmentStmt->execute([$studentId, $currentYear['id'], $currentTerm['id'], $intake['id'], $programmeId, $session['id'], 'active']);
-                }
+            // All new students start at Session 1
+            $stmt = $pdo->prepare('SELECT id FROM sessions WHERE code = ? LIMIT 1');
+            $stmt->execute(['S1']);
+            $session = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($currentYear && $currentTerm && $intake && $session) {
+                $enrollmentStmt = $pdo->prepare('INSERT INTO student_enrollments (student_id, academic_session_id, term_id, intake_id, programme_id, session_id, enrollment_date, status) VALUES (?, ?, ?, ?, ?, ?, CURDATE(), ?)');
+                $enrollmentStmt->execute([$studentId, $currentYear['id'], $currentTerm['id'], $intake['id'], $programmeId, $session['id'], 'active']);
             }
         } catch (PDOException $e) {
             // Log error but don't fail admission if enrollment creation fails
