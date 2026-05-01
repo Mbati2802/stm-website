@@ -76,6 +76,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Marks Entry: DOM loaded');
+    
     // Hardcoded exam types (CAT, Assignment, etc.)
     const examTypes = [
         { id: 'cat', name: 'CAT' },
@@ -86,16 +88,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load terms when session is selected
     document.getElementById('sessionFilter').addEventListener('change', function() {
         const sessionId = this.value;
+        console.log('Marks Entry: Academic year changed, sessionId =', sessionId);
         if (sessionId) {
-            fetch(`<?= e(base_url('admin/semester/terms')) ?>?session_id=${sessionId}`)
-                .then(response => response.json())
+            const url = `<?= e(base_url('admin/semester/terms')) ?>?session_id=${sessionId}`;
+            console.log('Marks Entry: Fetching terms from', url);
+            fetch(url)
+                .then(response => {
+                    console.log('Marks Entry: Terms response status', response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Marks Entry: Terms data received', data);
                     const termSelect = document.getElementById('termFilter');
                     termSelect.innerHTML = '<option value="">Select term</option>';
                     data.forEach(term => {
                         termSelect.innerHTML += `<option value="${term.id}" ${term.is_current ? 'selected' : ''}>${term.name}</option>`;
                     });
                     checkAndLoadStudents();
+                })
+                .catch(error => {
+                    console.error('Marks Entry: Error fetching terms', error);
                 });
         } else {
             document.getElementById('termFilter').innerHTML = '<option value="">Select term</option>';
@@ -103,9 +115,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Auto-load students when any filter changes
-    document.getElementById('programmeFilter').addEventListener('change', checkAndLoadStudents);
-    document.getElementById('termFilter').addEventListener('change', checkAndLoadStudents);
-    document.getElementById('studentSessionFilter').addEventListener('change', checkAndLoadStudents);
+    document.getElementById('programmeFilter').addEventListener('change', function() {
+        console.log('Marks Entry: Programme changed');
+        checkAndLoadStudents();
+    });
+    document.getElementById('termFilter').addEventListener('change', function() {
+        console.log('Marks Entry: Term changed');
+        checkAndLoadStudents();
+    });
+    document.getElementById('studentSessionFilter').addEventListener('change', function() {
+        console.log('Marks Entry: Student session changed');
+        checkAndLoadStudents();
+    });
 
     function checkAndLoadStudents() {
         const programmeId = document.getElementById('programmeFilter').value;
@@ -113,20 +134,40 @@ document.addEventListener('DOMContentLoaded', function() {
         const termId = document.getElementById('termFilter').value;
         const studentSessionId = document.getElementById('studentSessionFilter').value;
         
+        console.log('Marks Entry: checkAndLoadStudents called with', {
+            programmeId,
+            sessionId,
+            termId,
+            studentSessionId
+        });
+        
         if (programmeId && sessionId && termId && studentSessionId) {
+            console.log('Marks Entry: All filters set, loading students');
             loadStudents(programmeId, sessionId, termId, studentSessionId);
+        } else {
+            console.log('Marks Entry: Not all filters set yet');
         }
     }
 
     function loadStudents(programmeId, sessionId, termId, studentSessionId) {
-        fetch(`<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}&student_session_id=${studentSessionId}`)
-            .then(response => response.json())
+        const url = `<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}&student_session_id=${studentSessionId}`;
+        console.log('Marks Entry: Fetching students from', url);
+        fetch(url)
+            .then(response => {
+                console.log('Marks Entry: Students response status', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('Marks Entry: Students data received', data);
                 renderMarksTable(data);
+            })
+            .catch(error => {
+                console.error('Marks Entry: Error fetching students', error);
             });
     }
 
     function renderMarksTable(students) {
+        console.log('Marks Entry: Rendering table with', students.length, 'students');
         const header = document.getElementById('marksTableHeader');
         const body = document.getElementById('marksTableBody');
         
