@@ -1701,27 +1701,31 @@ class AdminContentController extends Controller
                     'course_id' => (int)($_POST['course_id'] ?? 0),
                     'grade' => trim($_POST['grade'] ?? ''),
                     'marks' => (($_POST['marks'] ?? '') !== '') ? (float)$_POST['marks'] : null,
-                    'grading_scheme_id' => (int)($_POST['grading_scheme_id'] ?? 0),
                     'remarks' => trim($_POST['remarks'] ?? ''),
                 ];
-                if ($stmtData['marks'] !== null) {
-                    if ($stmtData['grading_scheme_id'] > 0) {
-                        $gradeLookup = $pdo->prepare('SELECT grade_label FROM grading_schemes WHERE id = :id AND :marks BETWEEN min_score AND max_score LIMIT 1');
-                        $gradeLookup->execute(['id' => $stmtData['grading_scheme_id'], 'marks' => $stmtData['marks']]);
+                $gradingSystemId = (int)($_POST['grading_system_id'] ?? 0);
+                if ($gradingSystemId > 0) {
+                    $stmtData['grading_system_id'] = $gradingSystemId;
+                    $gradeLookup = $pdo->prepare('SELECT grade_letter FROM grade_ranges WHERE grading_system_id = :id AND :marks >= min_marks AND :marks <= max_marks LIMIT 1');
+                    $gradeLookup->execute(['id' => $stmtData['grading_system_id'], 'marks' => $stmtData['marks']]);
+                    $gradeResult = $gradeLookup->fetch(PDO::FETCH_ASSOC);
+                    if ($gradeResult) {
+                        $stmtData['grade'] = $gradeResult['grade_letter'];
                     } else {
-                        $gradeLookup = $pdo->prepare('SELECT grade_label FROM grading_schemes WHERE :marks BETWEEN min_score AND max_score ORDER BY min_score DESC LIMIT 1');
+                        // Try to find the default grading system for the course's exam type
+                        $gradeLookup = $pdo->prepare('SELECT gr.grade_letter FROM grade_ranges gr JOIN grading_systems gs ON gr.grading_system_id = gs.id WHERE gs.is_default = 1 AND :marks >= gr.min_marks AND :marks <= gr.max_marks LIMIT 1');
                         $gradeLookup->execute(['marks' => $stmtData['marks']]);
-                    }
-                    $derivedGrade = trim((string)($gradeLookup->fetch()['grade_label'] ?? ''));
-                    if ($derivedGrade !== '') {
-                        $stmtData['grade'] = $derivedGrade;
+                        $gradeResult = $gradeLookup->fetch(PDO::FETCH_ASSOC);
+                        if ($gradeResult) {
+                            $stmtData['grade'] = $gradeResult['grade_letter'];
+                        }
                     }
                 }
-                if ($isUpdate) {
-                    $stmt = $pdo->prepare('UPDATE course_grades SET student_id=:student_id, course_id=:course_id, grade=:grade, marks=:marks, grading_scheme_id=:grading_scheme_id, remarks=:remarks WHERE id=:id');
+                if ($id > 0) {
+                    $stmt = $pdo->prepare('UPDATE course_grades SET student_id=:student_id, course_id=:course_id, grade=:grade, marks=:marks, grading_system_id=:grading_system_id, remarks=:remarks WHERE id=:id');
                     $stmtData['id'] = $id;
                 } else {
-                    $stmt = $pdo->prepare('INSERT INTO course_grades(student_id, course_id, grade, marks, grading_scheme_id, remarks, created_at) VALUES(:student_id, :course_id, :grade, :marks, :grading_scheme_id, :remarks, NOW())');
+                    $stmt = $pdo->prepare('INSERT INTO course_grades(student_id, course_id, grade, marks, grading_system_id, remarks, created_at) VALUES(:student_id, :course_id, :grade, :marks, :grading_system_id, :remarks, NOW())');
                 }
                 $stmt->execute($stmtData);
                 break;
