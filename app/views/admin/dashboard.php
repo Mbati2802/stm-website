@@ -29,7 +29,7 @@
             <div class="col-lg-4">
                 <div class="soft-card p-3 h-100">
                     <h2 class="h6 text-uppercase text-primary mb-3">Engagement Mix</h2>
-                    <canvas id="engagementPie" height="200"></canvas>
+                    <canvas id="engagementBar" height="200"></canvas>
                 </div>
             </div>
             <?php endif; ?>
@@ -55,16 +55,19 @@
         <div class="row g-3 mb-3">
             <div class="col-lg-6">
                 <div class="soft-card p-3 h-100">
-                    <h2 class="h6 text-uppercase text-primary mb-3">Recent Public Messages</h2>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h6 text-uppercase text-primary mb-0">Recent Public Messages</h2>
+                        <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/messages')) ?>">View All</a>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-sm admin-table mb-0">
                             <thead><tr><th class="col-md">Name</th><th class="col-md">Subject</th><th class="col-lg">Message</th><th class="col-sm">Date</th></tr></thead>
                             <tbody>
-                            <?php foreach ($recentMessages as $row): ?>
+                            <?php foreach (array_slice($recentMessages, 0, 3) as $row): ?>
                                 <tr>
-                                    <td title="<?= e((string)($row['name'] ?? '')) ?>"><?= e((string)($row['name'] ?? '')) ?></td>
-                                    <td title="<?= e((string)($row['subject'] ?? '')) ?>"><?= e((string)($row['subject'] ?? '')) ?></td>
-                                    <td title="<?= e((string)($row['message'] ?? '')) ?>"><?= e((string)($row['message'] ?? '')) ?></td>
+                                    <td title="<?= e((string)($row['name'] ?? '')) ?>"><?= e(substr((string)($row['name'] ?? ''), 0, 15)) ?></td>
+                                    <td title="<?= e((string)($row['subject'] ?? '')) ?>"><?= e(substr((string)($row['subject'] ?? ''), 0, 15)) ?></td>
+                                    <td title="<?= e((string)($row['message'] ?? '')) ?>"><?= e(substr((string)($row['message'] ?? ''), 0, 25)) ?></td>
                                     <td><?= e((string)($row['created_at'] ?? '')) ?></td>
                                 </tr>
                             <?php endforeach; ?>
@@ -76,14 +79,17 @@
             <?php if (!empty($recentEvents)): ?>
             <div class="col-lg-6">
                 <div class="soft-card p-3 h-100">
-                    <h2 class="h6 text-uppercase text-primary mb-3">Recent Events</h2>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h6 text-uppercase text-primary mb-0">Recent Events</h2>
+                        <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/list/events')) ?>">View All</a>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-sm admin-table mb-0">
                             <thead><tr><th class="col-md">Title</th><th class="col-sm">Category</th><th class="col-sm">Status</th><th class="col-sm">Date</th></tr></thead>
                             <tbody>
-                            <?php foreach ($recentEvents as $row): ?>
+                            <?php foreach (array_slice($recentEvents, 0, 3) as $row): ?>
                                 <tr>
-                                    <td title="<?= e((string)($row['title'] ?? '')) ?>"><?= e((string)($row['title'] ?? '')) ?></td>
+                                    <td title="<?= e((string)($row['title'] ?? '')) ?>"><?= e(substr((string)($row['title'] ?? ''), 0, 20)) ?></td>
                                     <td><?= e((string)($row['category'] ?? '')) ?></td>
                                     <td><?= e((string)($row['registration_status'] ?? 'Open')) ?></td>
                                     <td><?= e((string)($row['starts_at'] ?? '')) ?></td>
@@ -234,8 +240,17 @@ document.addEventListener('DOMContentLoaded', function () {
             options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
         });
     };
+    const createBar = function (id, labels, values, colors) {
+        const el = document.getElementById(id);
+        if (!el || typeof Chart === 'undefined') return;
+        new Chart(el, {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ data: values, backgroundColor: colors }] },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+    };
     <?php if (!empty($engagementBreakdown)): ?>
-    createPie('engagementPie', <?= json_encode(array_keys($engagementBreakdown)) ?>, <?= json_encode(array_values($engagementBreakdown)) ?>, ['#ef476f','#ffd166','#06d6a0']);
+    createBar('engagementBar', <?= json_encode(array_keys($engagementBreakdown)) ?>, <?= json_encode(array_values($engagementBreakdown)) ?>, ['#ef476f','#ffd166','#06d6a0']);
     <?php endif; ?>
     const createLine = function (id, raw, label, color) {
         const el = document.getElementById(id);
