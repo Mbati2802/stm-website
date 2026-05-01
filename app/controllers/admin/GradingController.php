@@ -1,7 +1,5 @@
 <?php
 
-namespace app\controllers\admin;
-
 use app\core\Auth;
 use app\core\Database;
 use PDO;
