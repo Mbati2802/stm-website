@@ -105,6 +105,13 @@ $router->add('GET', $adminLoginSlug, [AdminAuthController::class, 'login']);
 $router->add('POST', $adminLoginSlug, [AdminAuthController::class, 'authenticate']);
 $router->add('GET', 'admin/logout', [AdminAuthController::class, 'logout']);
 $router->add('GET', 'admin', [AdminDashboardController::class, 'index']);
+$router->add('GET', 'admin/admission-number-formats', ['AdmissionNumberFormatsController', 'index']);
+$router->add('GET', 'admin/admission-number-formats/create', ['AdmissionNumberFormatsController', 'create']);
+$router->add('POST', 'admin/admission-number-formats/create', ['AdmissionNumberFormatsController', 'create']);
+$router->add('GET', 'admin/admission-number-formats/edit/{id}', ['AdmissionNumberFormatsController', 'edit']);
+$router->add('POST', 'admin/admission-number-formats/edit/{id}', ['AdmissionNumberFormatsController', 'edit']);
+$router->add('GET', 'admin/admission-number-formats/delete/{id}', ['AdmissionNumberFormatsController', 'delete']);
+$router->add('GET', 'admin/admission-number-formats/set-default/{id}', ['AdmissionNumberFormatsController', 'setDefault']);
 $router->add('GET', 'admin/list/{entity}', [AdminContentController::class, 'list']);
 $router->add('GET', 'admin/create/{entity}', [AdminContentController::class, 'create']);
 $router->add('POST', 'admin/create/{entity}', [AdminContentController::class, 'store']);
@@ -134,13 +141,6 @@ $router->add('GET', 'cron/social-fetch', [AdminContentController::class, 'cronSo
 $router->add('GET', 'admin/internal-messages', [AdminContentController::class, 'internalMessages']);
 $router->add('POST', 'admin/internal-messages/send', [AdminContentController::class, 'sendInternalMessage']);
 $router->add('GET', 'admin/applications', [AdminContentController::class, 'applications']);
-$router->add('GET', 'admin/admission-number-formats', ['AdmissionNumberFormatsController', 'index']);
-$router->add('GET', 'admin/admission-number-formats/create', ['AdmissionNumberFormatsController', 'create']);
-$router->add('POST', 'admin/admission-number-formats/create', ['AdmissionNumberFormatsController', 'create']);
-$router->add('GET', 'admin/admission-number-formats/edit/{id}', ['AdmissionNumberFormatsController', 'edit']);
-$router->add('POST', 'admin/admission-number-formats/edit/{id}', ['AdmissionNumberFormatsController', 'edit']);
-$router->add('GET', 'admin/admission-number-formats/delete/{id}', ['AdmissionNumberFormatsController', 'delete']);
-$router->add('GET', 'admin/admission-number-formats/set-default/{id}', ['AdmissionNumberFormatsController', 'setDefault']);
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
 $basePath = dirname($_SERVER['SCRIPT_NAME']);
