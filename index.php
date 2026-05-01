@@ -2,6 +2,7 @@
 require_once __DIR__ . '/bootstrap.php';
 
 require_once __DIR__ . '/app/controllers/admin/AdmissionNumberFormatsController.php';
+require_once __DIR__ . '/app/controllers/admin/GradingController.php';
 
 $config = require __DIR__ . '/config/config.php';
 try {
