@@ -17,10 +17,31 @@
             'created_at' => 'col-sm',
             'updated_at' => 'col-sm',
         ];
+        $entityDisplayNames = [
+            'portal_courses' => 'Portal Units',
+            'course_grades' => 'Unit Grades',
+            'course_assignments' => 'Assignments',
+        ];
+        $columnHeaderMap = [
+            'portal_courses' => [
+                'code' => 'Unit Code',
+                'title' => 'Unit Title',
+                'course_id' => 'Unit',
+            ],
+            'course_grades' => [
+                'course_id' => 'Unit',
+            ],
+            'course_assignments' => [
+                'course_id' => 'Unit',
+            ],
+            'study_materials' => [
+                'course_id' => 'Unit',
+            ],
+        ];
         $entitySettings = $settings ?? [];
         ?>
         <div class="admin-page-head mb-3">
-            <h1 class="h4 fw-bold mb-0 text-capitalize">Manage <?= e(str_replace('_',' ',$entity)) ?></h1>
+            <h1 class="h4 fw-bold mb-0 text-capitalize">Manage <?= e($entityDisplayNames[$entity] ?? str_replace('_',' ',$entity)) ?></h1>
             <div class="d-flex flex-wrap gap-2">
                 <?php if ($entity === 'testimonials'): ?>
                     <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#entitySettingsModal"><i class="bi bi-gear me-1"></i>Appearance Settings</button>
@@ -44,9 +65,10 @@
                         <?php
                         $headerClass = $columnClassMap[(string)$h] ?? 'col-md';
                         $skipColumn = ($entity === 'programmes') && in_array((string)$h, ['description', 'slug'], true);
+                        $headerText = $columnHeaderMap[$entity][(string)$h] ?? $h;
                         ?>
                         <?php if (!$skipColumn): ?>
-                        <th class="<?= e($headerClass) ?>"><?= e($h) ?></th>
+                        <th class="<?= e($headerClass) ?>"><?= e($headerText) ?></th>
                         <?php endif; ?>
                     <?php endforeach; endif; ?>
                     <th class="col-sm">Visibility</th>
@@ -71,6 +93,16 @@
                                 <strong><?= e((string)($row['abbreviation'] ?? '')) ?></strong>
                             <?php elseif ($entity === 'programmes' && $key === 'description'): ?>
                                 <?= e(implode(' ', array_slice(explode(' ', $fullValue), 0, 3))) ?>...
+                            <?php elseif (in_array($entity, ['course_grades', 'course_assignments', 'study_materials']) && $key === 'course_id' && isset($courses)): ?>
+                                <?php foreach (($courses ?? []) as $course): ?>
+                                    <?php if ((string)$course['id'] === (string)$v): ?>
+                                        <?= e(trim((string)($course['code'] ?? '') . ' - ' . (string)$course['title'])) ?>
+                                        <?php break; ?>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                                <?php if (!isset($course)): ?>
+                                    <?= e($fullValue) ?>
+                                <?php endif; ?>
                             <?php else: ?>
                                 <?= e($fullValue) ?>
                             <?php endif; ?>
