@@ -2098,7 +2098,7 @@ class AdminContentController extends Controller
             $pdo = Database::getInstance($this->config['db']);
             
             // Get programme_id for the selected unit/course
-            $courseStmt = $pdo->prepare('SELECT programme_id FROM courses WHERE id = ?');
+            $courseStmt = $pdo->prepare('SELECT programme_id FROM portal_courses WHERE id = ?');
             $courseStmt->execute([$unitId]);
             $course = $courseStmt->fetch(PDO::FETCH_ASSOC);
             
