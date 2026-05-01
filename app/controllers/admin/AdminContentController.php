@@ -2052,7 +2052,9 @@ class AdminContentController extends Controller
         $students = (new StudentPortalModel($this->config))->allStudents();
         $users = $model->all('users');
         $teachers = array_values(array_filter($users, static fn($user) => (string)($user['role'] ?? '') === 'teacher'));
-        $gradingSchemes = $model->all('grading_schemes');
+        $pdo = Database::getInstance($this->config['db']);
+        $stmt = $pdo->query('SELECT gs.*, et.name as exam_type_name FROM grading_systems gs LEFT JOIN exam_types et ON gs.exam_type_id = et.id ORDER BY gs.id ASC');
+        $gradingSystems = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $settings = $model->getSettings();
 
         return [
@@ -2060,7 +2062,7 @@ class AdminContentController extends Controller
             'courses' => $courses,
             'students' => $students,
             'teachers' => $teachers,
-            'gradingSchemes' => $gradingSchemes,
+            'gradingSystems' => $gradingSystems,
             'siteSettings' => $settings,
         ];
     }
