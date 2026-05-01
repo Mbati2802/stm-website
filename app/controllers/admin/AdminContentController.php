@@ -883,7 +883,9 @@ class AdminContentController extends Controller
         extract(['student' => $student, 'programme' => $programme]);
 
         // Render partial view without layout for modal
+        ob_start();
         include __DIR__ . '/../../app/views/admin/student_details.php';
+        echo ob_get_clean();
     }
 
     public function editStudentForm(): void
@@ -917,7 +919,9 @@ class AdminContentController extends Controller
         extract(['student' => $student, 'programmes' => $programmes, 'kenyanCounties' => $kenyanCounties]);
 
         // Render partial view without layout for modal
+        ob_start();
         include __DIR__ . '/../../app/views/admin/student_edit.php';
+        echo ob_get_clean();
     }
 
     public function editStudent(): void
