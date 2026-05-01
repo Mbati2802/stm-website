@@ -25,6 +25,30 @@
     min-width:280px;
     max-width:280px;
     z-index:100;
+    transition:width .3s ease,transform .3s ease;
+}
+.admin-sidebar.collapsed{
+    width:60px;
+    min-width:60px;
+    max-width:60px;
+}
+.admin-sidebar.collapsed .admin-sidebar-brand div,
+.admin-sidebar.collapsed .admin-sidebar-brand .admin-sidebar-collapse-btn,
+.admin-sidebar.collapsed .admin-nav-group-title,
+.admin-sidebar.collapsed .admin-nav-chevron,
+.admin-sidebar.collapsed .nav-link span{
+    display:none;
+}
+.admin-sidebar.collapsed .nav-link{
+    justify-content:center;
+    padding:.58rem;
+}
+.admin-sidebar-collapse-btn{
+    opacity:.6;
+    transition:opacity .2s;
+}
+.admin-sidebar-collapse-btn:hover{
+    opacity:1;
 }
 .admin-sidebar-brand{
     display:flex;

@@ -56,6 +56,9 @@ if ($adminId > 0 && !str_ends_with($viewPath, 'admin/login.php')) {
                 <span class="fw-bold">STM Admin</span>
                 <small class="text-white-50 text-uppercase"><?= e($adminRoleLabel) ?></small>
             </div>
+            <button class="btn btn-sm btn-link text-white admin-sidebar-collapse-btn ms-auto" type="button" id="adminSidebarCollapse">
+                <i class="bi bi-chevron-left"></i>
+            </button>
         </div>
         <nav class="nav flex-column gap-2 mt-3">
             <a class="nav-link <?= $isAdminHome ? 'active' : '' ?>" href="<?= e(base_url('admin')) ?>"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
@@ -322,6 +325,20 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
+
+    /* --- Sidebar collapse toggle --- */
+    const sidebarCollapseBtn = document.getElementById('adminSidebarCollapse');
+    const sidebar = document.getElementById('adminSidebar');
+    if (sidebarCollapseBtn && sidebar) {
+        sidebarCollapseBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('bi-chevron-left');
+                icon.classList.toggle('bi-chevron-right');
+            }
+        });
+    }
 });
 </script>
 </body>
