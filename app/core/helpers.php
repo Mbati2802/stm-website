@@ -667,6 +667,36 @@ function smtp_expect($socket, array $expectedCodes): bool
     return $isExpected;
 }
 
+function generate_program_abbreviation(string $programName): string
+{
+    // Words to exclude from abbreviation
+    $excludeWords = ['in', 'of', 'and', 'for', 'the', 'with', 'a', 'an', 'on', 'at', 'to', 'by'];
+    
+    // Split by spaces and filter out excluded words
+    $words = preg_split('/\s+/', trim($programName)) ?: [];
+    $significantWords = array_filter($words, static fn($word) => 
+        !in_array(strtolower(trim($word)), $excludeWords, true)
+    );
+    
+    // Take first letter of each significant word and convert to uppercase
+    $abbreviation = '';
+    foreach ($significantWords as $word) {
+        $word = trim($word);
+        if ($word !== '') {
+            $abbreviation .= strtoupper($word[0]);
+        }
+    }
+    
+    // Fallback: if abbreviation is too short, use first 3-4 letters of first word
+    if (strlen($abbreviation) < 3 && !empty($words)) {
+        $firstWord = trim($words[0]);
+        $abbreviation = strtoupper(substr($firstWord, 0, 4));
+    }
+    
+    // Limit to 6 characters max
+    return substr($abbreviation, 0, 6);
+}
+
 function generate_simple_pdf(array $lines): string
 {
     $safeLines = array_values(array_filter(array_map(

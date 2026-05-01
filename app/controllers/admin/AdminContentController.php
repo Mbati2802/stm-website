@@ -679,7 +679,18 @@ class AdminContentController extends Controller
         if ($admissionNumber === '') {
             $contentModel = new ContentModel($this->config);
             $format = (string)($contentModel->getSettings()['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}');
-            $admissionNumber = $this->buildAdmissionNumber($format, (int)$student['id']);
+            
+            // Get programme abbreviation if student has a programme assigned
+            $programmeAbbr = null;
+            if (!empty($student['programme_id'])) {
+                $pdo = Database::getInstance($this->config['db']);
+                $stmt = $pdo->prepare('SELECT abbreviation FROM programmes WHERE id = ?');
+                $stmt->execute([(int)$student['programme_id']]);
+                $programme = $stmt->fetch(PDO::FETCH_ASSOC);
+                $programmeAbbr = $programme['abbreviation'] ?? null;
+            }
+            
+            $admissionNumber = $this->buildAdmissionNumber($format, (int)$student['id'], $programmeAbbr);
         }
 
         if (!preg_match('/^[A-Z0-9\/\-_]+$/', $admissionNumber)) {
@@ -707,17 +718,29 @@ class AdminContentController extends Controller
         $portalModel = new StudentPortalModel($this->config);
         $contentModel = new ContentModel($this->config);
         $format = (string)($contentModel->getSettings()['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}');
-        $students = $portalModel->allStudents();
-
+        $pdo = Database::getInstance($this->config['db']);
+        
+        $stmt = $pdo->query('SELECT id, programme_id FROM student_accounts');
+        $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
         $assigned = 0;
         foreach ($students as $student) {
-            $id = (int)($student['id'] ?? 0);
+            $id = (int)$student['id'];
             $current = trim((string)($student['admission_number'] ?? ''));
-            if ($id <= 0 || $current !== '') {
+            if ($current !== '') {
                 continue;
             }
-
-            $admissionNumber = $this->buildAdmissionNumber($format, $id);
+            
+            // Get programme abbreviation if student has a programme assigned
+            $programmeAbbr = null;
+            if (!empty($student['programme_id'])) {
+                $progStmt = $pdo->prepare('SELECT abbreviation FROM programmes WHERE id = ?');
+                $progStmt->execute([(int)$student['programme_id']]);
+                $programme = $progStmt->fetch(PDO::FETCH_ASSOC);
+                $programmeAbbr = $programme['abbreviation'] ?? null;
+            }
+            
+            $admissionNumber = $this->buildAdmissionNumber($format, $id, $programmeAbbr);
             try {
                 $portalModel->assignAdmissionNumber($id, $admissionNumber);
                 $assigned++;
@@ -726,7 +749,6 @@ class AdminContentController extends Controller
                 continue;
             }
         }
-
         flash('success', 'Bulk generation complete. Assigned admission numbers to ' . $assigned . ' student(s).');
         $this->redirect('admin/students');
     }
@@ -936,8 +958,16 @@ class AdminContentController extends Controller
                     $existing = (new ContentModel($this->config))->findById('programmes', (int)$id);
                     $oldSlug = (string)($existing['slug'] ?? '');
                 }
+                
+                // Generate or use provided abbreviation
+                $abbreviation = trim($_POST['abbreviation'] ?? '');
+                if ($abbreviation === '') {
+                    $abbreviation = generate_program_abbreviation($name);
+                }
+                
                 $params = [
                     'name' => $name,
+                    'abbreviation' => strtoupper($abbreviation),
                     'slug' => $slug,
                     'category' => trim($_POST['category'] ?? 'Diploma'),
                     'terms' => (int)($_POST['terms'] ?? 1),
@@ -945,11 +975,11 @@ class AdminContentController extends Controller
                     'description' => plain_text_multiline($_POST['description'] ?? ''),
                 ];
                 if ($isUpdate) {
-                    $stmt = $pdo->prepare('UPDATE programmes SET name=:name, slug=:slug, category=:category, terms=:terms, department_id=:department_id, description=:description WHERE id=:id');
+                    $stmt = $pdo->prepare('UPDATE programmes SET name=:name, abbreviation=:abbreviation, slug=:slug, category=:category, terms=:terms, department_id=:department_id, description=:description WHERE id=:id');
                     $params['id'] = $id;
                     $stmt->execute($params);
                 } else {
-                    $stmt = $pdo->prepare('INSERT INTO programmes(name, slug, category, terms, department_id, description, created_at) VALUES(:name, :slug, :category, :terms, :department_id, :description, NOW())');
+                    $stmt = $pdo->prepare('INSERT INTO programmes(name, abbreviation, slug, category, terms, department_id, description, created_at) VALUES(:name, :abbreviation, :slug, :category, :terms, :department_id, :description, NOW())');
                     $stmt->execute($params);
                 }
                 $model = new ContentModel($this->config);
@@ -1548,23 +1578,32 @@ class AdminContentController extends Controller
         ];
     }
 
-    private function buildAdmissionNumber(string $format, int $studentId): string
+    private function buildAdmissionNumber(string $format, int $studentId, ?string $programmeAbbr = null): string
     {
         $year = date('Y');
+        $shortYear = date('y');
         $month = date('m');
-        $day = date('d');
+        $monthName = strtoupper(date('M'));
+        $seq2 = str_pad((string)$studentId, 2, '0', STR_PAD_LEFT);
+        $seq3 = str_pad((string)$studentId, 3, '0', STR_PAD_LEFT);
         $seq4 = str_pad((string)$studentId, 4, '0', STR_PAD_LEFT);
         $seq5 = str_pad((string)$studentId, 5, '0', STR_PAD_LEFT);
         $seq6 = str_pad((string)$studentId, 6, '0', STR_PAD_LEFT);
+        
         $replacements = [
             '{YEAR}' => $year,
-            '{YY}' => substr($year, -2),
+            '{YYYY}' => $year,
+            '{YY}' => $shortYear,
             '{MM}' => $month,
-            '{DD}' => $day,
+            '{DD}' => date('d'),
+            '{MON}' => $monthName,
+            '{SEQ2}' => $seq2,
+            '{SEQ3}' => $seq3,
             '{SEQ4}' => $seq4,
             '{SEQ5}' => $seq5,
             '{SEQ6}' => $seq6,
             '{ID}' => (string)$studentId,
+            '{PROG_ABBR}' => $programmeAbbr ?? 'STM',
         ];
         return strtr($format, $replacements);
     }

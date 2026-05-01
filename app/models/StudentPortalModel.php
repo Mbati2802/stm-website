@@ -34,7 +34,7 @@ class StudentPortalModel
 
     public function findStudentById(int $id): ?array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM student_accounts WHERE id = :id LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT sa.*, p.abbreviation FROM student_accounts sa LEFT JOIN programmes p ON sa.programme_id = p.id WHERE sa.id = :id LIMIT 1');
         $stmt->execute(['id' => $id]);
         return $stmt->fetch() ?: null;
     }
