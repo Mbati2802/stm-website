@@ -34,7 +34,6 @@ class AdmissionNumberFormatsController extends Controller
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->validateCsrf();
             $name = trim($_POST['name'] ?? '');
             $formatPattern = trim($_POST['format_pattern'] ?? '');
             $isDefault = isset($_POST['is_default']) ? 1 : 0;
@@ -85,7 +84,6 @@ class AdmissionNumberFormatsController extends Controller
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->validateCsrf();
             $name = trim($_POST['name'] ?? '');
             $formatPattern = trim($_POST['format_pattern'] ?? '');
             $isDefault = isset($_POST['is_default']) ? 1 : 0;
