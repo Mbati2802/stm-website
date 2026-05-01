@@ -2062,8 +2062,15 @@ class AdminContentController extends Controller
 
     public function getStudentsByEnrollment(): void
     {
-        Auth::requireAdmin();
+        // Check authentication for AJAX requests
+        if (!Auth::check()) {
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+
         if (!Auth::canViewEntity('students')) {
+            header('Content-Type: application/json');
             echo json_encode(['error' => 'Unauthorized']);
             return;
         }
@@ -2074,6 +2081,7 @@ class AdminContentController extends Controller
         $studentSessionId = (int)($_GET['student_session_id'] ?? 0); // Student progression session
 
         if ($programmeId === 0 || $sessionId === 0 || $termId === 0) {
+            header('Content-Type: application/json');
             echo json_encode(['error' => 'Invalid parameters']);
             return;
         }
@@ -2103,8 +2111,10 @@ class AdminContentController extends Controller
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
             $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            header('Content-Type: application/json');
             echo json_encode($students);
         } catch (PDOException $e) {
+            header('Content-Type: application/json');
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
