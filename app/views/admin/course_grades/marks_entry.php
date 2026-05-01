@@ -51,11 +51,19 @@
     <div class="card" id="marksEntryCard" style="display: none;">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Marks Entry</h5>
-            <button class="btn btn-sm btn-success" id="saveAllMarks">
-                <i class="bi bi-save"></i> Save All Marks
-            </button>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-primary" id="refreshStudents">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+                <button class="btn btn-sm btn-success" id="saveAllMarks">
+                    <i class="bi bi-save"></i> Save All Marks
+                </button>
+            </div>
         </div>
         <div class="card-body">
+            <div id="noStudentsMessage" class="alert alert-warning" style="display: none;">
+                No students found for the selected filters. Please ensure students are enrolled in the selected programme, academic year, term, and session.
+            </div>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover" id="marksEntryTable">
                     <thead>
@@ -167,9 +175,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function renderMarksTable(students) {
-        console.log('Marks Entry: Rendering table with', students.length, 'students');
         const header = document.getElementById('marksTableHeader');
         const body = document.getElementById('marksTableBody');
+        const noStudentsMessage = document.getElementById('noStudentsMessage');
+        const table = document.getElementById('marksEntryTable');
+        
+        // Handle error response
+        if (students.error) {
+            console.error('Marks Entry: Server error', students.error);
+            noStudentsMessage.textContent = 'Error loading students: ' + students.error;
+            noStudentsMessage.className = 'alert alert-danger';
+            noStudentsMessage.style.display = 'block';
+            table.style.display = 'none';
+            document.getElementById('marksEntryCard').style.display = 'block';
+            return;
+        }
+        
+        // Handle empty array
+        if (!Array.isArray(students) || students.length === 0) {
+            console.log('Marks Entry: No students found');
+            noStudentsMessage.textContent = 'No students found for the selected filters. Please ensure students are enrolled in the selected programme, academic year, term, and session.';
+            noStudentsMessage.className = 'alert alert-warning';
+            noStudentsMessage.style.display = 'block';
+            table.style.display = 'none';
+            document.getElementById('marksEntryCard').style.display = 'block';
+            return;
+        }
+        
+        console.log('Marks Entry: Rendering table with', students.length, 'students');
+        
+        // Show table, hide message
+        noStudentsMessage.style.display = 'none';
+        table.style.display = 'table';
         
         // Build header with exam types
         let headerHTML = '<th>Admission No.</th><th>Student Name</th>';
@@ -240,6 +277,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         row.querySelector('.grade-display').textContent = grade;
     }
+
+    // Refresh students
+    document.getElementById('refreshStudents').addEventListener('click', function() {
+        console.log('Marks Entry: Refresh button clicked');
+        checkAndLoadStudents();
+    });
 
     // Save all marks
     document.getElementById('saveAllMarks').addEventListener('click', function() {
