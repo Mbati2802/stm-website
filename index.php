@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/bootstrap.php';
 
+require_once __DIR__ . '/app/controllers/admin/AdmissionNumberFormatsController.php';
+
 $config = require __DIR__ . '/config/config.php';
 try {
     $settings = (new ContentModel($config))->getSettings();
@@ -105,6 +107,13 @@ $router->add('GET', $adminLoginSlug, [AdminAuthController::class, 'login']);
 $router->add('POST', $adminLoginSlug, [AdminAuthController::class, 'authenticate']);
 $router->add('GET', 'admin/logout', [AdminAuthController::class, 'logout']);
 $router->add('GET', 'admin', [AdminDashboardController::class, 'index']);
+$router->add('GET', 'admin/admission-number-formats', ['AdmissionNumberFormatsController', 'index']);
+$router->add('GET', 'admin/admission-number-formats/create', ['AdmissionNumberFormatsController', 'create']);
+$router->add('POST', 'admin/admission-number-formats/create', ['AdmissionNumberFormatsController', 'create']);
+$router->add('GET', 'admin/admission-number-formats/edit/{id}', ['AdmissionNumberFormatsController', 'edit']);
+$router->add('POST', 'admin/admission-number-formats/edit/{id}', ['AdmissionNumberFormatsController', 'edit']);
+$router->add('GET', 'admin/admission-number-formats/delete/{id}', ['AdmissionNumberFormatsController', 'delete']);
+$router->add('GET', 'admin/admission-number-formats/set-default/{id}', ['AdmissionNumberFormatsController', 'setDefault']);
 $router->add('GET', 'admin/list/{entity}', [AdminContentController::class, 'list']);
 $router->add('GET', 'admin/create/{entity}', [AdminContentController::class, 'create']);
 $router->add('POST', 'admin/create/{entity}', [AdminContentController::class, 'store']);
