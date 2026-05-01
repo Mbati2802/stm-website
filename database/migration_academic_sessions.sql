@@ -87,12 +87,6 @@ CREATE TABLE IF NOT EXISTS `sessions` (
   INDEX `idx_is_active` (`is_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Add session_id to student_enrollments
-ALTER TABLE `student_enrollments` 
-ADD COLUMN `session_id` INT NULL AFTER `academic_session_id`,
-ADD INDEX `idx_session_id` (`session_id`),
-ADD FOREIGN KEY (`session_id`) REFERENCES `sessions`(`id`) ON DELETE SET NULL;
-
 -- Insert default data
 INSERT INTO `academic_years` (`name`, `code`, `start_date`, `end_date`, `is_current`, `is_active`) VALUES
 ('2024-2025', '2024-2025', '2024-01-01', '2025-12-31', 1, 1);
