@@ -1,9 +1,5 @@
 <?php
 
-use app\core\Auth;
-use app\core\Database;
-use PDO;
-
 class GradingController
 {
     private array $config;
