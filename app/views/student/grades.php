@@ -11,8 +11,8 @@
                     <table class="table align-middle admin-table">
                         <thead>
                             <tr>
-                                <th>Course Code</th>
-                                <th>Course Name</th>
+                                <th>Unit Code</th>
+                                <th>Unit Name</th>
                                 <th>Marks</th>
                                 <th>Grade</th>
                                 <th>Remarks</th>

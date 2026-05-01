@@ -10,14 +10,14 @@ $programmeContent = $programmeContent ?? [];
 $durationText = match (strtolower($programmeCategory)) {
     'certificate' => 'Certificate: 6 months - 1 year',
     'artisan' => 'Artisan: 6 months - 1 year',
-    'short course' => 'Short Course: 3 - 6 months',
+    'short course' => 'Short Unit: 3 - 6 months',
     default => 'Diploma: 1 - 2 years',
 };
 
 $entryRequirement = match (strtolower($programmeCategory)) {
     'certificate' => 'Certificate: KCSE mean grade D (plain) and above',
     'artisan' => 'Artisan: KCSE mean grade D- (minus) and above',
-    'short course' => 'Short Course: Open entry depending on course area',
+    'short course' => 'Short Unit: Open entry depending on unit area',
     default => 'Diploma: KCSE mean grade C- (minus) and above',
 };
 $overviewText = trim((string)($programmeContent['overview'] ?? ''));
@@ -42,7 +42,7 @@ $overviewDisplay = $overviewText !== ''
     ? $overviewText
     : ($programmeDescription !== ''
         ? $programmeDescription
-        : ($programmeName . ' is a people-centered course designed to equip students with the skills and knowledge needed to support individuals facing emotional, psychological, and social challenges. This programme focuses on understanding human behavior, effective communication, and practical counselling techniques that can be applied in real-life situations.'));
+        : ($programmeName . ' is a people-centered unit designed to equip students with the skills and knowledge needed to support individuals facing emotional, psychological, and social challenges. This programme focuses on understanding human behavior, effective communication, and practical counselling techniques that can be applied in real-life situations.'));
 $overviewHtml = safe_html($overviewDisplay);
 $programmeMainImage = trim((string)($settings['programme_detail_image'] ?? 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=900'));
 $programmeSidebarTitle = trim((string)($settings['programme_sidebar_title'] ?? 'Need Guidance?'));
@@ -75,7 +75,7 @@ if (!is_array($mosaicImages)) {
           <h3 class="h4 fw-bold text-primary mb-2"><?= e($programmeSidebarTitle) ?></h3>
           <p class="small text-muted"><?= e($programmeSidebarText) ?></p>
           <div class="d-grid gap-2">
-            <a class="btn btn-sm btn-primary" href="<?= e(base_url($programmeSidebarPrimaryLink . '?course=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>"><?= e($programmeSidebarPrimaryLabel) ?></a>
+            <a class="btn btn-sm btn-primary" href="<?= e(base_url($programmeSidebarPrimaryLink . '?unit=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>"><?= e($programmeSidebarPrimaryLabel) ?></a>
             <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url($programmeSidebarSecondaryLink)) ?>"><?= e($programmeSidebarSecondaryLabel) ?></a>
           </div>
         </div>
@@ -101,17 +101,17 @@ if (!is_array($mosaicImages)) {
           <div><strong>Level:</strong> <?= e($programmeCategory) ?></div>
           <div><strong>Duration:</strong> <?= e($programmeTerms) ?> terms</div>
           <div>
-            <a class="btn btn-sm btn-primary" href="<?= e(base_url('programmes/apply?course=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>">Apply Now</a>
+            <a class="btn btn-sm btn-primary" href="<?= e(base_url('programmes/apply?unit=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>">Apply Now</a>
           </div>
         </div>
 
-        <h2 class="h4 fw-bold mt-4">Course Overview</h2>
+        <h2 class="h4 fw-bold mt-4">Unit Overview</h2>
         <div class="mb-3 course-overview-content"><?= $overviewHtml ?></div>
 
         <div class="row g-3 mt-4 mb-4">
           <div class="col-lg-6">
-            <h2 class="h4 fw-bold mb-3">Course Objectives</h2>
-            <p>By the end of this course, students will be able to:</p>
+            <h2 class="h4 fw-bold mb-3">Unit Objectives</h2>
+            <p>By the end of this unit, students will be able to:</p>
             <ul class="programme-detail-bullets">
               <?php foreach (($objectives !== [] ? $objectives : [
                 'Understand human growth, behavior, and mental processes',
@@ -126,7 +126,7 @@ if (!is_array($mosaicImages)) {
           </div>
 
           <div class="col-lg-6">
-            <h2 class="h4 fw-bold mb-3">Course Content</h2>
+            <h2 class="h4 fw-bold mb-3">Unit Content</h2>
             <p>Key areas of study include:</p>
             <ul class="programme-detail-bullets">
               <?php foreach (($contentAreas !== [] ? $contentAreas : [
@@ -167,13 +167,13 @@ if (!is_array($mosaicImages)) {
           <h2 class="h5 fw-bold mb-3">Entry Requirements</h2>
           <p class="mb-3"><?= e($entryRequirement) ?></p>
           <div class="entry-card-divider"></div>
-          <h3 class="h6 fw-bold mt-3 mb-2">Duration of the Course</h3>
+          <h3 class="h6 fw-bold mt-3 mb-2">Duration of the Unit</h3>
           <p class="mb-0"><?= e($durationText) ?></p>
         </div>
       </div>
       <div class="col-md-6 col-lg-3">
         <div class="soft-card p-3 h-100">
-          <h2 class="h5 fw-bold mb-3">Why Study This Course?</h2>
+          <h2 class="h5 fw-bold mb-3">Why Study This Unit?</h2>
           <ul class="programme-detail-bullets mb-0">
             <?php foreach ($whyList as $item): ?>
               <li><?= e(plain_text($item)) ?></li>
@@ -186,7 +186,7 @@ if (!is_array($mosaicImages)) {
           <h2 class="h5 fw-bold mb-3">Ready to Join?</h2>
           <p class="mb-2"><strong>Current Intake:</strong> <?= e($currentIntake) ?></p>
           <p class="small text-muted mb-3">Applications for <?= e($currentIntake) ?> intake are ongoing.</p>
-          <a class="btn btn-primary mt-auto" href="<?= e(base_url('programmes/apply?course=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>">Apply Now</a>
+          <a class="btn btn-primary mt-auto" href="<?= e(base_url('programmes/apply?unit=' . urlencode($programmeName) . '&level=' . urlencode($programmeCategory))) ?>">Apply Now</a>
         </div>
       </div>
     </div>

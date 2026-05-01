@@ -74,7 +74,7 @@ include __DIR__ . '/../partials/page_hero.php';
                         <h3 class="h6 fw-bold mb-2 text-white"><i class="bi bi-star me-1"></i>Why Choose St. Mary's?</h3>
                         <ul class="list-unstyled mb-3 small" style="opacity:.9">
                             <li class="mb-1"><i class="bi bi-check-circle me-1"></i> Practical-based learning</li>
-                            <li class="mb-1"><i class="bi bi-check-circle me-1"></i> Market-driven courses</li>
+                            <li class="mb-1"><i class="bi bi-check-circle me-1"></i> Market-driven units</li>
                             <li class="mb-1"><i class="bi bi-check-circle me-1"></i> Supportive environment</li>
                             <li class="mb-1"><i class="bi bi-check-circle me-1"></i> Career-focused training</li>
                         </ul>

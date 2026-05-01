@@ -427,8 +427,8 @@ body.student-portal{font-family:'Roboto',sans-serif;background:var(--student-lig
     opacity: 0.9;
 }
 
-/* Course Cards */
-.course-card {
+/* Unit Cards */
+.unit-card {
     background: #fff;
     border-radius: 0.75rem;
     padding: 1.25rem;
@@ -437,38 +437,38 @@ body.student-portal{font-family:'Roboto',sans-serif;background:var(--student-lig
     transition: all 0.2s ease;
 }
 
-.course-card:hover {
+.unit-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--student-shadow);
 }
 
-.course-header {
+.unit-header {
     display: flex;
     justify-content: between;
     align-items: start;
     margin-bottom: 1rem;
 }
 
-.course-title {
+.unit-title {
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--student-primary);
     margin: 0;
 }
 
-.course-code {
+.unit-code {
     font-size: 0.875rem;
     color: #6b7280;
     margin-top: 0.25rem;
 }
 
-.course-instructor {
+.unit-instructor {
     font-size: 0.875rem;
     color: #6b7280;
     margin-bottom: 0.5rem;
 }
 
-.course-progress {
+.unit-progress {
     margin-top: 1rem;
 }
 

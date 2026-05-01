@@ -50,9 +50,9 @@ $currentIntake = (string)($currentIntake ?? 'January');
           </select>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Course Selection</label>
-          <select required name="course_selection" class="form-select">
-            <option value="">Select Course</option>
+          <label class="form-label">Unit Selection</label>
+          <select required name="unit_selection" class="form-select">
+            <option value="">Select Unit</option>
             <?php foreach ($programmes as $programme): ?>
               <option value="<?= e($programme['name']) ?>" <?= $selectedCourse === $programme['name'] ? 'selected' : '' ?>><?= e($programme['name']) ?></option>
             <?php endforeach; ?>
@@ -110,7 +110,7 @@ $currentIntake = (string)($currentIntake ?? 'January');
         </div>
 
         <div class="soft-card p-4 bg-white mt-3 application-sidebar-coral">
-          <h2 class="h6 text-uppercase text-muted mb-3">Trending Courses</h2>
+          <h2 class="h6 text-uppercase text-muted mb-3">Trending Units</h2>
           <ul class="small mb-0 ps-3">
             <?php foreach (array_slice($programmes, 0, 6) as $p): ?>
               <li class="mb-2"><a href="<?= e(base_url('programmes/' . $p['slug'])) ?>"><?= e($p['name']) ?></a></li>

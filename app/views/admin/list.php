@@ -4,6 +4,7 @@
         $columnClassMap = [
             'id' => 'col-xs',
             'name' => 'col-md',
+            'abbreviation' => 'col-sm',
             'title' => 'col-lg',
             'email' => 'col-lg',
             'phone' => 'col-sm',
@@ -66,8 +67,10 @@
                         <td class="<?= e($cellClass) ?>" title="<?= e($key === 'password' ? '' : $fullValue) ?>">
                             <?php if ((string)$k === 'password'): ?>
                                 ••••••••
-                            <?php elseif ($entity === 'programmes' && $key === 'course'): ?>
-                                <?= e(implode(' ', array_slice(explode(' ', $fullValue), 0, 3))) ?>
+                            <?php elseif ($entity === 'programmes' && $key === 'abbreviation'): ?>
+                                <td><strong><?= e((string)($row['abbreviation'] ?? '')) ?></strong></td>
+                            <?php elseif ($entity === 'programmes' && $key === 'description'): ?>
+                                <td title="<?= e($fullValue) ?>"><?= e(implode(' ', array_slice(explode(' ', $fullValue), 0, 3))) ?>...</td>
                             <?php else: ?>
                                 <?= e($fullValue) ?>
                             <?php endif; ?>

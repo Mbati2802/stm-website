@@ -18,11 +18,11 @@
                 ];
                 foreach ($clubs as $club): ?>
                 <div class="col-md-6 col-lg-4">
-                    <div class="course-card">
-                        <div class="course-header">
+                    <div class="unit-card">
+                        <div class="unit-header">
                             <div>
-                                <h5 class="course-title"><?= $club[0] ?></h5>
-                                <div class="course-code"><?= $club[1] ?></div>
+                                <h5 class="unit-title"><?= $club[0] ?></h5>
+                                <div class="unit-code"><?= $club[1] ?></div>
                             </div>
                             <?php if ($club[3]): ?>
                                 <span class="badge bg-success rounded-pill">Member</span>

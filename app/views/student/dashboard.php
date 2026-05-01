@@ -23,7 +23,7 @@
                     <i class="bi bi-book"></i>
                 </div>
                 <div class="student-stat-value">6</div>
-                <div class="student-stat-label">Active Courses</div>
+                <div class="student-stat-label">Active Units</div>
             </div>
             <div class="student-stat-card">
                 <div class="student-card-icon warning">
@@ -49,29 +49,29 @@
         </div>
 
         <div class="row">
-            <!-- Recent Courses -->
+            <!-- Recent Units -->
             <div class="col-lg-8">
                 <div class="student-card">
                     <div class="student-card-header">
                         <h4 class="student-card-title">
-                            <i class="bi bi-book me-2"></i>My Courses
+                            <i class="bi bi-book me-2"></i>My Units
                         </h4>
                         <a href="<?= e(base_url('student/courses')) ?>" class="btn btn-sm btn-outline-primary">View All</a>
                     </div>
                     
                     <?php for ($i = 1; $i <= 3; $i++): ?>
-                    <div class="course-card">
-                        <div class="course-header">
+                    <div class="unit-card">
+                        <div class="unit-header">
                             <div>
-                                <h5 class="course-title">Advanced Web Development</h5>
-                                <div class="course-code">CS<?= 300 + $i ?> - Web Technologies</div>
-                                <div class="course-instructor"><i class="bi bi-person me-1"></i>Dr. John Smith</div>
+                                <h5 class="unit-title">Advanced Web Development</h5>
+                                <div class="unit-code">CS<?= 300 + $i ?> - Web Technologies</div>
+                                <div class="unit-instructor"><i class="bi bi-person me-1"></i>Dr. John Smith</div>
                             </div>
                             <span class="badge bg-<?= $i == 1 ? 'success' : ($i == 2 ? 'warning' : 'info') ?> rounded-pill">
                                 <?= $i == 1 ? 'Active' : ($i == 2 ? 'In Progress' : 'Upcoming') ?>
                             </span>
                         </div>
-                        <div class="course-progress">
+                        <div class="unit-progress">
                             <div class="d-flex justify-content-between mb-1">
                                 <small class="text-muted">Progress</small>
                                 <small class="text-muted"><?= 60 + ($i * 10) ?>%</small>

@@ -10,18 +10,18 @@
                 $certificates = [
                     ['Student ID Card', 'Official college identification', 'bi-card-heading', true],
                     ['Academic Transcript', 'Complete academic record', 'bi-file-earmark-text', true],
-                    ['Course Completion Certificate', 'Semester 1 completion', 'bi-award', true],
+                    ['Unit Completion Certificate', 'Semester 1 completion', 'bi-award', true],
                     ['Internship Certificate', 'Summer internship 2023', 'bi-briefcase', true],
                     ['Attendance Certificate', 'Excellent attendance record', 'bi-calendar-check', false],
                     ['Scholarship Certificate', 'Merit-based scholarship', 'bi-trophy', false],
                 ];
                 foreach ($certificates as $cert): ?>
                 <div class="col-md-6 col-lg-4">
-                    <div class="course-card">
-                        <div class="course-header">
+                    <div class="unit-card">
+                        <div class="unit-header">
                             <div>
-                                <h5 class="course-title"><?= $cert[0] ?></h5>
-                                <div class="course-code"><?= $cert[1] ?></div>
+                                <h5 class="unit-title"><?= $cert[0] ?></h5>
+                                <div class="unit-code"><?= $cert[1] ?></div>
                             </div>
                             <?php if ($cert[3]): ?>
                                 <span class="badge bg-success rounded-pill">Available</span>

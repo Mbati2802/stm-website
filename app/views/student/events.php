@@ -25,12 +25,12 @@
                 ];
                 foreach ($events as $event): ?>
                 <div class="col-md-6 col-lg-4">
-                    <div class="course-card">
-                        <div class="course-header">
+                    <div class="unit-card">
+                        <div class="unit-header">
                             <div>
-                                <h5 class="course-title"><?= $event[0] ?></h5>
-                                <div class="course-code"><i class="bi bi-calendar me-1"></i><?= $event[1] ?></div>
-                                <div class="course-instructor"><i class="bi bi-geo-alt me-1"></i><?= $event[2] ?></div>
+                                <h5 class="unit-title"><?= $event[0] ?></h5>
+                                <div class="unit-code"><i class="bi bi-calendar me-1"></i><?= $event[1] ?></div>
+                                <div class="unit-instructor"><i class="bi bi-geo-alt me-1"></i><?= $event[2] ?></div>
                             </div>
                             <span class="badge bg-<?= $event[3] === 'upcoming' ? 'success' : 'secondary' ?> rounded-pill"><?= $event[3] === 'upcoming' ? 'Upcoming' : 'Past' ?></span>
                         </div>

@@ -11,7 +11,7 @@ $toggleItems = [
     'show_home_cards' => 'Show Home Intro Cards',
     'show_home_banner' => 'Show Home Banner Image',
     'show_home_why' => 'Show Why Choose Us',
-    'show_home_courses' => 'Show Courses On Offer',
+    'show_home_courses' => 'Show Units On Offer',
     'show_home_testimonials' => 'Show Testimonials',
     'show_home_events' => 'Show Events',
     'show_home_news' => 'Show Latest News',
@@ -47,9 +47,9 @@ $manageableEntities = [
     'pages' => 'Pages',
     'messages' => 'Messages',
     'students' => 'Students',
-    'portal_courses' => 'Portal Courses',
+    'portal_courses' => 'Portal Units',
     'programme_timetables' => 'Programme Timetables',
-    'course_grades' => 'Course Grades',
+    'course_grades' => 'Unit Grades',
     'grading_schemes' => 'Grading Schemes',
     'course_assignments' => 'Assignments',
     'study_materials' => 'Study Materials',
@@ -698,7 +698,7 @@ usort($defaultSnapshotCards, static function (array $a, array $b) use ($layoutMa
                             </div>
                         </div>
                         <div class="alert alert-info small mb-3">
-                            Manage "Courses | Programmes On Offer" card images using <strong>Home Programme Images JSON</strong> or <strong>Upload Programme Card Images</strong>. These are separate from the details page image above.
+                            Manage "Units | Programmes On Offer" card images using <strong>Home Programme Images JSON</strong> or <strong>Upload Programme Card Images</strong>. These are separate from the details page image above.
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Home Extra Sections JSON</label>

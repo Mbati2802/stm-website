@@ -11,7 +11,7 @@
                     <table class="table align-middle admin-table">
                         <thead>
                             <tr>
-                                <th>Course</th>
+                                <th>Unit</th>
                                 <th>Title</th>
                                 <th>Summary</th>
                                 <th>File</th>

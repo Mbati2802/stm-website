@@ -117,11 +117,11 @@ a{text-decoration:none}
 .teaching-strip-section .split-title .title-secondary{color:var(--secondary)!important}
 .teaching-strip-section .btn-outline-primary{color:var(--secondary);border-color:var(--secondary)}
 .teaching-strip-section .btn-outline-primary:hover{background:var(--secondary);color:#fff}
-.teaching-strip-section .course-card{min-height:300px}
-.teaching-strip-section .course-card .card-body{height:auto;padding-bottom:.55rem}
-.course-card{min-height:360px;display:flex;flex-direction:column}
-.course-card-image{height:190px;object-fit:cover}
-.course-card .card-body{flex:1;display:flex;flex-direction:column}
+.teaching-strip-section .unit-card{min-height:300px}
+.teaching-strip-section .unit-card .card-body{height:auto;padding-bottom:.55rem}
+.unit-card{min-height:360px;display:flex;flex-direction:column}
+.unit-card-image{height:190px;object-fit:cover}
+.unit-card .card-body{flex:1;display:flex;flex-direction:column}
 .link-arrow{
     color:var(--primary);
     font-weight:600;
