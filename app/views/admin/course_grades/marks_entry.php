@@ -52,15 +52,6 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Grading System (Optional)</label>
-                    <select class="form-select" id="gradingSystemFilter">
-                        <option value="">Select grading system</option>
-                        <?php foreach ($gradingSystems ?? [] as $gradingSystem): ?>
-                        <option value="<?= e((string)$gradingSystem['id']) ?>"><?= e($gradingSystem['name']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
             </form>
         </div>
     </div>
