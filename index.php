@@ -155,6 +155,7 @@ $router->add('POST', 'admin/semester/term/delete', [SemesterController::class, '
 $router->add('POST', 'admin/semester/intake/create', [SemesterController::class, 'createIntake']);
 $router->add('POST', 'admin/semester/intake/edit', [SemesterController::class, 'editIntake']);
 $router->add('POST', 'admin/semester/intake/delete', [SemesterController::class, 'deleteIntake']);
+$router->add('GET', 'admin/semester/terms', [SemesterController::class, 'getTerms']);
 $router->add('POST', 'admin/grading/exam-type/create', [GradingController::class, 'createExamType']);
 $router->add('POST', 'admin/grading/exam-type/edit', [GradingController::class, 'editExamType']);
 $router->add('POST', 'admin/grading/exam-type/delete', [GradingController::class, 'deleteExamType']);
@@ -165,6 +166,9 @@ $router->add('POST', 'admin/grading/grade-range/add', [GradingController::class,
 $router->add('POST', 'admin/grading/grade-range/edit', [GradingController::class, 'editGradeRange']);
 $router->add('POST', 'admin/grading/grade-range/delete', [GradingController::class, 'deleteGradeRange']);
 $router->add('GET', 'admin/grading/grade-ranges', [GradingController::class, 'getGradeRanges']);
+$router->add('GET', 'admin/grading/exam-types', [GradingController::class, 'getExamTypes']);
+$router->add('GET', 'admin/students/by-enrollment', [AdminContentController::class, 'getStudentsByEnrollment']);
+$router->add('POST', 'admin/course-grades/bulk-save', [AdminContentController::class, 'bulkSaveCourseGrades']);
 $router->add('GET', 'admin/grading/calculate-grade', [GradingController::class, 'calculateGrade']);
 $router->add('GET', 'admin/media', [AdminContentController::class, 'mediaLibrary']);
 $router->add('POST', 'admin/media/upload', [AdminContentController::class, 'uploadMedia']);

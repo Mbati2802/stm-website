@@ -1722,39 +1722,15 @@ class AdminContentController extends Controller
                 $stmt->execute($stmtData);
                 break;
             case 'course_grades':
-                $stmtData = [
-                    'student_id' => (int)($_POST['student_id'] ?? 0),
-                    'course_id' => (int)($_POST['course_id'] ?? 0),
-                    'grade' => trim($_POST['grade'] ?? ''),
-                    'marks' => (($_POST['marks'] ?? '') !== '') ? (float)$_POST['marks'] : null,
-                    'remarks' => trim($_POST['remarks'] ?? ''),
-                ];
-                $gradingSystemId = (int)($_POST['grading_system_id'] ?? 0);
-                if ($gradingSystemId > 0) {
-                    $stmtData['grading_system_id'] = $gradingSystemId;
-                    $gradeLookup = $pdo->prepare('SELECT grade_letter FROM grade_ranges WHERE grading_system_id = :id AND :marks >= min_marks AND :marks <= max_marks LIMIT 1');
-                    $gradeLookup->execute(['id' => $stmtData['grading_system_id'], 'marks' => $stmtData['marks']]);
-                    $gradeResult = $gradeLookup->fetch(PDO::FETCH_ASSOC);
-                    if ($gradeResult) {
-                        $stmtData['grade'] = $gradeResult['grade_letter'];
-                    } else {
-                        // Try to find the default grading system for the course's exam type
-                        $gradeLookup = $pdo->prepare('SELECT gr.grade_letter FROM grade_ranges gr JOIN grading_systems gs ON gr.grading_system_id = gs.id WHERE gs.is_default = 1 AND :marks >= gr.min_marks AND :marks <= gr.max_marks LIMIT 1');
-                        $gradeLookup->execute(['marks' => $stmtData['marks']]);
-                        $gradeResult = $gradeLookup->fetch(PDO::FETCH_ASSOC);
-                        if ($gradeResult) {
-                            $stmtData['grade'] = $gradeResult['grade_letter'];
-                        }
-                    }
-                }
-                if ($id > 0) {
-                    $stmt = $pdo->prepare('UPDATE course_grades SET student_id=:student_id, course_id=:course_id, grade=:grade, marks=:marks, grading_system_id=:grading_system_id, remarks=:remarks WHERE id=:id');
-                    $stmtData['id'] = $id;
-                } else {
-                    $stmt = $pdo->prepare('INSERT INTO course_grades(student_id, course_id, grade, marks, grading_system_id, remarks, created_at) VALUES(:student_id, :course_id, :grade, :marks, :grading_system_id, :remarks, NOW())');
-                }
-                $stmt->execute($stmtData);
-                break;
+                $relations = $this->buildFormRelations();
+                $this->view('admin/course_grades/marks_entry', [
+                    'metaTitle' => 'Marks Entry',
+                    'programmes' => $relations['programmes'],
+                    'academicSessions' => $relations['academicSessions'],
+                    'terms' => $relations['terms'],
+                    'gradingSystems' => $relations['gradingSystems'],
+                ]);
+                return;
             case 'course_assignments':
                 $file = $this->uploadFile('file_path', ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'], 'assignments');
                 $dueRaw = trim($_POST['due_at'] ?? '');
@@ -2070,7 +2046,136 @@ class AdminContentController extends Controller
         return $mode === 'view' ? Auth::canViewEntity($entity) : Auth::canManageEntity($entity);
     }
 
-    private function buildFormRelations(): array
+    public function getStudentsByEnrollment(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canViewEntity('students')) {
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+
+        $programmeId = (int)($_GET['programme_id'] ?? 0);
+        $sessionId = (int)($_GET['session_id'] ?? 0);
+        $termId = (int)($_GET['term_id'] ?? 0);
+
+        if ($programmeId === 0 || $sessionId === 0 || $termId === 0) {
+            echo json_encode(['error' => 'Invalid parameters']);
+            return;
+        }
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('
+                SELECT s.id, s.name, s.admission_number 
+                FROM students s
+                JOIN student_enrollments se ON s.id = se.student_id
+                WHERE se.programme_id = ? 
+                AND se.academic_session_id = ? 
+                AND se.term_id = ? 
+                AND se.status = "active"
+                ORDER BY s.name ASC
+            ');
+            $stmt->execute([$programmeId, $sessionId, $termId]);
+            $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode($students);
+        } catch (PDOException $e) {
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function bulkSaveCourseGrades(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('course_grades')) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $marks = $data['marks'] ?? [];
+
+        if (empty($marks)) {
+            echo json_encode(['success' => false, 'message' => 'No marks provided']);
+            return;
+        }
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $pdo->beginTransaction();
+
+            foreach ($marks as $mark) {
+                // Check if grade already exists
+                $checkStmt = $pdo->prepare('
+                    SELECT id FROM course_grades 
+                    WHERE student_id = ? 
+                    AND course_id = ? 
+                    AND exam_type_id = ? 
+                    AND academic_session_id = ? 
+                    AND term_id = ?
+                    LIMIT 1
+                ');
+                $checkStmt->execute([
+                    $mark['student_id'],
+                    $mark['course_id'],
+                    $mark['exam_type_id'],
+                    $mark['academic_session_id'],
+                    $mark['term_id']
+                ]);
+                $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+                // Calculate grade based on marks
+                $gradeLookup = $pdo->prepare('SELECT grade_letter FROM grade_ranges WHERE grading_system_id = ? AND ? >= min_marks AND ? <= max_marks LIMIT 1');
+                $gradeLookup->execute([$mark['grading_system_id'], $mark['marks'], $mark['marks']]);
+                $gradeResult = $gradeLookup->fetch(PDO::FETCH_ASSOC);
+                $grade = $gradeResult['grade_letter'] ?? null;
+
+                if ($existing) {
+                    // Update existing grade
+                    $updateStmt = $pdo->prepare('
+                        UPDATE course_grades 
+                        SET marks = ?, grade = ?, grading_system_id = ? 
+                        WHERE id = ?
+                    ');
+                    $updateStmt->execute([
+                        $mark['marks'],
+                        $grade,
+                        $mark['grading_system_id'],
+                        $existing['id']
+                    ]);
+                } else {
+                    // Insert new grade
+                    $insertStmt = $pdo->prepare('
+                        INSERT INTO course_grades 
+                        (student_id, course_id, exam_type_id, academic_session_id, term_id, marks, grade, grading_system_id, created_at) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                    ');
+                    $insertStmt->execute([
+                        $mark['student_id'],
+                        $mark['course_id'],
+                        $mark['exam_type_id'],
+                        $mark['academic_session_id'],
+                        $mark['term_id'],
+                        $mark['marks'],
+                        $grade,
+                        $mark['grading_system_id']
+                    ]);
+                }
+            }
+
+            $pdo->commit();
+            echo json_encode(['success' => true, 'message' => 'Marks saved successfully']);
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            echo json_encode(['success' => false, 'message' => 'Failed to save marks: ' . $e->getMessage()]);
+        }
+    }
+
+    public function buildFormRelations(): array
     {
         $model = new ContentModel($this->config);
         $programmes = $model->all('programmes');
@@ -2081,6 +2186,15 @@ class AdminContentController extends Controller
         $pdo = Database::getInstance($this->config['db']);
         $stmt = $pdo->query('SELECT gs.*, et.name as exam_type_name FROM grading_systems gs LEFT JOIN exam_types et ON gs.exam_type_id = et.id ORDER BY gs.id ASC');
         $gradingSystems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get academic sessions
+        $stmt = $pdo->query('SELECT * FROM academic_sessions ORDER BY start_date DESC');
+        $academicSessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get terms
+        $stmt = $pdo->query('SELECT t.*, s.name as session_name FROM terms t LEFT JOIN academic_sessions s ON t.academic_session_id = s.id ORDER BY s.start_date DESC, t.start_date ASC');
+        $terms = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
         $settings = $model->getSettings();
 
         return [
@@ -2089,6 +2203,8 @@ class AdminContentController extends Controller
             'students' => $students,
             'teachers' => $teachers,
             'gradingSystems' => $gradingSystems,
+            'academicSessions' => $academicSessions,
+            'terms' => $terms,
             'siteSettings' => $settings,
         ];
     }

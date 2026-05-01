@@ -358,4 +358,28 @@ class SemesterController extends Controller
 
         $this->redirect('admin/semester');
     }
+
+    public function getTerms(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canViewEntity('settings')) {
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+
+        $sessionId = (int)($_GET['session_id'] ?? 0);
+        if ($sessionId === 0) {
+            echo json_encode(['error' => 'Invalid session ID']);
+            return;
+        }
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('SELECT * FROM terms WHERE academic_session_id = ? ORDER BY start_date ASC');
+            $stmt->execute([$sessionId]);
+            echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (PDOException $e) {
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
 }

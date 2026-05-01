@@ -375,4 +375,44 @@ class GradingController extends Controller
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
+
+    public function getExamTypes(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canViewEntity('settings')) {
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+
+        $gradingSystemId = (int)($_GET['grading_system_id'] ?? 0);
+        if ($gradingSystemId === 0) {
+            echo json_encode(['error' => 'Invalid grading system ID']);
+            return;
+        }
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('SELECT * FROM exam_types WHERE id = (SELECT exam_type_id FROM grading_systems WHERE id = ?)');
+            $stmt->execute([$gradingSystemId]);
+            $examType = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($examType && $examType['type'] === 'consolidated') {
+                // For consolidated exams, get parent exam types
+                $parentIds = json_decode($examType['parent_exam_ids'] ?? '[]', true);
+                if (!empty($parentIds)) {
+                    $placeholders = str_repeat('?,', count($parentIds) - 1) . '?';
+                    $stmt = $pdo->prepare("SELECT * FROM exam_types WHERE id IN ($placeholders)");
+                    $stmt->execute($parentIds);
+                    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+                } else {
+                    echo json_encode([]);
+                }
+            } else {
+                // For single exams, return the exam type itself
+                echo json_encode([$examType]);
+            }
+        } catch (PDOException $e) {
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
 }
