@@ -346,6 +346,7 @@ function confirmDelete(type, id) {
 
 // Session Modal
 const sessionModal = document.getElementById('sessionModal');
+const sessionForm = sessionModal?.querySelector('form');
 if (sessionModal) {
     sessionModal.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
@@ -358,6 +359,9 @@ if (sessionModal) {
             document.getElementById('sessionEndDate').value = button.getAttribute('data-end-date');
             document.getElementById('sessionIsCurrent').checked = button.getAttribute('data-is-current') === '1';
             document.getElementById('sessionDescription').value = button.getAttribute('data-description') || '';
+            if (sessionForm) {
+                sessionForm.action = '<?= e(base_url('admin/semester/session/edit')) ?>';
+            }
         } else {
             document.getElementById('sessionModalTitle').textContent = 'Add Academic Session';
             document.getElementById('sessionId').value = '';
@@ -367,12 +371,16 @@ if (sessionModal) {
             document.getElementById('sessionEndDate').value = '';
             document.getElementById('sessionIsCurrent').checked = false;
             document.getElementById('sessionDescription').value = '';
+            if (sessionForm) {
+                sessionForm.action = '<?= e(base_url('admin/semester/session/create')) ?>';
+            }
         }
     });
 }
 
 // Term Modal
 const termModal = document.getElementById('termModal');
+const termForm = termModal?.querySelector('form');
 if (termModal) {
     termModal.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
@@ -385,6 +393,9 @@ if (termModal) {
             document.getElementById('termStartDate').value = button.getAttribute('data-start-date');
             document.getElementById('termEndDate').value = button.getAttribute('data-end-date');
             document.getElementById('termIsCurrent').checked = button.getAttribute('data-is-current') === '1';
+            if (termForm) {
+                termForm.action = '<?= e(base_url('admin/semester/term/edit')) ?>';
+            }
         } else {
             document.getElementById('termModalTitle').textContent = 'Add Term';
             document.getElementById('termId').value = '';
@@ -394,12 +405,16 @@ if (termModal) {
             document.getElementById('termStartDate').value = '';
             document.getElementById('termEndDate').value = '';
             document.getElementById('termIsCurrent').checked = false;
+            if (termForm) {
+                termForm.action = '<?= e(base_url('admin/semester/term/create')) ?>';
+            }
         }
     });
 }
 
 // Intake Modal
 const intakeModal = document.getElementById('intakeModal');
+const intakeForm = intakeModal?.querySelector('form');
 if (intakeModal) {
     intakeModal.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
@@ -411,6 +426,9 @@ if (intakeModal) {
             document.getElementById('intakeStartDate').value = button.getAttribute('data-start-date');
             document.getElementById('intakeEndDate').value = button.getAttribute('data-end-date') || '';
             document.getElementById('intakeDescription').value = button.getAttribute('data-description') || '';
+            if (intakeForm) {
+                intakeForm.action = '<?= e(base_url('admin/semester/intake/edit')) ?>';
+            }
         } else {
             document.getElementById('intakeModalTitle').textContent = 'Add Intake';
             document.getElementById('intakeId').value = '';
@@ -419,6 +437,9 @@ if (intakeModal) {
             document.getElementById('intakeStartDate').value = '';
             document.getElementById('intakeEndDate').value = '';
             document.getElementById('intakeDescription').value = '';
+            if (intakeForm) {
+                intakeForm.action = '<?= e(base_url('admin/semester/intake/create')) ?>';
+            }
         }
     });
 }
