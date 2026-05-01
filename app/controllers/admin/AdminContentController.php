@@ -2206,7 +2206,7 @@ class AdminContentController extends Controller
         $academicYears = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Get terms
-        $stmt = $pdo->query('SELECT t.*, ay.name as year_name FROM terms t LEFT JOIN academic_years ay ON t.academic_session_id = ay.id ORDER BY ay.start_date DESC, t.start_date ASC');
+        $stmt = $pdo->query('SELECT t.*, ay.name as year_name FROM terms t LEFT JOIN academic_years ay ON t.academic_year_id = ay.id ORDER BY ay.start_date DESC, t.start_date ASC');
         $terms = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Get sessions
@@ -2225,6 +2225,7 @@ class AdminContentController extends Controller
             'academicSessions' => $academicYears, // Keep for backward compatibility
             'terms' => $terms,
             'sessions' => $sessions,
+            'studentSessions' => $sessions, // For marks entry page
             'siteSettings' => $settings,
         ];
     }

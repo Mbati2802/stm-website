@@ -380,7 +380,7 @@ class SemesterController extends Controller
 
         try {
             $pdo = Database::getInstance($this->config['db']);
-            $stmt = $pdo->prepare('SELECT * FROM terms WHERE academic_session_id = ? ORDER BY start_date ASC');
+            $stmt = $pdo->prepare('SELECT * FROM terms WHERE academic_year_id = ? ORDER BY start_date ASC');
             $stmt->execute([$sessionId]);
             echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
         } catch (PDOException $e) {

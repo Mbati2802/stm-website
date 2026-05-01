@@ -10,7 +10,7 @@
     <div class="card mb-4">
         <div class="card-body">
             <form id="marksFilterForm" class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Programme</label>
                     <select class="form-select" id="programmeFilter" required>
                         <option value="">Select programme</option>
@@ -19,7 +19,7 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Academic Year</label>
                     <select class="form-select" id="sessionFilter" required>
                         <option value="">Select year</option>
@@ -28,10 +28,19 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Term</label>
                     <select class="form-select" id="termFilter" required>
                         <option value="">Select term</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Session</label>
+                    <select class="form-select" id="studentSessionFilter" required>
+                        <option value="">Select session</option>
+                        <?php foreach ($studentSessions ?? [] as $session): ?>
+                        <option value="<?= e((string)$session['id']) ?>"><?= e($session['name']) ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
             </form>
@@ -95,19 +104,21 @@ document.getElementById('sessionFilter').addEventListener('change', function() {
 // Auto-load students when any filter changes
 document.getElementById('programmeFilter').addEventListener('change', checkAndLoadStudents);
 document.getElementById('termFilter').addEventListener('change', checkAndLoadStudents);
+document.getElementById('studentSessionFilter').addEventListener('change', checkAndLoadStudents);
 
 function checkAndLoadStudents() {
     const programmeId = document.getElementById('programmeFilter').value;
     const sessionId = document.getElementById('sessionFilter').value;
     const termId = document.getElementById('termFilter').value;
+    const studentSessionId = document.getElementById('studentSessionFilter').value;
     
-    if (programmeId && sessionId && termId) {
-        loadStudents(programmeId, sessionId, termId);
+    if (programmeId && sessionId && termId && studentSessionId) {
+        loadStudents(programmeId, sessionId, termId, studentSessionId);
     }
 }
 
-function loadStudents(programmeId, sessionId, termId) {
-    fetch(`<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}`)
+function loadStudents(programmeId, sessionId, termId, studentSessionId) {
+    fetch(`<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}&session_id=${studentSessionId}`)
         .then(response => response.json())
         .then(data => {
             renderMarksTable(data);
