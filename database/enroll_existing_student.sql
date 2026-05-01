@@ -2,7 +2,7 @@
 -- Run this in phpMyAdmin
 
 -- First, get the student ID
-SELECT id, name FROM students LIMIT 1;
+SELECT id, name FROM student_accounts LIMIT 1;
 
 -- Replace X with your student ID from above, then run:
 INSERT INTO student_enrollments 

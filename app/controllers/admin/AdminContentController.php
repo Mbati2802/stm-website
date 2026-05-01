@@ -2091,9 +2091,9 @@ class AdminContentController extends Controller
             
             // Build query with optional session filter
             $sql = '
-                SELECT s.id, s.name, s.admission_number 
-                FROM students s
-                JOIN student_enrollments se ON s.id = se.student_id
+                SELECT sa.id, sa.name, sa.admission_number 
+                FROM student_accounts sa
+                JOIN student_enrollments se ON sa.id = se.student_id
                 WHERE se.programme_id = ? 
                 AND se.academic_session_id = ? 
                 AND se.term_id = ? 
