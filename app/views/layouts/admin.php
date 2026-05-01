@@ -309,29 +309,14 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     /* --- Sidebar accordion behavior --- */
-    const navGroupHeaders = document.querySelectorAll('.admin-nav-group-header');
-    navGroupHeaders.forEach(header => {
-        header.addEventListener('click', function() {
-            const targetId = this.getAttribute('data-bs-target');
-            if (!targetId) return;
-            const targetCollapse = document.querySelector(targetId);
-            if (!targetCollapse) return;
-
-            if (targetCollapse.classList.contains('show')) {
-                return;
-            }
-
-            navGroupHeaders.forEach(otherHeader => {
-                if (otherHeader === header) return;
-                const otherTargetId = otherHeader.getAttribute('data-bs-target');
-                if (!otherTargetId) return;
-                const otherCollapse = document.querySelector(otherTargetId);
-                if (otherCollapse && otherCollapse.classList.contains('show')) {
-                    const bsCollapse = bootstrap.Collapse.getInstance(otherCollapse);
+    const sidebarCollapses = document.querySelectorAll('.admin-nav-group .collapse');
+    sidebarCollapses.forEach(collapse => {
+        collapse.addEventListener('show.bs.collapse', function() {
+            sidebarCollapses.forEach(other => {
+                if (other !== this && other.classList.contains('show')) {
+                    const bsCollapse = bootstrap.Collapse.getInstance(other);
                     if (bsCollapse) {
                         bsCollapse.hide();
-                    } else {
-                        otherCollapse.classList.remove('show');
                     }
                 }
             });
