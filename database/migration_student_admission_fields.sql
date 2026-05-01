@@ -20,8 +20,5 @@ ALTER TABLE `student_accounts` ADD COLUMN `disability_status` ENUM('None', 'Phys
 ALTER TABLE `student_accounts` ADD COLUMN `referral_source` VARCHAR(255) NULL AFTER `disability_status`;
 ALTER TABLE `student_accounts` ADD COLUMN `additional_notes` TEXT NULL AFTER `referral_source`;
 
--- Add foreign key for programme_id (may fail if already exists - ignore if it fails)
-ALTER TABLE `student_accounts` 
-ADD CONSTRAINT `fk_student_accounts_programme` 
-FOREIGN KEY (`programme_id`) REFERENCES `programmes`(`id`) 
-ON DELETE SET NULL ON UPDATE CASCADE;
+-- Foreign key constraint already exists, skipping
+
