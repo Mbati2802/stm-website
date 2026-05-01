@@ -49,10 +49,6 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-primary w-100">Load Students</button>
-                </div>
             </form>
         </div>
     </div>
@@ -86,7 +82,7 @@
 
 <script>
 let examTypes = [];
-let courseId = 0;
+let unitId = 0;
 
 // Load units when programme is selected
 document.getElementById('programmeFilter').addEventListener('change', function() {
@@ -104,6 +100,7 @@ document.getElementById('programmeFilter').addEventListener('change', function()
     } else {
         document.getElementById('unitFilter').innerHTML = '<option value="">Select unit</option>';
     }
+    checkAndLoadStudents();
 });
 
 // Load terms when session is selected
@@ -122,31 +119,31 @@ document.getElementById('sessionFilter').addEventListener('change', function() {
     } else {
         document.getElementById('termFilter').innerHTML = '<option value="">Select term</option>';
     }
+    checkAndLoadStudents();
 });
 
-// Load students and exam types when form is submitted
-document.getElementById('marksFilterForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
+// Auto-load students when any filter changes
+document.getElementById('unitFilter').addEventListener('change', checkAndLoadStudents);
+document.getElementById('termFilter').addEventListener('change', checkAndLoadStudents);
+document.getElementById('gradingSystemFilter').addEventListener('change', checkAndLoadStudents);
+
+function checkAndLoadStudents() {
     const programmeId = document.getElementById('programmeFilter').value;
     const courseId = document.getElementById('unitFilter').value;
     const sessionId = document.getElementById('sessionFilter').value;
     const termId = document.getElementById('termFilter').value;
     const gradingSystemId = document.getElementById('gradingSystemFilter').value;
     
-    if (!programmeId || !courseId || !sessionId || !termId || !gradingSystemId) {
-        alert('Please select all filters');
-        return;
+    if (programmeId && courseId && sessionId && termId && gradingSystemId) {
+        // Load exam types from grading system
+        fetch(`<?= e(base_url('admin/grading/exam-types')) ?>?grading_system_id=${gradingSystemId}`)
+            .then(response => response.json())
+            .then(data => {
+                examTypes = data;
+                loadStudents(programmeId, courseId, sessionId, termId);
+            });
     }
-    
-    // Load exam types from grading system
-    fetch(`<?= e(base_url('admin/grading/exam-types')) ?>?grading_system_id=${gradingSystemId}`)
-        .then(response => response.json())
-        .then(data => {
-            examTypes = data;
-            loadStudents(programmeId, courseId, sessionId, termId);
-        });
-});
+}
 
 function loadStudents(programmeId, courseId, sessionId, termId) {
     fetch(`<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}`)
