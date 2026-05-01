@@ -10,7 +10,7 @@
     <div class="card mb-4">
         <div class="card-body">
             <form id="marksFilterForm" class="row g-3">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="form-label">Programme</label>
                     <select class="form-select" id="programmeFilter" required>
                         <option value="">Select programme</option>
@@ -19,13 +19,7 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Unit</label>
-                    <select class="form-select" id="unitFilter" required>
-                        <option value="">Select unit</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="form-label">Academic Year</label>
                     <select class="form-select" id="sessionFilter" required>
                         <option value="">Select year</option>
@@ -34,19 +28,10 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="form-label">Term</label>
                     <select class="form-select" id="termFilter" required>
                         <option value="">Select term</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Grading System</label>
-                    <select class="form-select" id="gradingSystemFilter" required>
-                        <option value="">Select grading system</option>
-                        <?php foreach ($gradingSystems ?? [] as $system): ?>
-                        <option value="<?= e((string)$system['id']) ?>"><?= e($system['name']) ?></option>
-                        <?php endforeach; ?>
                     </select>
                 </div>
             </form>
@@ -81,27 +66,12 @@
 </div>
 
 <script>
-let examTypes = [];
-let unitId = 0;
-
-// Load units when programme is selected
-document.getElementById('programmeFilter').addEventListener('change', function() {
-    const programmeId = this.value;
-    if (programmeId) {
-        fetch(`<?= e(base_url('admin/list/portal_courses')) ?>?programme_id=${programmeId}`)
-            .then(response => response.json())
-            .then(data => {
-                const unitSelect = document.getElementById('unitFilter');
-                unitSelect.innerHTML = '<option value="">Select unit</option>';
-                data.forEach(course => {
-                    unitSelect.innerHTML += `<option value="${course.id}">${course.code} - ${course.title}</option>`;
-                });
-            });
-    } else {
-        document.getElementById('unitFilter').innerHTML = '<option value="">Select unit</option>';
-    }
-    checkAndLoadStudents();
-});
+// Hardcoded exam types (CAT, Assignment, etc.)
+const examTypes = [
+    { id: 'cat', name: 'CAT' },
+    { id: 'assignment', name: 'Assignment' },
+    { id: 'exam', name: 'Exam' }
+];
 
 // Load terms when session is selected
 document.getElementById('sessionFilter').addEventListener('change', function() {
@@ -115,37 +85,28 @@ document.getElementById('sessionFilter').addEventListener('change', function() {
                 data.forEach(term => {
                     termSelect.innerHTML += `<option value="${term.id}" ${term.is_current ? 'selected' : ''}>${term.name}</option>`;
                 });
+                checkAndLoadStudents();
             });
     } else {
         document.getElementById('termFilter').innerHTML = '<option value="">Select term</option>';
     }
-    checkAndLoadStudents();
 });
 
 // Auto-load students when any filter changes
-document.getElementById('unitFilter').addEventListener('change', checkAndLoadStudents);
+document.getElementById('programmeFilter').addEventListener('change', checkAndLoadStudents);
 document.getElementById('termFilter').addEventListener('change', checkAndLoadStudents);
-document.getElementById('gradingSystemFilter').addEventListener('change', checkAndLoadStudents);
 
 function checkAndLoadStudents() {
     const programmeId = document.getElementById('programmeFilter').value;
-    const courseId = document.getElementById('unitFilter').value;
     const sessionId = document.getElementById('sessionFilter').value;
     const termId = document.getElementById('termFilter').value;
-    const gradingSystemId = document.getElementById('gradingSystemFilter').value;
     
-    if (programmeId && courseId && sessionId && termId && gradingSystemId) {
-        // Load exam types from grading system
-        fetch(`<?= e(base_url('admin/grading/exam-types')) ?>?grading_system_id=${gradingSystemId}`)
-            .then(response => response.json())
-            .then(data => {
-                examTypes = data;
-                loadStudents(programmeId, courseId, sessionId, termId);
-            });
+    if (programmeId && sessionId && termId) {
+        loadStudents(programmeId, sessionId, termId);
     }
 }
 
-function loadStudents(programmeId, courseId, sessionId, termId) {
+function loadStudents(programmeId, sessionId, termId) {
     fetch(`<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}`)
         .then(response => response.json())
         .then(data => {
@@ -158,7 +119,7 @@ function renderMarksTable(students) {
     const body = document.getElementById('marksTableBody');
     
     // Build header with exam types
-    let headerHTML = '<th>Student</th><th>Admission No.</th>';
+    let headerHTML = '<th>Admission No.</th><th>Student Name</th>';
     examTypes.forEach(type => {
         headerHTML += `<th>${type.name}</th>`;
     });
@@ -170,8 +131,8 @@ function renderMarksTable(students) {
     students.forEach(student => {
         let rowHTML = `
             <tr data-student-id="${student.id}">
-                <td>${student.name}</td>
                 <td>${student.admission_number || 'N/A'}</td>
+                <td>${student.name}</td>
         `;
         
         examTypes.forEach(type => {
@@ -216,21 +177,19 @@ function calculateTotalAndGrade(e) {
     
     row.querySelector('.total-marks').textContent = total.toFixed(2);
     
-    // Calculate grade based on total
-    const gradingSystemId = document.getElementById('gradingSystemFilter').value;
-    fetch(`<?= e(base_url('admin/grading/calculate-grade')) ?>?grading_system_id=${gradingSystemId}&marks=${total}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                row.querySelector('.grade-display').textContent = data.data.grade_letter;
-            }
-        });
+    // Simple grade calculation (can be customized)
+    let grade = '-';
+    if (total >= 70) grade = 'A';
+    else if (total >= 60) grade = 'B';
+    else if (total >= 50) grade = 'C';
+    else if (total >= 40) grade = 'D';
+    else if (total > 0) grade = 'F';
+    
+    row.querySelector('.grade-display').textContent = grade;
 }
 
 // Save all marks
 document.getElementById('saveAllMarks').addEventListener('click', function() {
-    const courseId = document.getElementById('unitFilter').value;
-    const gradingSystemId = document.getElementById('gradingSystemFilter').value;
     const sessionId = document.getElementById('sessionFilter').value;
     const termId = document.getElementById('termFilter').value;
     
@@ -243,9 +202,7 @@ document.getElementById('saveAllMarks').addEventListener('click', function() {
             if (marks) {
                 marksData.push({
                     student_id: studentId,
-                    course_id: courseId,
                     exam_type_id: examTypeId,
-                    grading_system_id: gradingSystemId,
                     marks: marks,
                     academic_session_id: sessionId,
                     term_id: termId
