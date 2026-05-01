@@ -838,6 +838,183 @@ class AdminContentController extends Controller
         $this->redirect('admin/students');
     }
 
+    public function viewStudent(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canViewEntity('students')) {
+            $this->redirect('admin');
+        }
+
+        $studentId = (int)($_GET['id'] ?? 0);
+        $portalModel = new StudentPortalModel($this->config);
+        $student = $portalModel->findStudentById($studentId);
+
+        if ($student === null) {
+            echo '<p class="text-danger">Student not found.</p>';
+            return;
+        }
+
+        $contentModel = new ContentModel($this->config);
+        $programme = null;
+        if (!empty($student['programme_id'])) {
+            $programme = $contentModel->getProgrammeById((int)$student['programme_id']);
+        }
+
+        $this->view('admin/student_details', [
+            'student' => $student,
+            'programme' => $programme,
+        ]);
+    }
+
+    public function editStudentForm(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+        }
+
+        $studentId = (int)($_GET['id'] ?? 0);
+        $portalModel = new StudentPortalModel($this->config);
+        $student = $portalModel->findStudentById($studentId);
+
+        if ($student === null) {
+            echo '<p class="text-danger">Student not found.</p>';
+            return;
+        }
+
+        $contentModel = new ContentModel($this->config);
+        $programmes = $contentModel->getProgrammes();
+
+        $kenyanCounties = [
+            'Baringo','Bomet','Bungoma','Busia','Elgeyo-Marakwet','Embu','Garissa','Homa Bay','Isiolo','Kajiado','Kakamega',
+            'Kericho','Kiambu','Kilifi','Kirinyaga','Kisii','Kisumu','Kitui','Kwale','Laikipia','Lamu','Machakos','Makueni',
+            'Mandera','Marsabit','Meru','Migori','Mombasa','Murang\'a','Nairobi','Nakuru','Nandi','Narok','Nyamira','Nyandarua',
+            'Nyeri','Samburu','Siaya','Taita-Taveta','Tana River','Tharaka-Nithi','Trans Nzoia','Turkana','Uasin Gishu',
+            'Vihiga','Wajir','West Pokot'
+        ];
+
+        $this->view('admin/student_edit', [
+            'student' => $student,
+            'programmes' => $programmes,
+            'kenyanCounties' => $kenyanCounties,
+        ]);
+    }
+
+    public function editStudent(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+        }
+
+        $studentId = (int)($_POST['student_id'] ?? 0);
+        $portalModel = new StudentPortalModel($this->config);
+        $student = $portalModel->findStudentById($studentId);
+
+        if ($student === null) {
+            flash('error', 'Student not found.');
+            $this->redirect('admin/students');
+        }
+
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+        $county = trim($_POST['county'] ?? '');
+        $subCounty = trim($_POST['sub_county'] ?? '');
+        $guardianName = trim($_POST['guardian_name'] ?? '');
+        $guardianPhone = trim($_POST['guardian_phone'] ?? '');
+        $programmeId = (int)($_POST['programme_id'] ?? 0);
+        $preferredIntake = trim($_POST['preferred_intake'] ?? '');
+
+        if ($name === '' || $email === '') {
+            flash('error', 'Name and email are required.');
+            $this->redirect('admin/students');
+        }
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare(<<<SQL
+                UPDATE student_accounts SET
+                    name = ?, email = ?, phone = ?, county = ?, sub_county = ?,
+                    guardian_name = ?, guardian_phone = ?, programme_id = ?, preferred_intake = ?
+                WHERE id = ?
+            SQL);
+            $stmt->execute([
+                $name, $email, $phone, $county, $subCounty,
+                $guardianName, $guardianPhone, $programmeId ?: null, $preferredIntake,
+                $studentId
+            ]);
+
+            flash('success', 'Student updated successfully.');
+        } catch (PDOException $e) {
+            flash('error', 'Failed to update student: ' . $e->getMessage());
+        }
+
+        $this->redirect('admin/students');
+    }
+
+    public function suspendStudent(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+        }
+
+        $studentId = (int)($_POST['student_id'] ?? 0);
+        $isSuspended = (int)($_POST['is_suspended'] ?? 0);
+
+        $portalModel = new StudentPortalModel($this->config);
+        $student = $portalModel->findStudentById($studentId);
+
+        if ($student === null) {
+            flash('error', 'Student not found.');
+            $this->redirect('admin/students');
+        }
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('UPDATE student_accounts SET is_suspended = ? WHERE id = ?');
+            $stmt->execute([$isSuspended, $studentId]);
+
+            $action = $isSuspended ? 'activated' : 'suspended';
+            flash('success', "Student has been {$action}.");
+        } catch (PDOException $e) {
+            flash('error', 'Failed to update student status: ' . $e->getMessage());
+        }
+
+        $this->redirect('admin/students');
+    }
+
+    public function deleteStudent(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+        }
+
+        $studentId = (int)($_POST['student_id'] ?? 0);
+
+        $portalModel = new StudentPortalModel($this->config);
+        $student = $portalModel->findStudentById($studentId);
+
+        if ($student === null) {
+            flash('error', 'Student not found.');
+            $this->redirect('admin/students');
+        }
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('DELETE FROM student_accounts WHERE id = ?');
+            $stmt->execute([$studentId]);
+
+            flash('success', 'Student deleted successfully.');
+        } catch (PDOException $e) {
+            flash('error', 'Failed to delete student: ' . $e->getMessage());
+        }
+
+        $this->redirect('admin/students');
+    }
+
     public function bulkAssignAdmissionNumbers(): void
     {
         Auth::requireAdmin();

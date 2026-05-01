@@ -129,6 +129,11 @@ $router->add('GET', 'admin/messages/export', [AdminContentController::class, 'ex
 $router->add('GET', 'admin/event-registrations', [AdminContentController::class, 'eventRegistrations']);
 $router->add('POST', 'admin/event-registrations/email/{id}', [AdminContentController::class, 'emailEventRegistrant']);
 $router->add('GET', 'admin/students', [AdminContentController::class, 'students']);
+$router->add('GET', 'admin/students/view', [AdminContentController::class, 'viewStudent']);
+$router->add('GET', 'admin/students/edit-form', [AdminContentController::class, 'editStudentForm']);
+$router->add('POST', 'admin/students/edit', [AdminContentController::class, 'editStudent']);
+$router->add('POST', 'admin/students/suspend', [AdminContentController::class, 'suspendStudent']);
+$router->add('POST', 'admin/students/delete', [AdminContentController::class, 'deleteStudent']);
 $router->add('POST', 'admin/students/assign/{id}', [AdminContentController::class, 'assignStudentAdmissionNumber']);
 $router->add('POST', 'admin/students/bulk-assign', [AdminContentController::class, 'bulkAssignAdmissionNumbers']);
 $router->add('GET', 'admin/admission', [AdminContentController::class, 'admission']);

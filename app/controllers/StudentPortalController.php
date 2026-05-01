@@ -61,6 +61,12 @@ class StudentPortalController extends Controller
             $this->redirect('portal/login');
         }
 
+        if (!empty($student['is_suspended'])) {
+            rate_limit_increment($limitKey);
+            flash('error', 'Your account has been suspended. Please contact the administration.');
+            $this->redirect('portal/login');
+        }
+
         rate_limit_clear($limitKey);
         session_regenerate_id(true);
         $_SESSION['student_id'] = (int)$student['id'];
