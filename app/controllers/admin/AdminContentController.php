@@ -888,7 +888,7 @@ class AdminContentController extends Controller
 
         // Render partial view without layout for modal
         ob_start();
-        include __DIR__ . '/../../app/views/admin/student_details.php';
+        include __DIR__ . '/../../views/admin/student_details.php';
         echo ob_get_clean();
     }
 
@@ -928,7 +928,7 @@ class AdminContentController extends Controller
 
         // Render partial view without layout for modal
         ob_start();
-        include __DIR__ . '/../../app/views/admin/student_edit.php';
+        include __DIR__ . '/../../views/admin/student_edit.php';
         echo ob_get_clean();
     }
 
