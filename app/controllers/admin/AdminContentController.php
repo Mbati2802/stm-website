@@ -2106,7 +2106,7 @@ class AdminContentController extends Controller
                 $params[] = $studentSessionId;
             }
             
-            $sql .= ' ORDER BY s.name ASC';
+            $sql .= ' ORDER BY sa.name ASC';
             
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
