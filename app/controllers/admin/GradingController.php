@@ -1,6 +1,6 @@
 <?php
 
-class GradingController
+class GradingController extends Controller
 {
     private array $config;
 
@@ -374,17 +374,5 @@ class GradingController
         } catch (PDOException $e) {
             echo json_encode(['error' => $e->getMessage()]);
         }
-    }
-
-    private function redirect(string $path): void
-    {
-        header('Location: ' . base_url($path));
-        exit;
-    }
-
-    private function view(string $view, array $data = []): void
-    {
-        extract($data);
-        require_once __DIR__ . '/../../views/layouts/admin.php';
     }
 }
