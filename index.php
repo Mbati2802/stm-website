@@ -3,6 +3,7 @@ require_once __DIR__ . '/bootstrap.php';
 
 require_once __DIR__ . '/app/controllers/admin/AdmissionNumberFormatsController.php';
 require_once __DIR__ . '/app/controllers/admin/GradingController.php';
+require_once __DIR__ . '/app/controllers/admin/SemesterController.php';
 
 $config = require __DIR__ . '/config/config.php';
 try {
@@ -144,6 +145,16 @@ $router->add('POST', 'admin/admission', [AdminContentController::class, 'submitA
 $router->add('GET', 'admin/deleted-records', [AdminContentController::class, 'deletedRecords']);
 $router->add('POST', 'admin/deleted-records/restore', [AdminContentController::class, 'restoreRecord']);
 $router->add('GET', 'admin/grading', [GradingController::class, 'index']);
+$router->add('GET', 'admin/semester', [SemesterController::class, 'index']);
+$router->add('POST', 'admin/semester/session/create', [SemesterController::class, 'createAcademicSession']);
+$router->add('POST', 'admin/semester/session/edit', [SemesterController::class, 'editAcademicSession']);
+$router->add('POST', 'admin/semester/session/delete', [SemesterController::class, 'deleteAcademicSession']);
+$router->add('POST', 'admin/semester/term/create', [SemesterController::class, 'createTerm']);
+$router->add('POST', 'admin/semester/term/edit', [SemesterController::class, 'editTerm']);
+$router->add('POST', 'admin/semester/term/delete', [SemesterController::class, 'deleteTerm']);
+$router->add('POST', 'admin/semester/intake/create', [SemesterController::class, 'createIntake']);
+$router->add('POST', 'admin/semester/intake/edit', [SemesterController::class, 'editIntake']);
+$router->add('POST', 'admin/semester/intake/delete', [SemesterController::class, 'deleteIntake']);
 $router->add('POST', 'admin/grading/exam-type/create', [GradingController::class, 'createExamType']);
 $router->add('POST', 'admin/grading/exam-type/edit', [GradingController::class, 'editExamType']);
 $router->add('POST', 'admin/grading/exam-type/delete', [GradingController::class, 'deleteExamType']);
