@@ -18,16 +18,16 @@ class SemesterController extends Controller
 
         $pdo = Database::getInstance($this->config['db']);
         
-        // Get all academic sessions
-        $stmt = $pdo->query('SELECT * FROM academic_sessions ORDER BY start_date DESC');
-        $academicSessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Get all academic years
+        $stmt = $pdo->query('SELECT * FROM academic_years ORDER BY start_date DESC');
+        $academicYears = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Get all terms with session names
+        // Get all terms with year names
         $stmt = $pdo->query('
-            SELECT t.*, s.name as session_name, s.code as session_code 
+            SELECT t.*, ay.name as year_name, ay.code as year_code 
             FROM terms t 
-            LEFT JOIN academic_sessions s ON t.academic_session_id = s.id 
-            ORDER BY s.start_date DESC, t.start_date ASC
+            LEFT JOIN academic_years ay ON t.academic_session_id = ay.id 
+            ORDER BY ay.start_date DESC, t.start_date ASC
         ');
         $terms = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -35,15 +35,20 @@ class SemesterController extends Controller
         $stmt = $pdo->query('SELECT * FROM intakes ORDER BY start_date ASC');
         $intakes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // Get all sessions
+        $stmt = $pdo->query('SELECT * FROM sessions ORDER BY sequence_number ASC');
+        $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         $this->view('admin/semester/index', [
             'metaTitle' => 'Semester Management',
-            'academicSessions' => $academicSessions,
+            'academicYears' => $academicYears,
             'terms' => $terms,
             'intakes' => $intakes,
+            'sessions' => $sessions,
         ]);
     }
 
-    public function createAcademicSession(): void
+    public function createAcademicYear(): void
     {
         Auth::requireAdmin();
         if (!Auth::canManageEntity('settings')) {
@@ -69,23 +74,23 @@ class SemesterController extends Controller
         try {
             $pdo = Database::getInstance($this->config['db']);
             
-            // If setting as current, unset all other current sessions
+            // If setting as current, unset all other current years
             if ($isCurrent) {
-                $pdo->prepare('UPDATE academic_sessions SET is_current = 0')->execute();
+                $pdo->prepare('UPDATE academic_years SET is_current = 0')->execute();
             }
 
-            $stmt = $pdo->prepare('INSERT INTO academic_sessions (name, code, start_date, end_date, is_current, description) VALUES (?, ?, ?, ?, ?, ?)');
+            $stmt = $pdo->prepare('INSERT INTO academic_years (name, code, start_date, end_date, is_current, description) VALUES (?, ?, ?, ?, ?, ?)');
             $stmt->execute([$name, $code, $startDate, $endDate, $isCurrent, $description]);
             
-            flash('success', 'Academic session created successfully.');
+            flash('success', 'Academic year created successfully.');
         } catch (PDOException $e) {
-            flash('error', 'Failed to create academic session: ' . $e->getMessage());
+            flash('error', 'Failed to create academic year: ' . $e->getMessage());
         }
 
         $this->redirect('admin/semester');
     }
 
-    public function editAcademicSession(): void
+    public function editAcademicYear(): void
     {
         Auth::requireAdmin();
         if (!Auth::canManageEntity('settings')) {
@@ -112,23 +117,23 @@ class SemesterController extends Controller
         try {
             $pdo = Database::getInstance($this->config['db']);
             
-            // If setting as current, unset all other current sessions
+            // If setting as current, unset all other current years
             if ($isCurrent) {
-                $pdo->prepare('UPDATE academic_sessions SET is_current = 0 WHERE id != ?')->execute([$id]);
+                $pdo->prepare('UPDATE academic_years SET is_current = 0 WHERE id != ?')->execute([$id]);
             }
 
-            $stmt = $pdo->prepare('UPDATE academic_sessions SET name = ?, code = ?, start_date = ?, end_date = ?, is_current = ?, description = ? WHERE id = ?');
+            $stmt = $pdo->prepare('UPDATE academic_years SET name = ?, code = ?, start_date = ?, end_date = ?, is_current = ?, description = ? WHERE id = ?');
             $stmt->execute([$name, $code, $startDate, $endDate, $isCurrent, $description, $id]);
             
-            flash('success', 'Academic session updated successfully.');
+            flash('success', 'Academic year updated successfully.');
         } catch (PDOException $e) {
-            flash('error', 'Failed to update academic session: ' . $e->getMessage());
+            flash('error', 'Failed to update academic year: ' . $e->getMessage());
         }
 
         $this->redirect('admin/semester');
     }
 
-    public function deleteAcademicSession(): void
+    public function deleteAcademicYear(): void
     {
         Auth::requireAdmin();
         if (!Auth::canManageEntity('settings')) {
@@ -137,17 +142,17 @@ class SemesterController extends Controller
 
         $id = (int)($_POST['id'] ?? 0);
         if ($id === 0) {
-            flash('error', 'Invalid session ID.');
+            flash('error', 'Invalid year ID.');
             $this->redirect('admin/semester');
         }
 
         try {
             $pdo = Database::getInstance($this->config['db']);
-            $stmt = $pdo->prepare('DELETE FROM academic_sessions WHERE id = ?');
+            $stmt = $pdo->prepare('DELETE FROM academic_years WHERE id = ?');
             $stmt->execute([$id]);
-            flash('success', 'Academic session deleted successfully.');
+            flash('success', 'Academic year deleted successfully.');
         } catch (PDOException $e) {
-            flash('error', 'Failed to delete academic session: ' . $e->getMessage());
+            flash('error', 'Failed to delete academic year: ' . $e->getMessage());
         }
 
         $this->redirect('admin/semester');
@@ -382,4 +387,3 @@ class SemesterController extends Controller
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
-}

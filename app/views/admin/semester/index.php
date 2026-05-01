@@ -2,16 +2,16 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h4 fw-bold mb-1">Semester Management</h1>
-            <p class="text-muted mb-0">Manage academic sessions, terms, and intakes.</p>
+            <p class="text-muted mb-0">Manage academic years, terms, intakes, and sessions.</p>
         </div>
     </div>
 
-    <!-- Academic Sessions Section -->
+    <!-- Academic Years Section -->
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Academic Sessions</h5>
-            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#sessionModal">
-                <i class="bi bi-plus"></i> Add Session
+            <h5 class="mb-0">Academic Years</h5>
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#yearModal">
+                <i class="bi bi-plus"></i> Add Year
             </button>
         </div>
         <div class="card-body">
@@ -28,36 +28,73 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($academicSessions as $session): ?>
+                        <?php foreach ($academicYears ?? [] as $year): ?>
                         <tr>
-                            <td><?= e($session['name']) ?></td>
-                            <td><span class="badge bg-secondary"><?= e($session['code']) ?></span></td>
-                            <td><?= e(date('M d, Y', strtotime($session['start_date']))) ?></td>
-                            <td><?= e(date('M d, Y', strtotime($session['end_date']))) ?></td>
+                            <td><?= e($year['name']) ?></td>
+                            <td><span class="badge bg-secondary"><?= e($year['code']) ?></span></td>
+                            <td><?= e(date('M d, Y', strtotime($year['start_date']))) ?></td>
+                            <td><?= e(date('M d, Y', strtotime($year['end_date']))) ?></td>
                             <td>
-                                <?php if ($session['is_current']): ?>
+                                <?php if ($year['is_current']): ?>
                                     <span class="badge bg-success">Current</span>
                                 <?php endif; ?>
-                                <?php if ($session['is_active']): ?>
+                                <?php if ($year['is_active']): ?>
                                     <span class="badge bg-primary">Active</span>
                                 <?php else: ?>
                                     <span class="badge bg-secondary">Inactive</span>
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-action-edit" data-bs-toggle="modal" data-bs-target="#sessionModal"
-                                    data-id="<?= e((string)$session['id']) ?>"
-                                    data-name="<?= e($session['name']) ?>"
-                                    data-code="<?= e($session['code']) ?>"
-                                    data-start-date="<?= e($session['start_date']) ?>"
-                                    data-end-date="<?= e($session['end_date']) ?>"
-                                    data-is-current="<?= e((string)$session['is_current']) ?>"
-                                    data-description="<?= e($session['description'] ?? '') ?>">
+                                <button class="btn btn-sm btn-action-edit" data-bs-toggle="modal" data-bs-target="#yearModal"
+                                    data-id="<?= e((string)$year['id']) ?>"
+                                    data-name="<?= e($year['name']) ?>"
+                                    data-code="<?= e($year['code']) ?>"
+                                    data-start-date="<?= e($year['start_date']) ?>"
+                                    data-end-date="<?= e($year['end_date']) ?>"
+                                    data-is-current="<?= e((string)$year['is_current']) ?>"
+                                    data-description="<?= e($year['description'] ?? '') ?>">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-action-delete" onclick="confirmDelete('session', <?= e((string)$session['id']) ?>)">
+                                <button class="btn btn-sm btn-action-delete" onclick="confirmDelete('year', <?= e((string)$year['id']) ?>)">
                                     <i class="bi bi-trash"></i>
                                 </button>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sessions Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Sessions (Student Progress)</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Sequence</th>
+                            <th>Name</th>
+                            <th>Code</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($sessions ?? [] as $session): ?>
+                        <tr>
+                            <td><?= e($session['sequence_number']) ?></td>
+                            <td><?= e($session['name']) ?></td>
+                            <td><span class="badge bg-secondary"><?= e($session['code']) ?></span></td>
+                            <td>
+                                <?php if ($session['is_active']): ?>
+                                    <span class="badge bg-primary">Active</span>
+                                <?php else: ?>
+                                    <span class="badge bg-secondary">Inactive</span>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -80,7 +117,7 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Session</th>
+                            <th>Academic Year</th>
                             <th>Name</th>
                             <th>Code</th>
                             <th>Start Date</th>
@@ -90,9 +127,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($terms as $term): ?>
+                        <?php foreach ($terms ?? [] as $term): ?>
                         <tr>
-                            <td><?= e($term['session_name'] ?? 'N/A') ?> (<?= e($term['session_code'] ?? '') ?>)</td>
+                            <td><?= e($term['year_name'] ?? 'N/A') ?> (<?= e($term['year_code'] ?? '') ?>)</td>
                             <td><?= e($term['name']) ?></td>
                             <td><span class="badge bg-secondary"><?= e($term['code']) ?></span></td>
                             <td><?= e(date('M d, Y', strtotime($term['start_date']))) ?></td>
@@ -188,41 +225,41 @@
     </div>
 </div>
 
-<!-- Academic Session Modal -->
-<div class="modal fade" id="sessionModal" tabindex="-1">
+<!-- Academic Year Modal -->
+<div class="modal fade" id="yearModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="sessionModalTitle">Add Academic Session</h5>
+                <h5 class="modal-title" id="yearModalTitle">Add Academic Year</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="<?= e(base_url('admin/semester/session/create')) ?>">
+            <form method="POST" action="<?= e(base_url('admin/semester/year/create')) ?>">
                 <div class="modal-body">
-                    <input type="hidden" name="id" id="sessionId">
+                    <input type="hidden" name="id" id="yearId">
                     <div class="mb-3">
                         <label class="form-label">Name</label>
-                        <input type="text" class="form-control" name="name" id="sessionName" required placeholder="e.g., 2024-2025">
+                        <input type="text" class="form-control" name="name" id="yearName" required placeholder="e.g., 2024-2025">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Code</label>
-                        <input type="text" class="form-control" name="code" id="sessionCode" required placeholder="e.g., 2024-2025">
+                        <input type="text" class="form-control" name="code" id="yearCode" required placeholder="e.g., 2024-2025">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Start Date</label>
-                        <input type="date" class="form-control" name="start_date" id="sessionStartDate" required>
+                        <input type="date" class="form-control" name="start_date" id="yearStartDate" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">End Date</label>
-                        <input type="date" class="form-control" name="end_date" id="sessionEndDate" required>
+                        <input type="date" class="form-control" name="end_date" id="yearEndDate" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea class="form-control" name="description" id="sessionDescription" rows="3"></textarea>
+                        <textarea class="form-control" name="description" id="yearDescription" rows="3"></textarea>
                     </div>
                     <div class="mb-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="is_current" id="sessionIsCurrent" value="1">
-                            <label class="form-check-label" for="sessionIsCurrent">Set as current session</label>
+                            <input class="form-check-input" type="checkbox" name="is_current" id="yearIsCurrent" value="1">
+                            <label class="form-check-label" for="yearIsCurrent">Set as current year</label>
                         </div>
                     </div>
                 </div>
@@ -247,11 +284,11 @@
                 <div class="modal-body">
                     <input type="hidden" name="id" id="termId">
                     <div class="mb-3">
-                        <label class="form-label">Academic Session</label>
+                        <label class="form-label">Academic Year</label>
                         <select class="form-select" name="academic_session_id" id="termSessionId" required>
-                            <option value="">Select session</option>
-                            <?php foreach ($academicSessions as $session): ?>
-                            <option value="<?= e((string)$session['id']) ?>"><?= e($session['name']) ?> (<?= e($session['code']) ?>)</option>
+                            <option value="">Select year</option>
+                            <?php foreach ($academicYears ?? [] as $year): ?>
+                            <option value="<?= e((string)$year['id']) ?>"><?= e($year['name']) ?> (<?= e($year['code']) ?>)</option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -333,7 +370,7 @@ function confirmDelete(type, id) {
     if (confirm('Are you sure you want to delete this ' + type + '?')) {
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '<?= e(base_url('admin/semester/')) ?>' + type + '/delete';
+        form.action = '<?= e(base_url('admin/semester/' . type . '/delete')) ?>';
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = 'id';
@@ -344,35 +381,35 @@ function confirmDelete(type, id) {
     }
 }
 
-// Session Modal
-const sessionModal = document.getElementById('sessionModal');
-const sessionForm = sessionModal?.querySelector('form');
-if (sessionModal) {
-    sessionModal.addEventListener('show.bs.modal', function(event) {
+// Academic Year Modal
+const yearModal = document.getElementById('yearModal');
+const yearForm = yearModal?.querySelector('form');
+if (yearModal) {
+    yearModal.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
         if (button && button.hasAttribute('data-id')) {
-            document.getElementById('sessionModalTitle').textContent = 'Edit Academic Session';
-            document.getElementById('sessionId').value = button.getAttribute('data-id');
-            document.getElementById('sessionName').value = button.getAttribute('data-name');
-            document.getElementById('sessionCode').value = button.getAttribute('data-code');
-            document.getElementById('sessionStartDate').value = button.getAttribute('data-start-date');
-            document.getElementById('sessionEndDate').value = button.getAttribute('data-end-date');
-            document.getElementById('sessionIsCurrent').checked = button.getAttribute('data-is-current') === '1';
-            document.getElementById('sessionDescription').value = button.getAttribute('data-description') || '';
-            if (sessionForm) {
-                sessionForm.action = '<?= e(base_url('admin/semester/session/edit')) ?>';
+            document.getElementById('yearModalTitle').textContent = 'Edit Academic Year';
+            document.getElementById('yearId').value = button.getAttribute('data-id');
+            document.getElementById('yearName').value = button.getAttribute('data-name');
+            document.getElementById('yearCode').value = button.getAttribute('data-code');
+            document.getElementById('yearStartDate').value = button.getAttribute('data-start-date');
+            document.getElementById('yearEndDate').value = button.getAttribute('data-end-date');
+            document.getElementById('yearIsCurrent').checked = button.getAttribute('data-is-current') === '1';
+            document.getElementById('yearDescription').value = button.getAttribute('data-description') || '';
+            if (yearForm) {
+                yearForm.action = '<?= e(base_url('admin/semester/year/edit')) ?>';
             }
         } else {
-            document.getElementById('sessionModalTitle').textContent = 'Add Academic Session';
-            document.getElementById('sessionId').value = '';
-            document.getElementById('sessionName').value = '';
-            document.getElementById('sessionCode').value = '';
-            document.getElementById('sessionStartDate').value = '';
-            document.getElementById('sessionEndDate').value = '';
-            document.getElementById('sessionIsCurrent').checked = false;
-            document.getElementById('sessionDescription').value = '';
-            if (sessionForm) {
-                sessionForm.action = '<?= e(base_url('admin/semester/session/create')) ?>';
+            document.getElementById('yearModalTitle').textContent = 'Add Academic Year';
+            document.getElementById('yearId').value = '';
+            document.getElementById('yearName').value = '';
+            document.getElementById('yearCode').value = '';
+            document.getElementById('yearStartDate').value = '';
+            document.getElementById('yearEndDate').value = '';
+            document.getElementById('yearIsCurrent').checked = false;
+            document.getElementById('yearDescription').value = '';
+            if (yearForm) {
+                yearForm.action = '<?= e(base_url('admin/semester/year/create')) ?>';
             }
         }
     });

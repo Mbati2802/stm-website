@@ -146,9 +146,9 @@ $router->add('GET', 'admin/deleted-records', [AdminContentController::class, 'de
 $router->add('POST', 'admin/deleted-records/restore', [AdminContentController::class, 'restoreRecord']);
 $router->add('GET', 'admin/grading', [GradingController::class, 'index']);
 $router->add('GET', 'admin/semester', [SemesterController::class, 'index']);
-$router->add('POST', 'admin/semester/session/create', [SemesterController::class, 'createAcademicSession']);
-$router->add('POST', 'admin/semester/session/edit', [SemesterController::class, 'editAcademicSession']);
-$router->add('POST', 'admin/semester/session/delete', [SemesterController::class, 'deleteAcademicSession']);
+$router->add('POST', 'admin/semester/year/create', [SemesterController::class, 'createAcademicYear']);
+$router->add('POST', 'admin/semester/year/edit', [SemesterController::class, 'editAcademicYear']);
+$router->add('POST', 'admin/semester/year/delete', [SemesterController::class, 'deleteAcademicYear']);
 $router->add('POST', 'admin/semester/term/create', [SemesterController::class, 'createTerm']);
 $router->add('POST', 'admin/semester/term/edit', [SemesterController::class, 'editTerm']);
 $router->add('POST', 'admin/semester/term/delete', [SemesterController::class, 'deleteTerm']);

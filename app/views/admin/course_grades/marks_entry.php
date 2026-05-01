@@ -26,9 +26,9 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Academic Session</label>
+                    <label class="form-label">Academic Year</label>
                     <select class="form-select" id="sessionFilter" required>
-                        <option value="">Select session</option>
+                        <option value="">Select year</option>
                         <?php foreach ($academicSessions ?? [] as $session): ?>
                         <option value="<?= e((string)$session['id']) ?>" <?= $session['is_current'] ? 'selected' : '' ?>><?= e($session['name']) ?></option>
                         <?php endforeach; ?>

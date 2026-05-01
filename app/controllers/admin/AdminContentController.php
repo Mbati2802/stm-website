@@ -852,10 +852,10 @@ class AdminContentController extends Controller
 
         // Create student enrollment record
         try {
-            // Get current academic session
-            $stmt = $pdo->prepare('SELECT id FROM academic_sessions WHERE is_current = 1 LIMIT 1');
+            // Get current academic year
+            $stmt = $pdo->prepare('SELECT id FROM academic_years WHERE is_current = 1 LIMIT 1');
             $stmt->execute();
-            $currentSession = $stmt->fetch(PDO::FETCH_ASSOC);
+            $currentYear = $stmt->fetch(PDO::FETCH_ASSOC);
             
             // Get current term
             $stmt = $pdo->prepare('SELECT id FROM terms WHERE is_current = 1 LIMIT 1');
@@ -867,9 +867,30 @@ class AdminContentController extends Controller
             $stmt->execute([$preferredIntake]);
             $intake = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            if ($currentSession && $currentTerm && $intake) {
-                $enrollmentStmt = $pdo->prepare('INSERT INTO student_enrollments (student_id, academic_session_id, term_id, intake_id, programme_id, enrollment_date, status) VALUES (?, ?, ?, ?, ?, CURDATE(), ?)');
-                $enrollmentStmt->execute([$studentId, $currentSession['id'], $currentTerm['id'], $intake['id'], $programmeId, 'active']);
+            // Determine session based on term (simplified logic - assign Session 1 for Term 1, Session 2 for Term 2, etc.)
+            if ($currentTerm) {
+                // Get term sequence from current term
+                $stmt = $pdo->prepare('SELECT t.*, ay.name as year_name FROM terms t LEFT JOIN academic_years ay ON t.academic_session_id = ay.id WHERE t.id = ?');
+                $stmt->execute([$currentTerm['id']]);
+                $termData = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                // Determine session based on term (this is a simplified logic - you may need to adjust based on your requirements)
+                // For now, we'll assign based on term code
+                $sessionCode = 'S1';
+                if ($termData && str_contains(strtolower($termData['code'] ?? ''), 't2')) {
+                    $sessionCode = 'S2';
+                } elseif ($termData && str_contains(strtolower($termData['code'] ?? ''), 't3')) {
+                    $sessionCode = 'S3';
+                }
+                
+                $stmt = $pdo->prepare('SELECT id FROM sessions WHERE code = ? LIMIT 1');
+                $stmt->execute([$sessionCode]);
+                $session = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($currentYear && $currentTerm && $intake && $session) {
+                    $enrollmentStmt = $pdo->prepare('INSERT INTO student_enrollments (student_id, academic_session_id, term_id, intake_id, programme_id, session_id, enrollment_date, status) VALUES (?, ?, ?, ?, ?, ?, CURDATE(), ?)');
+                    $enrollmentStmt->execute([$studentId, $currentYear['id'], $currentTerm['id'], $intake['id'], $programmeId, $session['id'], 'active']);
+                }
             }
         } catch (PDOException $e) {
             // Log error but don't fail admission if enrollment creation fails
@@ -2187,13 +2208,17 @@ class AdminContentController extends Controller
         $stmt = $pdo->query('SELECT gs.*, et.name as exam_type_name FROM grading_systems gs LEFT JOIN exam_types et ON gs.exam_type_id = et.id ORDER BY gs.id ASC');
         $gradingSystems = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Get academic sessions
-        $stmt = $pdo->query('SELECT * FROM academic_sessions ORDER BY start_date DESC');
-        $academicSessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Get academic years
+        $stmt = $pdo->query('SELECT * FROM academic_years ORDER BY start_date DESC');
+        $academicYears = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Get terms
-        $stmt = $pdo->query('SELECT t.*, s.name as session_name FROM terms t LEFT JOIN academic_sessions s ON t.academic_session_id = s.id ORDER BY s.start_date DESC, t.start_date ASC');
+        $stmt = $pdo->query('SELECT t.*, ay.name as year_name FROM terms t LEFT JOIN academic_years ay ON t.academic_session_id = ay.id ORDER BY ay.start_date DESC, t.start_date ASC');
         $terms = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get sessions
+        $stmt = $pdo->query('SELECT * FROM sessions ORDER BY sequence_number ASC');
+        $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         $settings = $model->getSettings();
 
@@ -2203,8 +2228,10 @@ class AdminContentController extends Controller
             'students' => $students,
             'teachers' => $teachers,
             'gradingSystems' => $gradingSystems,
-            'academicSessions' => $academicSessions,
+            'academicYears' => $academicYears,
+            'academicSessions' => $academicYears, // Keep for backward compatibility
             'terms' => $terms,
+            'sessions' => $sessions,
             'siteSettings' => $settings,
         ];
     }
