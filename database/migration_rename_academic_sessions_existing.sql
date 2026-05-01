@@ -138,3 +138,21 @@ INSERT IGNORE INTO `sessions` (`name`, `code`, `sequence_number`, `is_active`) V
 ('Session 4', 'S4', 4, 1),
 ('Session 5', 'S5', 5, 1),
 ('Session 6', 'S6', 6, 1);
+
+-- Step 7: Insert default terms for academic years if they don't exist
+-- Get the first academic year ID
+SET @first_academic_year_id = (SELECT id FROM academic_years LIMIT 1);
+
+-- Insert terms for the first academic year if it exists and terms don't exist for it
+SET @terms_exist = 0;
+SELECT COUNT(*) INTO @terms_exist FROM terms WHERE academic_session_id = @first_academic_year_id;
+
+SET @sql = IF(@first_academic_year_id IS NOT NULL AND @terms_exist = 0,
+    'INSERT INTO terms (academic_session_id, name, code, start_date, end_date, is_current, is_active) VALUES 
+    (@first_academic_year_id, ''Term 1'', ''T1'', ''2024-01-01'', ''2024-04-30'', 0, 1),
+    (@first_academic_year_id, ''Term 2'', ''T2'', ''2024-05-01'', ''2024-08-31'', 0, 1),
+    (@first_academic_year_id, ''Term 3'', ''T3'', ''2024-09-01'', ''2024-12-31'', 0, 1)',
+    'SELECT ''Terms already exist or no academic year found''');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
