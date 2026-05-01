@@ -234,6 +234,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="<?= e(base_url('admin/semester/year/create')) ?>">
+                <?= csrf_field() ?>
                 <div class="modal-body">
                     <input type="hidden" name="id" id="yearId">
                     <div class="mb-3">
@@ -281,6 +282,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="<?= e(base_url('admin/semester/term/create')) ?>">
+                <?= csrf_field() ?>
                 <div class="modal-body">
                     <input type="hidden" name="id" id="termId">
                     <div class="mb-3">
@@ -333,6 +335,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="<?= e(base_url('admin/semester/intake/create')) ?>">
+                <?= csrf_field() ?>
                 <div class="modal-body">
                     <input type="hidden" name="id" id="intakeId">
                     <div class="mb-3">
