@@ -215,7 +215,7 @@
                         <h5 class="modal-title">Assign Admission Number</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <form method="POST" action="<?= e(base_url('admin/students/assign')) ?>">
+                    <form method="POST" action="<?= e(base_url('admin/students/assign')) ?>" id="assignAdmissionForm">
                         <?= csrf_field() ?>
                         <div class="modal-body">
                             <input type="hidden" name="student_id" id="assignStudentId">

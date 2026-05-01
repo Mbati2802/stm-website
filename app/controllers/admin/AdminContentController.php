@@ -662,14 +662,21 @@ class AdminContentController extends Controller
         ]);
     }
 
-    public function assignStudentAdmissionNumber(int $id): void
+    public function assignStudentAdmissionNumber(int $id = 0): void
     {
         Auth::requireAdmin();
         if (!Auth::canManageEntity('students')) {
             $this->redirect('admin');
         }
+
+        $studentId = $id > 0 ? $id : (int)($_POST['student_id'] ?? 0);
+        if ($studentId === 0) {
+            flash('error', 'Student ID is required.');
+            $this->redirect('admin/students');
+        }
+
         $portalModel = new StudentPortalModel($this->config);
-        $student = $portalModel->findStudentById($id);
+        $student = $portalModel->findStudentById($studentId);
         if ($student === null) {
             flash('error', 'Student not found.');
             $this->redirect('admin/students');
@@ -699,7 +706,7 @@ class AdminContentController extends Controller
         }
 
         try {
-            $portalModel->assignAdmissionNumber($id, $admissionNumber);
+            $portalModel->assignAdmissionNumber($studentId, $admissionNumber);
         } catch (PDOException) {
             flash('error', 'Admission number already exists. Please choose another one.');
             $this->redirect('admin/students');
