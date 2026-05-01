@@ -2088,7 +2088,7 @@ class AdminContentController extends Controller
         $studentSessionId = (int)($_GET['student_session_id'] ?? 0); // Student progression session
         $unitId = (int)($_GET['unit_id'] ?? 0); // Unit/Course
 
-        if ($programmeId === 0 || $sessionId === 0 || $termId === 0 || $unitId === 0) {
+        if ($programmeId === 0 || $sessionId === 0 || $termId === 0) {
             header('Content-Type: application/json');
             echo json_encode(['error' => 'Invalid parameters']);
             return;
@@ -2099,17 +2099,15 @@ class AdminContentController extends Controller
             
             // Build query with optional session filter
             $sql = '
-                SELECT DISTINCT sa.id, sa.name, sa.admission_number 
+                SELECT sa.id, sa.name, sa.admission_number 
                 FROM student_accounts sa
                 JOIN student_enrollments se ON sa.id = se.student_id
-                JOIN course_grades cg ON sa.id = cg.student_id
                 WHERE se.programme_id = ? 
                 AND se.academic_session_id = ? 
                 AND se.term_id = ? 
-                AND cg.course_id = ?
                 AND se.status = "active"
             ';
-            $params = [$programmeId, $sessionId, $termId, $unitId];
+            $params = [$programmeId, $sessionId, $termId];
             
             if ($studentSessionId > 0) {
                 $sql .= ' AND se.session_id = ?';
@@ -2271,12 +2269,9 @@ class AdminContentController extends Controller
             return;
         }
 
-        $gradingSystemId = (int)($_GET['grading_system_id'] ?? 0);
-        
         try {
             $pdo = Database::getInstance($this->config['db']);
-            $stmt = $pdo->prepare('SELECT * FROM exam_types WHERE grading_system_id = ? ORDER BY sequence_number ASC');
-            $stmt->execute([$gradingSystemId]);
+            $stmt = $pdo->query('SELECT * FROM exam_types WHERE is_active = 1 ORDER BY id ASC');
             header('Content-Type: application/json');
             echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
         } catch (PDOException $e) {

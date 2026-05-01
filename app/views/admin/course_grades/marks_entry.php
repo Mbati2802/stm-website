@@ -44,8 +44,8 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Unit/Course</label>
-                    <select class="form-select" id="unitFilter" required>
+                    <label class="form-label">Unit/Course (Optional)</label>
+                    <select class="form-select" id="unitFilter">
                         <option value="">Select unit</option>
                         <?php foreach ($courses ?? [] as $course): ?>
                         <option value="<?= e((string)$course['id']) ?>"><?= e($course['title']) ?></option>
@@ -53,8 +53,8 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Grading System</label>
-                    <select class="form-select" id="gradingSystemFilter" required>
+                    <label class="form-label">Grading System (Optional)</label>
+                    <select class="form-select" id="gradingSystemFilter">
                         <option value="">Select grading system</option>
                         <?php foreach ($gradingSystems ?? [] as $gradingSystem): ?>
                         <option value="<?= e((string)$gradingSystem['id']) ?>"><?= e($gradingSystem['name']) ?></option>
@@ -149,68 +149,45 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Marks Entry: Student session changed');
         checkAndLoadStudents();
     });
-    document.getElementById('unitFilter').addEventListener('change', function() {
-        console.log('Marks Entry: Unit changed');
-        checkAndLoadStudents();
-    });
-    document.getElementById('gradingSystemFilter').addEventListener('change', function() {
-        console.log('Marks Entry: Grading system changed');
-        const gradingSystemId = this.value;
-        if (gradingSystemId) {
-            fetch(`<?= e(base_url('admin/exam-types/by-grading-system')) ?>?grading_system_id=${gradingSystemId}`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Marks Entry: Exam types received', data);
-                    window.examTypes = data;
-                    checkAndLoadStudents();
-                })
-                .catch(error => {
-                    console.error('Marks Entry: Error fetching exam types', error);
-                });
-        }
-    });
 
     function checkAndLoadStudents() {
         const programmeId = document.getElementById('programmeFilter').value;
         const sessionId = document.getElementById('sessionFilter').value;
         const termId = document.getElementById('termFilter').value;
         const studentSessionId = document.getElementById('studentSessionFilter').value;
-        const unitId = document.getElementById('unitFilter').value;
-        const gradingSystemId = document.getElementById('gradingSystemFilter').value;
         
         console.log('Marks Entry: checkAndLoadStudents called with', {
             programmeId,
             sessionId,
             termId,
-            studentSessionId,
-            unitId,
-            gradingSystemId
+            studentSessionId
         });
         
-        if (programmeId && sessionId && termId && studentSessionId && unitId && gradingSystemId) {
+        if (programmeId && sessionId && termId && studentSessionId) {
+            // Load exam types if not already loaded
             if (!window.examTypes || window.examTypes.length === 0) {
                 console.log('Marks Entry: Exam types not loaded, loading them first');
-                fetch(`<?= e(base_url('admin/exam-types/by-grading-system')) ?>?grading_system_id=${gradingSystemId}`)
+                fetch(`<?= e(base_url('admin/exam-types/by-grading-system')) ?>`)
                     .then(response => response.json())
                     .then(data => {
                         console.log('Marks Entry: Exam types received', data);
                         window.examTypes = data;
-                        loadStudents(programmeId, sessionId, termId, studentSessionId, unitId);
+                        loadStudents(programmeId, sessionId, termId, studentSessionId);
                     })
                     .catch(error => {
                         console.error('Marks Entry: Error fetching exam types', error);
                     });
             } else {
                 console.log('Marks Entry: All filters set, loading students');
-                loadStudents(programmeId, sessionId, termId, studentSessionId, unitId);
+                loadStudents(programmeId, sessionId, termId, studentSessionId);
             }
         } else {
             console.log('Marks Entry: Not all filters set yet');
         }
     }
 
-    function loadStudents(programmeId, sessionId, termId, studentSessionId, unitId) {
-        const url = `<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}&student_session_id=${studentSessionId}&unit_id=${unitId}`;
+    function loadStudents(programmeId, sessionId, termId, studentSessionId) {
+        const url = `<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}&student_session_id=${studentSessionId}`;
         console.log('Marks Entry: Fetching students from', url);
         fetch(url)
             .then(response => {
