@@ -134,13 +134,13 @@ $router->add('GET', 'cron/social-fetch', [AdminContentController::class, 'cronSo
 $router->add('GET', 'admin/internal-messages', [AdminContentController::class, 'internalMessages']);
 $router->add('POST', 'admin/internal-messages/send', [AdminContentController::class, 'sendInternalMessage']);
 $router->add('GET', 'admin/applications', [AdminContentController::class, 'applications']);
-$router->add('GET', 'admin/admission-number-formats', [AdmissionNumberFormatsController::class, 'index']);
-$router->add('GET', 'admin/admission-number-formats/create', [AdmissionNumberFormatsController::class, 'create']);
-$router->add('POST', 'admin/admission-number-formats/create', [AdmissionNumberFormatsController::class, 'create']);
-$router->add('GET', 'admin/admission-number-formats/edit/{id}', [AdmissionNumberFormatsController::class, 'edit']);
-$router->add('POST', 'admin/admission-number-formats/edit/{id}', [AdmissionNumberFormatsController::class, 'edit']);
-$router->add('GET', 'admin/admission-number-formats/delete/{id}', [AdmissionNumberFormatsController::class, 'delete']);
-$router->add('GET', 'admin/admission-number-formats/set-default/{id}', [AdmissionNumberFormatsController::class, 'setDefault']);
+$router->add('GET', 'admin/admission-number-formats', ['AdmissionNumberFormatsController', 'index']);
+$router->add('GET', 'admin/admission-number-formats/create', ['AdmissionNumberFormatsController', 'create']);
+$router->add('POST', 'admin/admission-number-formats/create', ['AdmissionNumberFormatsController', 'create']);
+$router->add('GET', 'admin/admission-number-formats/edit/{id}', ['AdmissionNumberFormatsController', 'edit']);
+$router->add('POST', 'admin/admission-number-formats/edit/{id}', ['AdmissionNumberFormatsController', 'edit']);
+$router->add('GET', 'admin/admission-number-formats/delete/{id}', ['AdmissionNumberFormatsController', 'delete']);
+$router->add('GET', 'admin/admission-number-formats/set-default/{id}', ['AdmissionNumberFormatsController', 'setDefault']);
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
 $basePath = dirname($_SERVER['SCRIPT_NAME']);
