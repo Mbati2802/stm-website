@@ -743,10 +743,16 @@ class AdminContentController extends Controller
 
         $contentModel = new ContentModel($this->config);
         $programmes = $contentModel->getProgrammes();
+        
+        // Get sessions for selection
+        $pdo = Database::getInstance($this->config['db']);
+        $stmt = $pdo->query('SELECT * FROM sessions ORDER BY sequence_number ASC');
+        $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $this->view('admin/admission', [
             'metaTitle' => 'Admission Form',
             'programmes' => $programmes,
+            'sessions' => $sessions,
         ]);
     }
 
@@ -775,6 +781,7 @@ class AdminContentController extends Controller
         $kcseIndex = trim($_POST['kcse_index'] ?? '');
         $programmeId = (int)($_POST['programme_id'] ?? 0);
         $preferredIntake = trim($_POST['preferred_intake'] ?? '');
+        $sessionId = (int)($_POST['session_id'] ?? 0);
         $disabilityStatus = trim($_POST['disability_status'] ?? 'None');
         $referralSource = trim($_POST['referral_source'] ?? '');
         $additionalNotes = trim($_POST['additional_notes'] ?? '');
@@ -784,7 +791,7 @@ class AdminContentController extends Controller
             $phone === '' || $email === '' || $county === '' ||
             $guardianName === '' || $guardianRelationship === '' || $guardianPhone === '' ||
             $previousSchool === '' || $kcseYear === '' || $kcseGrade === '' ||
-            $programmeId === 0 || $preferredIntake === ''
+            $programmeId === 0 || $preferredIntake === '' || $sessionId === 0
         ) {
             flash('error', 'Please fill in all required fields.');
             $this->redirect('admin/admission');
@@ -876,9 +883,9 @@ class AdminContentController extends Controller
             $stmt->execute([$preferredIntake]);
             $intake = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            // All new students start at Session 1
-            $stmt = $pdo->prepare('SELECT id FROM sessions WHERE code = ? LIMIT 1');
-            $stmt->execute(['S1']);
+            // Get selected session from admission form
+            $stmt = $pdo->prepare('SELECT id FROM sessions WHERE id = ? LIMIT 1');
+            $stmt->execute([$sessionId]);
             $session = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if ($currentYear && $currentTerm && $intake && $session) {
@@ -2079,8 +2086,9 @@ class AdminContentController extends Controller
         $sessionId = (int)($_GET['session_id'] ?? 0);
         $termId = (int)($_GET['term_id'] ?? 0);
         $studentSessionId = (int)($_GET['student_session_id'] ?? 0); // Student progression session
+        $unitId = (int)($_GET['unit_id'] ?? 0); // Unit/Course
 
-        if ($programmeId === 0 || $sessionId === 0 || $termId === 0) {
+        if ($programmeId === 0 || $sessionId === 0 || $termId === 0 || $unitId === 0) {
             header('Content-Type: application/json');
             echo json_encode(['error' => 'Invalid parameters']);
             return;
@@ -2091,15 +2099,17 @@ class AdminContentController extends Controller
             
             // Build query with optional session filter
             $sql = '
-                SELECT sa.id, sa.name, sa.admission_number 
+                SELECT DISTINCT sa.id, sa.name, sa.admission_number 
                 FROM student_accounts sa
                 JOIN student_enrollments se ON sa.id = se.student_id
+                JOIN course_grades cg ON sa.id = cg.student_id
                 WHERE se.programme_id = ? 
                 AND se.academic_session_id = ? 
                 AND se.term_id = ? 
+                AND cg.course_id = ?
                 AND se.status = "active"
             ';
-            $params = [$programmeId, $sessionId, $termId];
+            $params = [$programmeId, $sessionId, $termId, $unitId];
             
             if ($studentSessionId > 0) {
                 $sql .= ' AND se.session_id = ?';
@@ -2250,6 +2260,29 @@ class AdminContentController extends Controller
             'studentSessions' => $sessions, // For marks entry page
             'siteSettings' => $settings,
         ];
+    }
+
+    public function getExamTypesByGradingSystem(): void
+    {
+        // Check authentication for AJAX requests
+        if (!Auth::check()) {
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+
+        $gradingSystemId = (int)($_GET['grading_system_id'] ?? 0);
+        
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('SELECT * FROM exam_types WHERE grading_system_id = ? ORDER BY sequence_number ASC');
+            $stmt->execute([$gradingSystemId]);
+            header('Content-Type: application/json');
+            echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (PDOException $e) {
+            header('Content-Type: application/json');
+            echo json_encode(['error' => $e->getMessage()]);
+        }
     }
 
     private function buildAdmissionNumber(string $format, int $studentId, ?string $programmeAbbr = null): string

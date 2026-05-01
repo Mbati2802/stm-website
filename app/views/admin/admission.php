@@ -143,6 +143,15 @@ $kenyanCounties = [
                             <?php endforeach; ?>
                         </select>
                     </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Session (Student Progression) <span class="text-danger">*</span></label>
+                        <select required name="session_id" class="form-select">
+                            <option value="">Select Session</option>
+                            <?php foreach (($sessions ?? []) as $session): ?>
+                                <option value="<?= e((string)$session['id']) ?>"><?= e($session['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
 
                 <h2 class="h6 text-uppercase text-muted mb-3">Additional Information</h2>

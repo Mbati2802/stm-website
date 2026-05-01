@@ -168,6 +168,7 @@ $router->add('POST', 'admin/grading/grade-range/delete', [GradingController::cla
 $router->add('GET', 'admin/grading/grade-ranges', [GradingController::class, 'getGradeRanges']);
 $router->add('GET', 'admin/grading/exam-types', [GradingController::class, 'getExamTypes']);
 $router->add('GET', 'admin/students/by-enrollment', [AdminContentController::class, 'getStudentsByEnrollment']);
+$router->add('GET', 'admin/exam-types/by-grading-system', [AdminContentController::class, 'getExamTypesByGradingSystem']);
 $router->add('POST', 'admin/course-grades/bulk-save', [AdminContentController::class, 'bulkSaveCourseGrades']);
 $router->add('GET', 'admin/grading/calculate-grade', [GradingController::class, 'calculateGrade']);
 $router->add('GET', 'admin/media', [AdminContentController::class, 'mediaLibrary']);
