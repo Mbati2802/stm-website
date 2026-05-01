@@ -2088,7 +2088,7 @@ class AdminContentController extends Controller
         $studentSessionId = (int)($_GET['student_session_id'] ?? 0); // Student progression session
         $unitId = (int)($_GET['unit_id'] ?? 0); // Unit/Course
 
-        if ($programmeId === 0 || $sessionId === 0 || $termId === 0) {
+        if ($programmeId === 0 || $sessionId === 0 || $termId === 0 || $unitId === 0) {
             header('Content-Type: application/json');
             echo json_encode(['error' => 'Invalid parameters']);
             return;
@@ -2096,6 +2096,19 @@ class AdminContentController extends Controller
 
         try {
             $pdo = Database::getInstance($this->config['db']);
+            
+            // Get programme_id for the selected unit/course
+            $courseStmt = $pdo->prepare('SELECT programme_id FROM courses WHERE id = ?');
+            $courseStmt->execute([$unitId]);
+            $course = $courseStmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$course) {
+                header('Content-Type: application/json');
+                echo json_encode(['error' => 'Course not found']);
+                return;
+            }
+            
+            $courseProgrammeId = $course['programme_id'];
             
             // Build query with optional session filter
             $sql = '
@@ -2107,7 +2120,7 @@ class AdminContentController extends Controller
                 AND se.term_id = ? 
                 AND se.status = "active"
             ';
-            $params = [$programmeId, $sessionId, $termId];
+            $params = [$courseProgrammeId, $sessionId, $termId];
             
             if ($studentSessionId > 0) {
                 $sql .= ' AND se.session_id = ?';

@@ -44,8 +44,8 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Unit/Course (Optional)</label>
-                    <select class="form-select" id="unitFilter">
+                    <label class="form-label">Unit/Course <span class="text-danger">*</span></label>
+                    <select class="form-select" id="unitFilter" required>
                         <option value="">Select unit</option>
                         <?php foreach ($courses ?? [] as $course): ?>
                         <option value="<?= e((string)$course['id']) ?>"><?= e($course['title']) ?></option>
@@ -140,21 +140,27 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Marks Entry: Student session changed');
         checkAndLoadStudents();
     });
+    document.getElementById('unitFilter').addEventListener('change', function() {
+        console.log('Marks Entry: Unit changed');
+        checkAndLoadStudents();
+    });
 
     function checkAndLoadStudents() {
         const programmeId = document.getElementById('programmeFilter').value;
         const sessionId = document.getElementById('sessionFilter').value;
         const termId = document.getElementById('termFilter').value;
         const studentSessionId = document.getElementById('studentSessionFilter').value;
+        const unitId = document.getElementById('unitFilter').value;
         
         console.log('Marks Entry: checkAndLoadStudents called with', {
             programmeId,
             sessionId,
             termId,
-            studentSessionId
+            studentSessionId,
+            unitId
         });
         
-        if (programmeId && sessionId && termId && studentSessionId) {
+        if (programmeId && sessionId && termId && studentSessionId && unitId) {
             // Load exam types if not already loaded
             if (!window.examTypes || window.examTypes.length === 0) {
                 console.log('Marks Entry: Exam types not loaded, loading them first');
@@ -163,22 +169,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(data => {
                         console.log('Marks Entry: Exam types received', data);
                         window.examTypes = data;
-                        loadStudents(programmeId, sessionId, termId, studentSessionId);
+                        loadStudents(programmeId, sessionId, termId, studentSessionId, unitId);
                     })
                     .catch(error => {
                         console.error('Marks Entry: Error fetching exam types', error);
                     });
             } else {
                 console.log('Marks Entry: All filters set, loading students');
-                loadStudents(programmeId, sessionId, termId, studentSessionId);
+                loadStudents(programmeId, sessionId, termId, studentSessionId, unitId);
             }
         } else {
             console.log('Marks Entry: Not all filters set yet');
         }
     }
 
-    function loadStudents(programmeId, sessionId, termId, studentSessionId) {
-        const url = `<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}&student_session_id=${studentSessionId}`;
+    function loadStudents(programmeId, sessionId, termId, studentSessionId, unitId) {
+        const url = `<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}&student_session_id=${studentSessionId}&unit_id=${unitId}`;
         console.log('Marks Entry: Fetching students from', url);
         fetch(url)
             .then(response => {
