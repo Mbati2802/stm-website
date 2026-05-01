@@ -1,6 +1,9 @@
 -- Migration for existing databases with academic_sessions table
 -- This script renames academic_sessions to academic_years and creates sessions table
 
+-- Drop academic_years if it exists (in case of previous failed migration)
+DROP TABLE IF EXISTS `academic_years`;
+
 -- Rename academic_sessions to academic_years
 RENAME TABLE `academic_sessions` TO `academic_years`;
 
