@@ -158,6 +158,15 @@ class AdminContentController extends Controller
             return;
         }
 
+        // Use marks_entry view for course_grades
+        if ($entity === 'course_grades') {
+            $viewData = array_merge($this->buildFormRelations(), [
+                'metaTitle' => 'Marks Entry',
+            ]);
+            $this->view('admin/course_grades/marks_entry', $viewData);
+            return;
+        }
+
         $model = new ContentModel($this->config);
         $hiddenIds = $model->getHiddenIds($entity);
         $rows = $model->all($entity);
