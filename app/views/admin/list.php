@@ -40,8 +40,13 @@
                 <thead>
                 <tr>
                     <?php if(!empty($rows)): foreach(array_keys($rows[0]) as $h): ?>
-                        <?php $headerClass = $columnClassMap[(string)$h] ?? 'col-md'; ?>
+                        <?php
+                        $headerClass = $columnClassMap[(string)$h] ?? 'col-md';
+                        $skipColumn = ($entity === 'programmes') && in_array((string)$h, ['description', 'slug'], true);
+                        ?>
+                        <?php if (!$skipColumn): ?>
                         <th class="<?= e($headerClass) ?>"><?= e($h) ?></th>
+                        <?php endif; ?>
                     <?php endforeach; endif; ?>
                     <th class="col-sm">Visibility</th>
                     <th class="col-actions">Actions</th>
@@ -55,10 +60,14 @@
                         $key = (string)$k;
                         $cellClass = $columnClassMap[$key] ?? 'col-md';
                         $fullValue = (string)$v;
+                        $skipColumn = ($entity === 'programmes') && in_array($key, ['description', 'slug'], true);
+                        if ($skipColumn) continue;
                         ?>
                         <td class="<?= e($cellClass) ?>" title="<?= e($key === 'password' ? '' : $fullValue) ?>">
                             <?php if ((string)$k === 'password'): ?>
                                 ••••••••
+                            <?php elseif ($entity === 'programmes' && $key === 'course'): ?>
+                                <?= e(implode(' ', array_slice(explode(' ', $fullValue), 0, 3))) ?>
                             <?php else: ?>
                                 <?= e($fullValue) ?>
                             <?php endif; ?>
