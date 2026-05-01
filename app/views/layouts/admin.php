@@ -122,9 +122,10 @@ if ($adminId > 0 && !str_ends_with($viewPath, 'admin/login.php')) {
                     <span class="admin-nav-group-title">System</span>
                     <i class="bi bi-chevron-down admin-nav-chevron"></i>
                 </div>
-                <div class="collapse <?= str_contains($adminPath, 'admin/list/users') || str_contains($adminPath, 'admin/settings') ? 'show' : '' ?>" id="systemGroup">
+                <div class="collapse <?= str_contains($adminPath, 'admin/list/users') || str_contains($adminPath, 'admin/settings') || str_contains($adminPath, 'admin/deleted-records') ? 'show' : '' ?>" id="systemGroup">
                     <?php if (Auth::canViewEntity('users')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/users') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/users')) ?>"><i class="bi bi-person-badge"></i><span>Staff Users</span></a><?php endif; ?>
                     <?php if (!Auth::isTeacher()): ?><a class="nav-link <?= str_contains($adminPath, 'admin/settings') ? 'active' : '' ?>" href="<?= e(base_url('admin/settings')) ?>"><i class="bi bi-sliders"></i><span>UI Content Settings</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('students')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/deleted-records') ? 'active' : '' ?>" href="<?= e(base_url('admin/deleted-records')) ?>"><i class="bi bi-trash"></i><span>Deleted Records</span></a><?php endif; ?>
                     <a class="nav-link text-danger" href="<?= e(base_url('admin/logout')) ?>"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
                 </div>
             </div>

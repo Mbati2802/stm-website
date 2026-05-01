@@ -63,7 +63,7 @@
                                     <button class="btn btn-sm btn-action-reset" data-bs-toggle="modal" data-bs-target="#resetPasswordModal" data-student-id="<?= (int)$row['id'] ?>" data-student-name="<?= e((string)$row['name']) ?>" data-student-email="<?= e((string)$row['email']) ?>" title="Reset Password">
                                         <i class="bi bi-key"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-action-edit" data-bs-toggle="modal" data-bs-target="#assignAdmissionModal" data-student-id="<?= (int)$row['id'] ?>" data-admission-number="<?= e((string)($row['admission_number'] ?? '')) ?>" title="Assign Admission Number">
+                                    <button class="btn btn-sm btn-action-edit <?= !empty($row['admission_number']) ? 'disabled' : '' ?>" <?= !empty($row['admission_number']) ? 'disabled' : '' ?> data-bs-toggle="modal" data-bs-target="#assignAdmissionModal" data-student-id="<?= (int)$row['id'] ?>" data-admission-number="<?= e((string)($row['admission_number'] ?? '')) ?>" title="<?= !empty($row['admission_number']) ? 'Admission Number Already Assigned' : 'Assign Admission Number' ?>">
                                         <i class="bi bi-person-badge"></i>
                                     </button>
                                     <button class="btn btn-sm btn-action-delete" data-bs-toggle="modal" data-bs-target="#deleteStudentModal" data-student-id="<?= (int)$row['id'] ?>" data-student-name="<?= e((string)$row['name']) ?>" title="Delete Student">

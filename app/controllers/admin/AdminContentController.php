@@ -857,13 +857,14 @@ class AdminContentController extends Controller
         $contentModel = new ContentModel($this->config);
         $programme = null;
         if (!empty($student['programme_id'])) {
-            $programme = $contentModel->getProgrammeById((int)$student['programme_id']);
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('SELECT * FROM programmes WHERE id = ?');
+            $stmt->execute([(int)$student['programme_id']]);
+            $programme = $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
-        $this->view('admin/student_details', [
-            'student' => $student,
-            'programme' => $programme,
-        ]);
+        // Render partial view without layout for modal
+        require_once __DIR__ . '/../../app/views/admin/student_details.php';
     }
 
     public function editStudentForm(): void
@@ -893,11 +894,8 @@ class AdminContentController extends Controller
             'Vihiga','Wajir','West Pokot'
         ];
 
-        $this->view('admin/student_edit', [
-            'student' => $student,
-            'programmes' => $programmes,
-            'kenyanCounties' => $kenyanCounties,
-        ]);
+        // Render partial view without layout for modal
+        require_once __DIR__ . '/../../app/views/admin/student_edit.php';
     }
 
     public function editStudent(): void
@@ -985,6 +983,92 @@ class AdminContentController extends Controller
         $this->redirect('admin/students');
     }
 
+    public function deletedRecords(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canViewEntity('students')) {
+            $this->redirect('admin');
+        }
+
+        $pdo = Database::getInstance($this->config['db']);
+        $stmt = $pdo->prepare('SELECT dr.*, a.name as deleted_by_name FROM deleted_records dr LEFT JOIN admin_users a ON dr.deleted_by = a.id ORDER BY dr.deleted_at DESC LIMIT 100');
+        $stmt->execute();
+        $deletedRecords = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $this->view('admin/deleted_records', [
+            'metaTitle' => 'Deleted Records',
+            'records' => $deletedRecords,
+        ]);
+    }
+
+    public function restoreRecord(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+        }
+
+        $recordId = (int)($_POST['record_id'] ?? 0);
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('SELECT * FROM deleted_records WHERE id = ?');
+            $stmt->execute([$recordId]);
+            $record = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($record === null) {
+                flash('error', 'Record not found.');
+                $this->redirect('admin/deleted-records');
+            }
+
+            $recordData = json_decode($record['record_data'], true);
+            $tableName = $record['table_name'];
+
+            if ($tableName === 'student_accounts') {
+                $stmt = $pdo->prepare(<<<SQL
+                    INSERT INTO student_accounts (name, email, password, admission_number, national_id, gender, date_of_birth, phone, county, sub_county, guardian_name, guardian_relationship, guardian_phone, guardian_email, previous_school, kcse_year, kcse_grade, kcse_index, programme_id, preferred_intake, disability_status, referral_source, additional_notes, is_suspended, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                SQL);
+                $stmt->execute([
+                    $recordData['name'],
+                    $recordData['email'],
+                    $recordData['password'],
+                    $recordData['admission_number'] ?? null,
+                    $recordData['national_id'] ?? null,
+                    $recordData['gender'] ?? null,
+                    $recordData['date_of_birth'] ?? null,
+                    $recordData['phone'] ?? null,
+                    $recordData['county'] ?? null,
+                    $recordData['sub_county'] ?? null,
+                    $recordData['guardian_name'] ?? null,
+                    $recordData['guardian_relationship'] ?? null,
+                    $recordData['guardian_phone'] ?? null,
+                    $recordData['guardian_email'] ?? null,
+                    $recordData['previous_school'] ?? null,
+                    $recordData['kcse_year'] ?? null,
+                    $recordData['kcse_grade'] ?? null,
+                    $recordData['kcse_index'] ?? null,
+                    $recordData['programme_id'] ?? null,
+                    $recordData['preferred_intake'] ?? null,
+                    $recordData['disability_status'] ?? null,
+                    $recordData['referral_source'] ?? null,
+                    $recordData['additional_notes'] ?? null,
+                    $recordData['is_suspended'] ?? 0,
+                    $recordData['created_at'],
+                ]);
+            }
+
+            $stmt = $pdo->prepare('DELETE FROM deleted_records WHERE id = ?');
+            $stmt->execute([$recordId]);
+
+            flash('success', 'Record restored successfully.');
+        } catch (PDOException $e) {
+            flash('error', 'Failed to restore record: ' . $e->getMessage());
+        }
+
+        $this->redirect('admin/deleted-records');
+    }
+
     public function deleteStudent(): void
     {
         Auth::requireAdmin();
@@ -1004,10 +1088,17 @@ class AdminContentController extends Controller
 
         try {
             $pdo = Database::getInstance($this->config['db']);
+            
+            // Archive the record before deletion
+            $recordData = json_encode($student);
+            $stmt = $pdo->prepare('INSERT INTO deleted_records (table_name, record_id, record_data, deleted_by) VALUES (?, ?, ?, ?)');
+            $stmt->execute(['student_accounts', $studentId, $recordData, $_SESSION['admin_id'] ?? null]);
+            
+            // Delete the record
             $stmt = $pdo->prepare('DELETE FROM student_accounts WHERE id = ?');
             $stmt->execute([$studentId]);
 
-            flash('success', 'Student deleted successfully.');
+            flash('success', 'Student deleted successfully and archived.');
         } catch (PDOException $e) {
             flash('error', 'Failed to delete student: ' . $e->getMessage());
         }

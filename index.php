@@ -138,6 +138,8 @@ $router->add('POST', 'admin/students/assign/{id}', [AdminContentController::clas
 $router->add('POST', 'admin/students/bulk-assign', [AdminContentController::class, 'bulkAssignAdmissionNumbers']);
 $router->add('GET', 'admin/admission', [AdminContentController::class, 'admission']);
 $router->add('POST', 'admin/admission', [AdminContentController::class, 'submitAdmission']);
+$router->add('GET', 'admin/deleted-records', [AdminContentController::class, 'deletedRecords']);
+$router->add('POST', 'admin/deleted-records/restore', [AdminContentController::class, 'restoreRecord']);
 $router->add('GET', 'admin/media', [AdminContentController::class, 'mediaLibrary']);
 $router->add('POST', 'admin/media/upload', [AdminContentController::class, 'uploadMedia']);
 $router->add('GET', 'admin/media/delete/{id}', [AdminContentController::class, 'deleteMedia']);
