@@ -789,13 +789,15 @@ class AdminContentController extends Controller
             $this->redirect('admin/admission');
         }
 
-        // Generate admission number
-        $contentModel = new ContentModel($this->config);
-        $format = (string)($contentModel->getSettings()['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}');
+        // Generate admission number using default format from admission_number_formats table
+        $pdo = Database::getInstance($this->config['db']);
+        $stmt = $pdo->prepare('SELECT format_pattern FROM admission_number_formats WHERE is_default = 1 LIMIT 1');
+        $stmt->execute();
+        $defaultFormat = $stmt->fetch(PDO::FETCH_ASSOC);
+        $format = $defaultFormat['format_pattern'] ?? 'STM/{YEAR}/{SEQ4}';
         
         // Get programme abbreviation
         $programmeAbbr = null;
-        $pdo = Database::getInstance($this->config['db']);
         $stmt = $pdo->prepare('SELECT abbreviation FROM programmes WHERE id = ?');
         $stmt->execute([$programmeId]);
         $programme = $stmt->fetch(PDO::FETCH_ASSOC);
