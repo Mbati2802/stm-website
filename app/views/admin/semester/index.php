@@ -333,7 +333,7 @@ function confirmDelete(type, id) {
     if (confirm('Are you sure you want to delete this ' + type + '?')) {
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '<?= e(base_url('admin/semester/' . type . '/delete')) ?>';
+        form.action = '<?= e(base_url('admin/semester/')) ?>' + type + '/delete';
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = 'id';
