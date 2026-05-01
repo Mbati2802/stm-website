@@ -850,6 +850,32 @@ class AdminContentController extends Controller
         $admissionNumber = $this->buildAdmissionNumber($format, $studentId, $programmeAbbr);
         $portalModel->assignAdmissionNumber($studentId, $admissionNumber);
 
+        // Create student enrollment record
+        try {
+            // Get current academic session
+            $stmt = $pdo->prepare('SELECT id FROM academic_sessions WHERE is_current = 1 LIMIT 1');
+            $stmt->execute();
+            $currentSession = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Get current term
+            $stmt = $pdo->prepare('SELECT id FROM terms WHERE is_current = 1 LIMIT 1');
+            $stmt->execute();
+            $currentTerm = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Get intake by preferred intake
+            $stmt = $pdo->prepare('SELECT id FROM intakes WHERE code = ? LIMIT 1');
+            $stmt->execute([$preferredIntake]);
+            $intake = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($currentSession && $currentTerm && $intake) {
+                $enrollmentStmt = $pdo->prepare('INSERT INTO student_enrollments (student_id, academic_session_id, term_id, intake_id, programme_id, enrollment_date, status) VALUES (?, ?, ?, ?, ?, CURDATE(), ?)');
+                $enrollmentStmt->execute([$studentId, $currentSession['id'], $currentTerm['id'], $intake['id'], $programmeId, 'active']);
+            }
+        } catch (PDOException $e) {
+            // Log error but don't fail admission if enrollment creation fails
+            error_log('Failed to create student enrollment: ' . $e->getMessage());
+        }
+
         flash('success', "Student admitted successfully. Admission Number: {$admissionNumber}. Temporary Password: {$tempPassword}");
         $this->redirect('admin/students');
     }
