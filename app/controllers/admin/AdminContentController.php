@@ -2071,6 +2071,7 @@ class AdminContentController extends Controller
         $programmeId = (int)($_GET['programme_id'] ?? 0);
         $sessionId = (int)($_GET['session_id'] ?? 0);
         $termId = (int)($_GET['term_id'] ?? 0);
+        $studentSessionId = (int)($_GET['student_session_id'] ?? 0); // Student progression session
 
         if ($programmeId === 0 || $sessionId === 0 || $termId === 0) {
             echo json_encode(['error' => 'Invalid parameters']);
@@ -2079,7 +2080,9 @@ class AdminContentController extends Controller
 
         try {
             $pdo = Database::getInstance($this->config['db']);
-            $stmt = $pdo->prepare('
+            
+            // Build query with optional session filter
+            $sql = '
                 SELECT s.id, s.name, s.admission_number 
                 FROM students s
                 JOIN student_enrollments se ON s.id = se.student_id
@@ -2087,9 +2090,18 @@ class AdminContentController extends Controller
                 AND se.academic_session_id = ? 
                 AND se.term_id = ? 
                 AND se.status = "active"
-                ORDER BY s.name ASC
-            ');
-            $stmt->execute([$programmeId, $sessionId, $termId]);
+            ';
+            $params = [$programmeId, $sessionId, $termId];
+            
+            if ($studentSessionId > 0) {
+                $sql .= ' AND se.session_id = ?';
+                $params[] = $studentSessionId;
+            }
+            
+            $sql .= ' ORDER BY s.name ASC';
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
             $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
             echo json_encode($students);
         } catch (PDOException $e) {
@@ -2206,7 +2218,7 @@ class AdminContentController extends Controller
         $academicYears = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Get terms
-        $stmt = $pdo->query('SELECT t.*, ay.name as year_name FROM terms t LEFT JOIN academic_years ay ON t.academic_year_id = ay.id ORDER BY ay.start_date DESC, t.start_date ASC');
+        $stmt = $pdo->query('SELECT t.*, ay.name as year_name FROM terms t LEFT JOIN academic_years ay ON t.academic_session_id = ay.id ORDER BY ay.start_date DESC, t.start_date ASC');
         $terms = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Get sessions

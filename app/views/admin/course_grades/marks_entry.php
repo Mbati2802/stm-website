@@ -118,7 +118,7 @@ function checkAndLoadStudents() {
 }
 
 function loadStudents(programmeId, sessionId, termId, studentSessionId) {
-    fetch(`<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}&session_id=${studentSessionId}`)
+    fetch(`<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}&student_session_id=${studentSessionId}`)
         .then(response => response.json())
         .then(data => {
             renderMarksTable(data);
