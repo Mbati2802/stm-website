@@ -68,9 +68,9 @@
                             <?php if ((string)$k === 'password'): ?>
                                 ••••••••
                             <?php elseif ($entity === 'programmes' && $key === 'abbreviation'): ?>
-                                <td><strong><?= e((string)($row['abbreviation'] ?? '')) ?></strong></td>
+                                <strong><?= e((string)($row['abbreviation'] ?? '')) ?></strong>
                             <?php elseif ($entity === 'programmes' && $key === 'description'): ?>
-                                <td title="<?= e($fullValue) ?>"><?= e(implode(' ', array_slice(explode(' ', $fullValue), 0, 3))) ?>...</td>
+                                <?= e(implode(' ', array_slice(explode(' ', $fullValue), 0, 3))) ?>...
                             <?php else: ?>
                                 <?= e($fullValue) ?>
                             <?php endif; ?>
