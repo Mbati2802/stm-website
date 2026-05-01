@@ -879,8 +879,11 @@ class AdminContentController extends Controller
             $programme = $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
+        // Extract variables for the view
+        extract(['student' => $student, 'programme' => $programme]);
+
         // Render partial view without layout for modal
-        require_once __DIR__ . '/../../app/views/admin/student_details.php';
+        include __DIR__ . '/../../app/views/admin/student_details.php';
     }
 
     public function editStudentForm(): void
@@ -910,8 +913,11 @@ class AdminContentController extends Controller
             'Vihiga','Wajir','West Pokot'
         ];
 
+        // Extract variables for the view
+        extract(['student' => $student, 'programmes' => $programmes, 'kenyanCounties' => $kenyanCounties]);
+
         // Render partial view without layout for modal
-        require_once __DIR__ . '/../../app/views/admin/student_edit.php';
+        include __DIR__ . '/../../app/views/admin/student_edit.php';
     }
 
     public function editStudent(): void
