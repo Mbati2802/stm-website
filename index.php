@@ -132,6 +132,7 @@ $router->add('GET', 'admin/students', [AdminContentController::class, 'students'
 $router->add('GET', 'admin/students/view', [AdminContentController::class, 'viewStudent']);
 $router->add('GET', 'admin/students/edit-form', [AdminContentController::class, 'editStudentForm']);
 $router->add('POST', 'admin/students/edit', [AdminContentController::class, 'editStudent']);
+$router->add('POST', 'admin/students/reset-password', [AdminContentController::class, 'resetStudentPassword']);
 $router->add('POST', 'admin/students/suspend', [AdminContentController::class, 'suspendStudent']);
 $router->add('POST', 'admin/students/delete', [AdminContentController::class, 'deleteStudent']);
 $router->add('POST', 'admin/students/assign', [AdminContentController::class, 'assignStudentAdmissionNumber']);

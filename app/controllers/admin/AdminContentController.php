@@ -973,6 +973,54 @@ class AdminContentController extends Controller
         $this->redirect('admin/students');
     }
 
+    public function resetStudentPassword(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+        }
+
+        $studentId = (int)($_POST['student_id'] ?? 0);
+        $newPassword = trim($_POST['new_password'] ?? '');
+        $confirmPassword = trim($_POST['confirm_password'] ?? '');
+
+        if ($newPassword === '' || $confirmPassword === '') {
+            flash('error', 'Password fields are required.');
+            $this->redirect('admin/students');
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            flash('error', 'Passwords do not match.');
+            $this->redirect('admin/students');
+        }
+
+        if (strlen($newPassword) < 6) {
+            flash('error', 'Password must be at least 6 characters.');
+            $this->redirect('admin/students');
+        }
+
+        try {
+            $portalModel = new StudentPortalModel($this->config);
+            $student = $portalModel->findStudentById($studentId);
+
+            if ($student === null) {
+                flash('error', 'Student not found.');
+                $this->redirect('admin/students');
+            }
+
+            $passwordHash = password_hash($newPassword, PASSWORD_DEFAULT);
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('UPDATE student_accounts SET password = ? WHERE id = ?');
+            $stmt->execute([$passwordHash, $studentId]);
+
+            flash('success', 'Password reset successfully.');
+        } catch (PDOException $e) {
+            flash('error', 'Failed to reset password: ' . $e->getMessage());
+        }
+
+        $this->redirect('admin/students');
+    }
+
     public function suspendStudent(): void
     {
         Auth::requireAdmin();
