@@ -717,7 +717,7 @@ class AdminContentController extends Controller
         }
 
         $contentModel = new ContentModel($this->config);
-        $programmes = $contentModel->getAllProgrammes();
+        $programmes = $contentModel->getProgrammes();
 
         $this->view('admin/admission', [
             'metaTitle' => 'Admission Form',
