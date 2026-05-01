@@ -387,3 +387,4 @@ class SemesterController extends Controller
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
+}
