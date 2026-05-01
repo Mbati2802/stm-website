@@ -366,14 +366,22 @@ class SemesterController extends Controller
 
     public function getTerms(): void
     {
-        Auth::requireAdmin();
+        // Check authentication for AJAX requests
+        if (!Auth::check()) {
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+
         if (!Auth::canViewEntity('settings')) {
+            header('Content-Type: application/json');
             echo json_encode(['error' => 'Unauthorized']);
             return;
         }
 
         $sessionId = (int)($_GET['session_id'] ?? 0);
         if ($sessionId === 0) {
+            header('Content-Type: application/json');
             echo json_encode(['error' => 'Invalid session ID']);
             return;
         }
@@ -382,8 +390,10 @@ class SemesterController extends Controller
             $pdo = Database::getInstance($this->config['db']);
             $stmt = $pdo->prepare('SELECT * FROM terms WHERE academic_session_id = ? ORDER BY start_date ASC');
             $stmt->execute([$sessionId]);
+            header('Content-Type: application/json');
             echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
         } catch (PDOException $e) {
+            header('Content-Type: application/json');
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
