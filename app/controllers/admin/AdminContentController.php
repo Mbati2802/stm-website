@@ -653,12 +653,18 @@ class AdminContentController extends Controller
             $this->redirect('admin');
         }
         $portalModel = new StudentPortalModel($this->config);
-        $contentModel = new ContentModel($this->config);
-        $settings = $contentModel->getSettings();
+        
+        // Get default admission number format from admission_number_formats table
+        $pdo = Database::getInstance($this->config['db']);
+        $stmt = $pdo->prepare('SELECT format_pattern FROM admission_number_formats WHERE is_default = 1 LIMIT 1');
+        $stmt->execute();
+        $defaultFormat = $stmt->fetch(PDO::FETCH_ASSOC);
+        $admissionNumberFormat = $defaultFormat['format_pattern'] ?? 'STM/{YEAR}/{SEQ4}';
+        
         $this->view('admin/students', [
             'metaTitle' => 'Student Accounts',
             'rows' => $portalModel->allStudents(),
-            'admissionNumberFormat' => (string)($settings['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}'),
+            'admissionNumberFormat' => $admissionNumberFormat,
         ]);
     }
 
@@ -684,13 +690,16 @@ class AdminContentController extends Controller
 
         $admissionNumber = strtoupper(trim($_POST['admission_number'] ?? ''));
         if ($admissionNumber === '') {
-            $contentModel = new ContentModel($this->config);
-            $format = (string)($contentModel->getSettings()['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}');
+            // Get default format from admission_number_formats table
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('SELECT format_pattern FROM admission_number_formats WHERE is_default = 1 LIMIT 1');
+            $stmt->execute();
+            $defaultFormat = $stmt->fetch(PDO::FETCH_ASSOC);
+            $format = $defaultFormat['format_pattern'] ?? 'STM/{YEAR}/{SEQ4}';
             
             // Get programme abbreviation if student has a programme assigned
             $programmeAbbr = null;
             if (!empty($student['programme_id'])) {
-                $pdo = Database::getInstance($this->config['db']);
                 $stmt = $pdo->prepare('SELECT abbreviation FROM programmes WHERE id = ?');
                 $stmt->execute([(int)$student['programme_id']]);
                 $programme = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -1120,9 +1129,13 @@ class AdminContentController extends Controller
             $this->redirect('admin');
         }
         $portalModel = new StudentPortalModel($this->config);
-        $contentModel = new ContentModel($this->config);
-        $format = (string)($contentModel->getSettings()['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}');
+        
+        // Get default format from admission_number_formats table
         $pdo = Database::getInstance($this->config['db']);
+        $stmt = $pdo->prepare('SELECT format_pattern FROM admission_number_formats WHERE is_default = 1 LIMIT 1');
+        $stmt->execute();
+        $defaultFormat = $stmt->fetch(PDO::FETCH_ASSOC);
+        $format = $defaultFormat['format_pattern'] ?? 'STM/{YEAR}/{SEQ4}';
         
         $stmt = $pdo->query('SELECT id, programme_id FROM student_accounts');
         $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
