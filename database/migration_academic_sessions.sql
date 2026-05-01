@@ -67,11 +67,9 @@ CREATE TABLE IF NOT EXISTS `student_enrollments` (
   INDEX `idx_intake_id` (`intake_id`),
   INDEX `idx_programme_id` (`programme_id`),
   INDEX `idx_status` (`status`),
-  FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`academic_session_id`) REFERENCES `academic_sessions`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`term_id`) REFERENCES `terms`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`intake_id`) REFERENCES `intakes`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`programme_id`) REFERENCES `programmes`(`id`) ON DELETE SET NULL
+  FOREIGN KEY (`intake_id`) REFERENCES `intakes`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Insert default data
