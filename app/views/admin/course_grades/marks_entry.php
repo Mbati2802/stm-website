@@ -59,7 +59,10 @@
     <!-- Marks Entry Table -->
     <div class="card" id="marksEntryCard" style="display: none;">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Marks Entry</h5>
+            <div>
+                <h5 class="mb-0">Marks Entry</h5>
+                <small class="text-muted" id="unitNameDisplay"></small>
+            </div>
             <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-primary" id="refreshStudents">
                     <i class="bi bi-arrow-clockwise"></i> Refresh
@@ -184,6 +187,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadStudents(programmeId, sessionId, termId, studentSessionId, unitId) {
+        // Fetch unit name for display
+        const unitSelect = document.getElementById('unitFilter');
+        const unitName = unitSelect.options[unitSelect.selectedIndex].text;
+        document.getElementById('unitNameDisplay').textContent = `Unit: ${unitName}`;
+        
         const url = `<?= e(base_url('admin/students/by-enrollment')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}&student_session_id=${studentSessionId}&unit_id=${unitId}`;
         console.log('Marks Entry: Fetching students from', url);
         fetch(url)
