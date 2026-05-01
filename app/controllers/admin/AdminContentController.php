@@ -709,6 +709,133 @@ class AdminContentController extends Controller
         $this->redirect('admin/students');
     }
 
+    public function admission(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+        }
+
+        $contentModel = new ContentModel($this->config);
+        $programmes = $contentModel->getAllProgrammes();
+
+        $this->view('admin/admission', [
+            'metaTitle' => 'Admission Form',
+            'programmes' => $programmes,
+        ]);
+    }
+
+    public function submitAdmission(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+        }
+
+        $name = trim($_POST['name'] ?? '');
+        $gender = trim($_POST['gender'] ?? '');
+        $dateOfBirth = trim($_POST['date_of_birth'] ?? '');
+        $nationalId = trim($_POST['national_id'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $county = trim($_POST['county'] ?? '');
+        $subCounty = trim($_POST['sub_county'] ?? '');
+        $guardianName = trim($_POST['guardian_name'] ?? '');
+        $guardianRelationship = trim($_POST['guardian_relationship'] ?? '');
+        $guardianPhone = trim($_POST['guardian_phone'] ?? '');
+        $guardianEmail = trim($_POST['guardian_email'] ?? '');
+        $previousSchool = trim($_POST['previous_school'] ?? '');
+        $kcseYear = trim($_POST['kcse_year'] ?? '');
+        $kcseGrade = trim($_POST['kcse_grade'] ?? '');
+        $kcseIndex = trim($_POST['kcse_index'] ?? '');
+        $programmeId = (int)($_POST['programme_id'] ?? 0);
+        $preferredIntake = trim($_POST['preferred_intake'] ?? '');
+        $disabilityStatus = trim($_POST['disability_status'] ?? 'None');
+        $referralSource = trim($_POST['referral_source'] ?? '');
+        $additionalNotes = trim($_POST['additional_notes'] ?? '');
+
+        if (
+            $name === '' || $gender === '' || $dateOfBirth === '' || $nationalId === '' ||
+            $phone === '' || $email === '' || $county === '' ||
+            $guardianName === '' || $guardianRelationship === '' || $guardianPhone === '' ||
+            $previousSchool === '' || $kcseYear === '' || $kcseGrade === '' ||
+            $programmeId === 0 || $preferredIntake === ''
+        ) {
+            flash('error', 'Please fill in all required fields.');
+            $this->redirect('admin/admission');
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            flash('error', 'Please provide a valid email address.');
+            $this->redirect('admin/admission');
+        }
+
+        if ($guardianEmail !== '' && !filter_var($guardianEmail, FILTER_VALIDATE_EMAIL)) {
+            flash('error', 'Please provide a valid guardian email address.');
+            $this->redirect('admin/admission');
+        }
+
+        $portalModel = new StudentPortalModel($this->config);
+        
+        // Check if email already exists
+        if ($portalModel->findStudentByEmail($email) !== null) {
+            flash('error', 'An account with that email already exists.');
+            $this->redirect('admin/admission');
+        }
+
+        // Check if national ID already exists
+        if ($portalModel->findStudentByNationalId($nationalId) !== null) {
+            flash('error', 'A student with that National ID already exists.');
+            $this->redirect('admin/admission');
+        }
+
+        // Generate admission number
+        $contentModel = new ContentModel($this->config);
+        $format = (string)($contentModel->getSettings()['admission_number_format'] ?? 'STM/{YEAR}/{SEQ4}');
+        
+        // Get programme abbreviation
+        $programmeAbbr = null;
+        $pdo = Database::getInstance($this->config['db']);
+        $stmt = $pdo->prepare('SELECT abbreviation FROM programmes WHERE id = ?');
+        $stmt->execute([$programmeId]);
+        $programme = $stmt->fetch(PDO::FETCH_ASSOC);
+        $programmeAbbr = $programme['abbreviation'] ?? null;
+
+        // Create student account
+        $tempPassword = substr(md5(uniqid()), 0, 8);
+        $studentId = $portalModel->createStudentWithDetails(
+            $name,
+            $email,
+            password_hash($tempPassword, PASSWORD_DEFAULT),
+            $nationalId,
+            $gender,
+            $dateOfBirth,
+            $phone,
+            $county,
+            $subCounty,
+            $guardianName,
+            $guardianRelationship,
+            $guardianPhone,
+            $guardianEmail,
+            $previousSchool,
+            $kcseYear,
+            $kcseGrade,
+            $kcseIndex,
+            $programmeId,
+            $preferredIntake,
+            $disabilityStatus,
+            $referralSource,
+            $additionalNotes
+        );
+
+        // Assign admission number
+        $admissionNumber = $this->buildAdmissionNumber($format, $studentId, $programmeAbbr);
+        $portalModel->assignAdmissionNumber($studentId, $admissionNumber);
+
+        flash('success', "Student admitted successfully. Admission Number: {$admissionNumber}. Temporary Password: {$tempPassword}");
+        $this->redirect('admin/students');
+    }
+
     public function bulkAssignAdmissionNumbers(): void
     {
         Auth::requireAdmin();

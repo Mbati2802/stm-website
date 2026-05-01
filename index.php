@@ -131,6 +131,8 @@ $router->add('POST', 'admin/event-registrations/email/{id}', [AdminContentContro
 $router->add('GET', 'admin/students', [AdminContentController::class, 'students']);
 $router->add('POST', 'admin/students/assign/{id}', [AdminContentController::class, 'assignStudentAdmissionNumber']);
 $router->add('POST', 'admin/students/bulk-assign', [AdminContentController::class, 'bulkAssignAdmissionNumbers']);
+$router->add('GET', 'admin/admission', [AdminContentController::class, 'admission']);
+$router->add('POST', 'admin/admission', [AdminContentController::class, 'submitAdmission']);
 $router->add('GET', 'admin/media', [AdminContentController::class, 'mediaLibrary']);
 $router->add('POST', 'admin/media/upload', [AdminContentController::class, 'uploadMedia']);
 $router->add('GET', 'admin/media/delete/{id}', [AdminContentController::class, 'deleteMedia']);

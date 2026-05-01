@@ -15,6 +15,13 @@ class StudentPortalModel
         return $stmt->fetch() ?: null;
     }
 
+    public function findStudentByNationalId(string $nationalId): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM student_accounts WHERE national_id = :national_id LIMIT 1');
+        $stmt->execute(['national_id' => $nationalId]);
+        return $stmt->fetch() ?: null;
+    }
+
     public function findStudentByAdmissionNumber(string $admissionNumber): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM student_accounts WHERE admission_number = :admission_number LIMIT 1');
@@ -30,6 +37,72 @@ class StudentPortalModel
             'email' => $email,
             'password' => $passwordHash,
         ]);
+    }
+
+    public function createStudentWithDetails(
+        string $name,
+        string $email,
+        string $passwordHash,
+        string $nationalId,
+        string $gender,
+        string $dateOfBirth,
+        string $phone,
+        string $county,
+        string $subCounty,
+        string $guardianName,
+        string $guardianRelationship,
+        string $guardianPhone,
+        string $guardianEmail,
+        string $previousSchool,
+        string $kcseYear,
+        string $kcseGrade,
+        string $kcseIndex,
+        int $programmeId,
+        string $preferredIntake,
+        string $disabilityStatus,
+        string $referralSource,
+        string $additionalNotes
+    ): int {
+        $stmt = $this->pdo->prepare(<<<SQL
+            INSERT INTO student_accounts(
+                name, email, password, national_id, gender, date_of_birth, phone, county, sub_county,
+                guardian_name, guardian_relationship, guardian_phone, guardian_email,
+                previous_school, kcse_year, kcse_grade, kcse_index,
+                programme_id, preferred_intake, disability_status, referral_source, additional_notes,
+                created_at
+            ) VALUES (
+                :name, :email, :password, :national_id, :gender, :date_of_birth, :phone, :county, :sub_county,
+                :guardian_name, :guardian_relationship, :guardian_phone, :guardian_email,
+                :previous_school, :kcse_year, :kcse_grade, :kcse_index,
+                :programme_id, :preferred_intake, :disability_status, :referral_source, :additional_notes,
+                NOW()
+            )
+        SQL);
+        $stmt->execute([
+            'name' => $name,
+            'email' => $email,
+            'password' => $passwordHash,
+            'national_id' => $nationalId,
+            'gender' => $gender,
+            'date_of_birth' => $dateOfBirth,
+            'phone' => $phone,
+            'county' => $county,
+            'sub_county' => $subCounty,
+            'guardian_name' => $guardianName,
+            'guardian_relationship' => $guardianRelationship,
+            'guardian_phone' => $guardianPhone,
+            'guardian_email' => $guardianEmail,
+            'previous_school' => $previousSchool,
+            'kcse_year' => $kcseYear,
+            'kcse_grade' => $kcseGrade,
+            'kcse_index' => $kcseIndex,
+            'programme_id' => $programmeId,
+            'preferred_intake' => $preferredIntake,
+            'disability_status' => $disabilityStatus,
+            'referral_source' => $referralSource,
+            'additional_notes' => $additionalNotes,
+        ]);
+        return (int)$this->pdo->lastInsertId();
     }
 
     public function findStudentById(int $id): ?array
