@@ -263,8 +263,15 @@
                 viewStudentModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
                     const studentId = button.getAttribute('data-student-id');
-                    fetch('<?= e(base_url('admin/students/view')) ?>?id=' + studentId)
-                        .then(response => response.text())
+                    fetch('<?= e(base_url('admin/students/view')) ?>?id=' + studentId, {
+                        credentials: 'same-origin'
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.text();
+                        })
                         .then(html => {
                             document.getElementById('viewStudentContent').innerHTML = html;
                         })
@@ -273,13 +280,20 @@
                         });
                 });
             }
-            
+
             if (editStudentModal) {
                 editStudentModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
                     const studentId = button.getAttribute('data-student-id');
-                    fetch('<?= e(base_url('admin/students/edit-form')) ?>?id=' + studentId)
-                        .then(response => response.text())
+                    fetch('<?= e(base_url('admin/students/edit-form')) ?>?id=' + studentId, {
+                        credentials: 'same-origin'
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.text();
+                        })
                         .then(html => {
                             document.getElementById('editStudentContent').innerHTML = html;
                         })

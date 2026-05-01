@@ -856,9 +856,13 @@ class AdminContentController extends Controller
 
     public function viewStudent(): void
     {
-        Auth::requireAdmin();
+        if (!Auth::check()) {
+            echo '<p class="text-danger">You must be logged in to view student details.</p>';
+            return;
+        }
         if (!Auth::canViewEntity('students')) {
-            $this->redirect('admin');
+            echo '<p class="text-danger">You do not have permission to view student details.</p>';
+            return;
         }
 
         $studentId = (int)($_GET['id'] ?? 0);
@@ -890,9 +894,13 @@ class AdminContentController extends Controller
 
     public function editStudentForm(): void
     {
-        Auth::requireAdmin();
+        if (!Auth::check()) {
+            echo '<p class="text-danger">You must be logged in to edit student details.</p>';
+            return;
+        }
         if (!Auth::canManageEntity('students')) {
-            $this->redirect('admin');
+            echo '<p class="text-danger">You do not have permission to edit student details.</p>';
+            return;
         }
 
         $studentId = (int)($_GET['id'] ?? 0);
