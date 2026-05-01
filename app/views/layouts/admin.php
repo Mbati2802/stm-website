@@ -81,17 +81,17 @@ if ($adminId > 0 && !str_ends_with($viewPath, 'admin/login.php')) {
             </div>
 
             <div class="admin-nav-group">
-                <div class="admin-nav-group-header" data-bs-toggle="collapse" data-bs-target="#academicGroup">
+                <div class="admin-nav-group-header" data-bs-toggle="collapse" data-bs-target="#academicPortalGroup">
                     <span class="admin-nav-group-title">Academic Portal</span>
                     <i class="bi bi-chevron-down admin-nav-chevron"></i>
                 </div>
-                <div class="collapse <?= str_contains($adminPath, 'admin/list/portal_courses') || str_contains($adminPath, 'admin/list/programme_timetables') || str_contains($adminPath, 'admin/list/course_grades') || str_contains($adminPath, 'admin/list/grading_schemes') || str_contains($adminPath, 'admin/list/course_assignments') || str_contains($adminPath, 'admin/list/study_materials') || str_contains($adminPath, 'admin/admission') || str_contains($adminPath, 'admin/admission-number-formats') ? 'show' : '' ?>" id="academicGroup">
+                <div class="collapse <?= str_contains($adminPath, 'admin/list/portal_courses') || str_contains($adminPath, 'admin/list/programme_timetables') || str_contains($adminPath, 'admin/list/course_grades') || str_contains($adminPath, 'admin/list/course_assignments') || str_contains($adminPath, 'admin/list/study_materials') || str_contains($adminPath, 'admin/admission') || str_contains($adminPath, 'admin/admission-number-formats') || str_contains($adminPath, 'admin/grading') ? 'show' : '' ?>" id="academicGroup">
                     <?php if (Auth::canViewEntity('portal_courses')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/portal_courses') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/portal_courses')) ?>"><i class="bi bi-journal-code"></i><span>Portal Units</span></a><?php endif; ?>
                     <?php if (Auth::canViewEntity('programme_timetables')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/programme_timetables') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/programme_timetables')) ?>"><i class="bi bi-calendar-week"></i><span>Programme Timetables</span></a><?php endif; ?>
                     <?php if (Auth::canViewEntity('course_grades')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/course_grades') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/course_grades')) ?>"><i class="bi bi-award"></i><span>Unit Grades</span></a><?php endif; ?>
-                    <?php if (Auth::canViewEntity('grading_schemes')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/grading_schemes') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/grading_schemes')) ?>"><i class="bi bi-sliders2"></i><span>Grading Schemes</span></a><?php endif; ?>
                     <?php if (Auth::canViewEntity('course_assignments')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/course_assignments') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/course_assignments')) ?>"><i class="bi bi-file-earmark-text"></i><span>Assignments</span></a><?php endif; ?>
                     <?php if (Auth::canViewEntity('study_materials')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/study_materials') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/study_materials')) ?>"><i class="bi bi-folder"></i><span>Study Materials</span></a><?php endif; ?>
+                    <?php if (Auth::canViewEntity('settings')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/grading') ? 'active' : '' ?>" href="<?= e(base_url('admin/grading')) ?>"><i class="bi bi-sliders2"></i><span>Grading System</span></a><?php endif; ?>
                     <?php if (Auth::canViewEntity('students')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/admission') ? 'active' : '' ?>" href="<?= e(base_url('admin/admission')) ?>"><i class="bi bi-person-plus"></i><span>Admission</span></a><?php endif; ?>
                     <?php if (Auth::canViewEntity('portal_courses')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/admission-number-formats') ? 'active' : '' ?>" href="<?= e(base_url('admin/admission-number-formats')) ?>"><i class="bi bi-hash"></i><span>Admission Number Formats</span></a><?php endif; ?>
                 </div>
@@ -122,11 +122,10 @@ if ($adminId > 0 && !str_ends_with($viewPath, 'admin/login.php')) {
                     <span class="admin-nav-group-title">System</span>
                     <i class="bi bi-chevron-down admin-nav-chevron"></i>
                 </div>
-                <div class="collapse <?= str_contains($adminPath, 'admin/list/users') || str_contains($adminPath, 'admin/settings') || str_contains($adminPath, 'admin/deleted-records') || str_contains($adminPath, 'admin/grading') ? 'show' : '' ?>" id="systemGroup">
+                <div class="collapse <?= str_contains($adminPath, 'admin/list/users') || str_contains($adminPath, 'admin/settings') || str_contains($adminPath, 'admin/deleted-records') ? 'show' : '' ?>" id="systemGroup">
                     <?php if (Auth::canViewEntity('users')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/list/users') ? 'active' : '' ?>" href="<?= e(base_url('admin/list/users')) ?>"><i class="bi bi-person-badge"></i><span>Staff Users</span></a><?php endif; ?>
                     <?php if (!Auth::isTeacher()): ?><a class="nav-link <?= str_contains($adminPath, 'admin/settings') ? 'active' : '' ?>" href="<?= e(base_url('admin/settings')) ?>"><i class="bi bi-sliders"></i><span>UI Content Settings</span></a><?php endif; ?>
                     <?php if (Auth::canViewEntity('students')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/deleted-records') ? 'active' : '' ?>" href="<?= e(base_url('admin/deleted-records')) ?>"><i class="bi bi-trash"></i><span>Deleted Records</span></a><?php endif; ?>
-                    <?php if (Auth::canViewEntity('settings')): ?><a class="nav-link <?= str_contains($adminPath, 'admin/grading') ? 'active' : '' ?>" href="<?= e(base_url('admin/grading')) ?>"><i class="bi bi-graph-up"></i><span>Grading System</span></a><?php endif; ?>
                     <a class="nav-link text-danger" href="<?= e(base_url('admin/logout')) ?>"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
                 </div>
             </div>
