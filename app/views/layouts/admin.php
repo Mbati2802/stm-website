@@ -312,17 +312,33 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     /* --- Sidebar accordion behavior --- */
-    const sidebarCollapses = document.querySelectorAll('.admin-nav-group .collapse');
-    sidebarCollapses.forEach(collapse => {
-        collapse.addEventListener('show.bs.collapse', function() {
-            sidebarCollapses.forEach(other => {
-                if (other !== this && other.classList.contains('show')) {
-                    const bsCollapse = bootstrap.Collapse.getInstance(other);
-                    if (bsCollapse) {
-                        bsCollapse.hide();
-                    }
+    const navGroupHeaders = document.querySelectorAll('.admin-nav-group-header');
+    navGroupHeaders.forEach(header => {
+        header.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('data-bs-target');
+            if (!targetId) return;
+            const targetCollapse = document.querySelector(targetId);
+            if (!targetCollapse) return;
+
+            const isAlreadyOpen = targetCollapse.classList.contains('show');
+
+            navGroupHeaders.forEach(otherHeader => {
+                if (otherHeader === header) return;
+                const otherTargetId = otherHeader.getAttribute('data-bs-target');
+                if (!otherTargetId) return;
+                const otherCollapse = document.querySelector(otherTargetId);
+                if (otherCollapse && otherCollapse.classList.contains('show')) {
+                    otherCollapse.classList.remove('show');
+                    otherHeader.setAttribute('aria-expanded', 'false');
                 }
             });
+
+            if (!isAlreadyOpen) {
+                setTimeout(() => {
+                    targetCollapse.classList.add('show');
+                    this.setAttribute('aria-expanded', 'true');
+                }, 10);
+            }
         });
     });
 
@@ -330,7 +346,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const sidebarCollapseBtn = document.getElementById('adminSidebarCollapse');
     const sidebar = document.getElementById('adminSidebar');
     if (sidebarCollapseBtn && sidebar) {
-        sidebarCollapseBtn.addEventListener('click', function() {
+        sidebarCollapseBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
             sidebar.classList.toggle('collapsed');
             const icon = this.querySelector('i');
             if (icon) {

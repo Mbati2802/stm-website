@@ -33,11 +33,15 @@
     max-width:60px;
 }
 .admin-sidebar.collapsed .admin-sidebar-brand div,
-.admin-sidebar.collapsed .admin-sidebar-brand .admin-sidebar-collapse-btn,
 .admin-sidebar.collapsed .admin-nav-group-title,
 .admin-sidebar.collapsed .admin-nav-chevron,
 .admin-sidebar.collapsed .nav-link span{
     display:none;
+}
+.admin-sidebar.collapsed .admin-sidebar-collapse-btn{
+    position:absolute;
+    right:10px;
+    top:10px;
 }
 .admin-sidebar.collapsed .nav-link{
     justify-content:center;
