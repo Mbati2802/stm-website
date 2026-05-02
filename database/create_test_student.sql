@@ -60,7 +60,7 @@ INSERT INTO student_accounts (
 
 -- Enroll the student in current academic session
 -- Get the current academic session and term
-SELECT id, name FROM academic_sessions ORDER BY id DESC LIMIT 1;
+SELECT id, name FROM academic_years ORDER BY id DESC LIMIT 1;
 SELECT id, name FROM terms ORDER BY id DESC LIMIT 1;
 SELECT id, name FROM intakes ORDER BY id DESC LIMIT 1;
 
@@ -77,7 +77,7 @@ INSERT INTO student_enrollments (
 )
 VALUES (
     (SELECT id FROM student_accounts WHERE admission_number = 'CBE/0008/MAY/2026'),
-    1, -- Replace with actual academic_session_id
+    1, -- Replace with actual academic_session_id (from academic_years table)
     1, -- Replace with actual term_id
     1, -- Replace with actual intake_id
     5, -- Diploma in Perioperative Theater Technology
