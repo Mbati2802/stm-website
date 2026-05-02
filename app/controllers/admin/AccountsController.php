@@ -355,8 +355,10 @@ class AccountsController extends Controller
                 }
 
                 // Build WHERE clause to find students
-                $where = ['s.programme_id = ?', 's.term_id = ?', 's.academic_session_id = ?'];
-                $params = [$programmeId, $termId, $sessionId];
+                // Note: student_accounts table doesn't have term_id or academic_session_id columns
+                // We'll filter by programme only, and store term/session in the invoice record
+                $where = ['s.programme_id = ?'];
+                $params = [$programmeId];
 
                 $whereClause = 'WHERE ' . implode(' AND ', $where);
 
