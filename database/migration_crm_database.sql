@@ -1,10 +1,6 @@
 -- CRM Database Migration for Student Admissions CRM
--- This creates a separate database for the CRM system
-
--- Create CRM database if it doesn't exist
-CREATE DATABASE IF NOT EXISTS crm_college CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-USE crm_college;
+-- This adds CRM tables to your existing database
+-- Run this in your existing database (stmarys2_stm)
 
 -- CRM Users Table
 CREATE TABLE IF NOT EXISTS crm_users (

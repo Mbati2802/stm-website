@@ -4,8 +4,8 @@ return [
     'db' => [
         'host' => 'localhost',
         'name' => 'crm_college',
-        'user' => 'root',
-        'pass' => '',
+        'user' => 'stmarys2_stm',
+        'pass' => 'stmarys2_stm',
         'charset' => 'utf8mb4',
         'collation' => 'utf8mb4_unicode_ci',
         'options' => [
