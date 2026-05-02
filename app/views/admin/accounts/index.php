@@ -72,7 +72,7 @@
 
         <!-- Invoices Table -->
         <div class="table-responsive admin-table-card">
-            <table class="table align-middle admin-table">
+            <table class="table align-middle admin-table" style="font-size: 0.85rem;">
                 <thead>
                     <tr>
                         <th class="col-sm">Invoice #</th>

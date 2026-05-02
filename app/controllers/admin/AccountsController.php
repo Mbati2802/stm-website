@@ -538,73 +538,81 @@ class AccountsController extends Controller
             return;
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $invoiceId = (int)($_POST['invoice_id'] ?? 0);
-            $studentId = (int)($_POST['student_id'] ?? 0);
-            $amount = (float)($_POST['amount'] ?? 0);
-            $paymentMethodId = (int)($_POST['payment_method_id'] ?? 0);
-            $paymentDate = $_POST['payment_date'] ?? date('Y-m-d');
-            $transactionCode = trim($_POST['transaction_code'] ?? '');
-            $chequeNumber = trim($_POST['cheque_number'] ?? '');
-            $bankName = trim($_POST['bank_name'] ?? '');
-            $notes = trim($_POST['notes'] ?? '');
+        try {
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $invoiceId = (int)($_POST['invoice_id'] ?? 0);
+                $studentId = (int)($_POST['student_id'] ?? 0);
+                $amount = (float)($_POST['amount'] ?? 0);
+                $paymentMethodId = (int)($_POST['payment_method_id'] ?? 0);
+                $paymentDate = $_POST['payment_date'] ?? date('Y-m-d');
+                $transactionCode = trim($_POST['transaction_code'] ?? '');
+                $chequeNumber = trim($_POST['cheque_number'] ?? '');
+                $bankName = trim($_POST['bank_name'] ?? '');
+                $notes = trim($_POST['notes'] ?? '');
 
-            if ($invoiceId === 0 || $studentId === 0 || $amount <= 0 || $paymentMethodId === 0) {
-                flash('error', 'Invoice, student, amount, and payment method are required.');
-                $this->redirect('admin/accounts/record-payment?invoice_id=' . $invoiceId);
+                if ($invoiceId === 0 || $studentId === 0 || $amount <= 0 || $paymentMethodId === 0) {
+                    flash('error', 'Invoice, student, amount, and payment method are required.');
+                    $this->redirect('admin/accounts/record-payment?invoice_id=' . $invoiceId);
+                    return;
+                }
+
+                $pdo = Database::getInstance($this->config['db']);
+
+                // Generate payment number
+                $paymentNumber = $this->generatePaymentNumber($pdo);
+
+                // Insert payment
+                $stmt = $pdo->prepare('INSERT INTO payments (payment_number, invoice_id, student_id, amount, payment_method_id, transaction_code, cheque_number, bank_name, payment_date, notes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                $stmt->execute([
+                    $paymentNumber,
+                    $invoiceId,
+                    $studentId,
+                    $amount,
+                    $paymentMethodId,
+                    $transactionCode,
+                    $chequeNumber,
+                    $bankName,
+                    $paymentDate,
+                    $notes,
+                    $_SESSION['admin_id'] ?? null
+                ]);
+
+                // Update invoice status
+                $this->updateInvoiceStatus($pdo, $invoiceId);
+
+                flash('success', 'Payment recorded successfully.');
+                $this->redirect('admin/accounts/view-invoice/' . $invoiceId);
                 return;
             }
 
             $pdo = Database::getInstance($this->config['db']);
+            
+            // Get invoice details
+            $stmt = $pdo->prepare('SELECT i.*, s.name AS student_name, s.admission_number FROM invoices i LEFT JOIN student_accounts s ON i.student_id = s.id WHERE i.id = ?');
+            $stmt->execute([$invoiceId]);
+            $invoice = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Generate payment number
-            $paymentNumber = $this->generatePaymentNumber($pdo);
+            if (!$invoice) {
+                flash('error', 'Invoice not found.');
+                $this->redirect('admin/accounts');
+                return;
+            }
 
-            // Insert payment
-            $stmt = $pdo->prepare('INSERT INTO payments (payment_number, invoice_id, student_id, amount, payment_method_id, transaction_code, cheque_number, bank_name, payment_date, notes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-            $stmt->execute([
-                $paymentNumber,
-                $invoiceId,
-                $studentId,
-                $amount,
-                $paymentMethodId,
-                $transactionCode,
-                $chequeNumber,
-                $bankName,
-                $paymentDate,
-                $notes,
-                $_SESSION['admin_id'] ?? null
+            // Get payment methods
+            $paymentMethods = $pdo->query('SELECT * FROM payment_methods WHERE is_active = 1 ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+
+            $this->view('admin/accounts/record_payment', [
+                'metaTitle' => 'Record Payment',
+                'invoice' => $invoice,
+                'paymentMethods' => $paymentMethods
             ]);
-
-            // Update invoice status
-            $this->updateInvoiceStatus($pdo, $invoiceId);
-
-            flash('success', 'Payment recorded successfully.');
-            $this->redirect('admin/accounts/view-invoice/' . $invoiceId);
-            return;
-        }
-
-        $pdo = Database::getInstance($this->config['db']);
-        
-        // Get invoice details
-        $stmt = $pdo->prepare('SELECT i.*, s.name AS student_name, s.admission_number FROM invoices i LEFT JOIN student_accounts s ON i.student_id = s.id WHERE i.id = ?');
-        $stmt->execute([$invoiceId]);
-        $invoice = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$invoice) {
-            flash('error', 'Invoice not found.');
+        } catch (PDOException $e) {
+            flash('error', 'Database error: ' . $e->getMessage());
             $this->redirect('admin/accounts');
-            return;
+        } catch (Throwable $e) {
+            flash('error', 'Error: ' . $e->getMessage());
+            $this->redirect('admin/accounts');
         }
-
-        // Get payment methods
-        $paymentMethods = $pdo->query('SELECT * FROM payment_methods WHERE is_active = 1 ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
-
-        $this->view('admin/accounts/record_payment', [
-            'metaTitle' => 'Record Payment',
-            'invoice' => $invoice,
-            'paymentMethods' => $paymentMethods
-        ]);
     }
 
     public function studentPayments(): void
