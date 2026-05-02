@@ -3,7 +3,7 @@
 return [
     'db' => [
         'host' => 'localhost',
-        'name' => 'crm_college',
+        'name' => 'stmarys2_crm_college',
         'user' => 'stmarys2_stm',
         'pass' => 'stmarys2_stm',
         'charset' => 'utf8mb4',
