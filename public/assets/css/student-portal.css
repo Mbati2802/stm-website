@@ -1,7 +1,8 @@
 /* Student Portal Styles - Modern Mobile-First Design */
 :root {
-    --student-primary: #185490;
+    --student-primary: #0f9d94;
     --student-secondary: #00aae8;
+    --student-accent: #ffbf00;
     --student-success: #10b981;
     --student-warning: #f59e0b;
     --student-danger: #ef4444;
