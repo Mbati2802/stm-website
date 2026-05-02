@@ -418,6 +418,54 @@ class StudentPortalController extends Controller
         ], 'student');
     }
 
+    public function receipt(int $paymentId): void
+    {
+        $student = $this->requireStudent();
+        
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            
+            // Get payment details
+            $stmt = $pdo->prepare('SELECT p.*, i.invoice_number, i.title AS invoice_title, i.amount AS invoice_amount,
+                                          s.name AS student_name, s.admission_number, s.email AS student_email,
+                                          pm.name AS payment_method_name
+                                   FROM payments p
+                                   LEFT JOIN invoices i ON p.invoice_id = i.id
+                                   LEFT JOIN student_accounts s ON p.student_id = s.id
+                                   LEFT JOIN payment_methods pm ON p.payment_method_id = pm.id
+                                   WHERE p.id = ? AND p.student_id = ?');
+            $stmt->execute([$paymentId, $student['id']]);
+            $payment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$payment) {
+                flash('error', 'Payment not found.');
+                $this->redirect('student/fees');
+                return;
+            }
+
+            // Get invoice balance info
+            $stmt = $pdo->prepare('SELECT COALESCE(SUM(amount), 0) AS total_paid FROM payments WHERE invoice_id = ?');
+            $stmt->execute([$payment['invoice_id']]);
+            $totalPaid = $stmt->fetch(PDO::FETCH_ASSOC)['total_paid'];
+
+            // Mark receipt as generated
+            $stmt = $pdo->prepare('UPDATE payments SET receipt_generated = 1 WHERE id = ?');
+            $stmt->execute([$paymentId]);
+
+            $this->view('student/receipt', [
+                'metaTitle' => 'Receipt ' . $payment['payment_number'],
+                'payment' => $payment,
+                'totalPaid' => $totalPaid
+            ], 'student');
+        } catch (PDOException $e) {
+            flash('error', 'Database error: ' . $e->getMessage());
+            $this->redirect('student/fees');
+        } catch (Throwable $e) {
+            flash('error', 'Error: ' . $e->getMessage());
+            $this->redirect('student/fees');
+        }
+    }
+
     public function submitSupportTicket(): void
     {
         $student = $this->requireStudent();

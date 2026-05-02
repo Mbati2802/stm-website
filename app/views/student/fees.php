@@ -100,6 +100,7 @@
                                 <th>Payment Method</th>
                                 <th>Transaction/Cheque #</th>
                                 <th>Payment Date</th>
+                                <th>Receipt</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -111,6 +112,9 @@
                                     <td><?= e($payment['payment_method_name']) ?></td>
                                     <td><?= e($payment['transaction_code'] ?? $payment['cheque_number'] ?? '-') ?></td>
                                     <td><?= e($payment['payment_date']) ?></td>
+                                    <td>
+                                        <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('student/receipt/' . $payment['id'])) ?>" target="_blank" title="Download Receipt"><i class="bi bi-download"></i></a>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
