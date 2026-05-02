@@ -114,6 +114,17 @@ $router->add('GET', 'admin/admission-number-formats/edit/{id}', ['AdmissionNumbe
 $router->add('POST', 'admin/admission-number-formats/edit/{id}', ['AdmissionNumberFormatsController', 'edit']);
 $router->add('GET', 'admin/admission-number-formats/delete/{id}', ['AdmissionNumberFormatsController', 'delete']);
 $router->add('GET', 'admin/admission-number-formats/set-default/{id}', ['AdmissionNumberFormatsController', 'setDefault']);
+
+// Accounts & Billing
+$router->add('GET', 'admin/accounts', ['AccountsController', 'index']);
+$router->add('GET', 'admin/accounts/create-invoice', ['AccountsController', 'createInvoice']);
+$router->add('POST', 'admin/accounts/create-invoice', ['AccountsController', 'createInvoice']);
+$router->add('GET', 'admin/accounts/view-invoice/{id}', ['AccountsController', 'viewInvoice']);
+$router->add('GET', 'admin/accounts/record-payment', ['AccountsController', 'recordPayment']);
+$router->add('POST', 'admin/accounts/record-payment', ['AccountsController', 'recordPayment']);
+$router->add('GET', 'admin/accounts/student-payments', ['AccountsController', 'studentPayments']);
+$router->add('GET', 'admin/accounts/generate-receipt/{id}', ['AccountsController', 'generateReceipt']);
+
 $router->add('GET', 'admin/list/{entity}', [AdminContentController::class, 'list']);
 $router->add('GET', 'admin/create/{entity}', [AdminContentController::class, 'create']);
 $router->add('POST', 'admin/create/{entity}', [AdminContentController::class, 'store']);

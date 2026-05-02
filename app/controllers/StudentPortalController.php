@@ -383,7 +383,17 @@ class StudentPortalController extends Controller
     public function fees(): void
     {
         $student = $this->requireStudent();
-        $this->view('student/fees', ['metaTitle' => 'Student Portal - Fee Statement'], 'student');
+        $model = new StudentPortalModel($this->config);
+        $invoices = $model->getStudentInvoices((int)$student['id']);
+        $payments = $model->getStudentPayments((int)$student['id']);
+        $balance = $model->getStudentBalance((int)$student['id']);
+        
+        $this->view('student/fees', [
+            'metaTitle' => 'Student Portal - Fee Statement',
+            'invoices' => $invoices,
+            'payments' => $payments,
+            'balance' => $balance
+        ], 'student');
     }
 
     public function clearance(): void

@@ -342,4 +342,105 @@ class StudentPortalModel
             return [];
         }
     }
+
+    public function getStudentInvoices(int $studentId): array
+    {
+        try {
+            $stmt = $this->pdo->prepare('
+                SELECT i.*, p.name AS programme_name, p.abbreviation AS programme_abbr,
+                       t.name AS term_name, ses.name AS session_name,
+                       COALESCE(SUM(pay.amount), 0) AS paid_amount,
+                       i.amount - COALESCE(SUM(pay.amount), 0) AS balance
+                FROM invoices i
+                LEFT JOIN programmes p ON i.programme_id = p.id
+                LEFT JOIN terms t ON i.term_id = t.id
+                LEFT JOIN academic_sessions ses ON i.academic_session_id = ses.id
+                LEFT JOIN payments pay ON i.id = pay.invoice_id
+                WHERE i.student_id = :student_id AND i.status != "cancelled"
+                GROUP BY i.id
+                ORDER BY i.created_at DESC
+            ');
+            $stmt->execute(['student_id' => $studentId]);
+            return $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function getStudentPayments(int $studentId): array
+    {
+        try {
+            $stmt = $this->pdo->prepare('
+                SELECT p.*, i.invoice_number, i.title AS invoice_title, pm.name AS payment_method_name
+                FROM payments p
+                LEFT JOIN invoices i ON p.invoice_id = i.id
+                LEFT JOIN payment_methods pm ON p.payment_method_id = pm.id
+                WHERE p.student_id = :student_id
+                ORDER BY p.payment_date DESC
+            ');
+            $stmt->execute(['student_id' => $studentId]);
+            return $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
+    public function getStudentBalance(int $studentId): array
+    {
+        try {
+            $stmt = $this->pdo->prepare('
+                SELECT 
+                    COALESCE(SUM(i.amount), 0) AS total_invoiced,
+                    COALESCE(SUM(pay.amount), 0) AS total_paid,
+                    COALESCE(SUM(i.amount), 0) - COALESCE(SUM(pay.amount), 0) AS balance
+                FROM student_accounts s
+                LEFT JOIN invoices i ON s.id = i.student_id AND i.status != "cancelled"
+                LEFT JOIN payments pay ON i.id = pay.invoice_id
+                WHERE s.id = :student_id
+            ');
+            $stmt->execute(['student_id' => $studentId]);
+            $result = $stmt->fetch();
+            return $result ?: ['total_invoiced' => 0, 'total_paid' => 0, 'balance' => 0];
+        } catch (PDOException) {
+            return ['total_invoiced' => 0, 'total_paid' => 0, 'balance' => 0];
+        }
+    }
+
+    public function getInvoiceById(int $invoiceId): ?array
+    {
+        try {
+            $stmt = $this->pdo->prepare('
+                SELECT i.*, s.name AS student_name, s.admission_number, s.email AS student_email,
+                       p.name AS programme_name, p.abbreviation AS programme_abbr,
+                       t.name AS term_name, ses.name AS session_name
+                FROM invoices i
+                LEFT JOIN student_accounts s ON i.student_id = s.id
+                LEFT JOIN programmes p ON i.programme_id = p.id
+                LEFT JOIN terms t ON i.term_id = t.id
+                LEFT JOIN academic_sessions ses ON i.academic_session_id = ses.id
+                WHERE i.id = :id
+            ');
+            $stmt->execute(['id' => $invoiceId]);
+            return $stmt->fetch() ?: null;
+        } catch (PDOException) {
+            return null;
+        }
+    }
+
+    public function getInvoicePayments(int $invoiceId): array
+    {
+        try {
+            $stmt = $this->pdo->prepare('
+                SELECT p.*, pm.name AS payment_method_name
+                FROM payments p
+                LEFT JOIN payment_methods pm ON p.payment_method_id = pm.id
+                WHERE p.invoice_id = :invoice_id
+                ORDER BY p.payment_date DESC
+            ');
+            $stmt->execute(['invoice_id' => $invoiceId]);
+            return $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
 }
