@@ -24,7 +24,7 @@
         }
         .receipt-header {
             text-align: center;
-            border-bottom: 3px solid #007bff;
+            border-bottom: 3px solid #185490;
             padding-bottom: 10px;
             margin-bottom: 15px;
         }
@@ -36,7 +36,7 @@
         }
         .receipt-header h1 {
             margin: 0;
-            color: #007bff;
+            color: #185490;
             font-size: 16px;
         }
         .receipt-header h2 {
@@ -44,6 +44,8 @@
             color: #666;
             font-size: 13px;
             font-weight: normal;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .receipt-header .contact {
             margin-top: 5px;
@@ -138,12 +140,14 @@
     <div class="receipt-container">
         <div class="receipt-header">
             <img src="/assets/images/logo.png" alt="College Logo" class="logo" onerror="this.style.display='none'">
-            <h1>St. Mary's Mother and Child Hospital Medical Training College</h1>
-            <h2>Official Payment Receipt</h2>
             <div class="contact">
-                <p>Email: finance@stmarysmchmcollege.ac.ke | Phone: +254 700 000 000 / +254 733 000 000</p>
+                <?php if (!empty($settings['email'])): ?><p>Email: <?= e($settings['email']) ?></p><?php endif; ?>
+                <?php if (!empty($settings['phone'])): ?><p>Phone: <?= e($settings['phone']) ?></p><?php endif; ?>
+                <?php if (!empty($settings['location'])): ?><p>Location: <?= e($settings['location']) ?></p><?php endif; ?>
             </div>
+            <h1>St. Mary's Mother and Child Hospital Medical Training College</h1>
         </div>
+        <h2 style="text-align: center; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 15px 0; color: #666; font-size: 13px;">Official Payment Receipt</h2>
         
         <div class="receipt-info">
             <table>
@@ -211,7 +215,7 @@
                 </tr>
                 <tr>
                     <td>Remaining Balance:</td>
-                    <td>KES <?= number_format($payment['invoice_amount'] - $totalPaid, 2) ?></td>
+                    <td style="font-weight: bold;">KES <?= number_format($payment['invoice_amount'] - $totalPaid, 2) ?></td>
                 </tr>
             </table>
         </div>

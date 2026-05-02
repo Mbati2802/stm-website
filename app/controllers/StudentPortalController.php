@@ -452,11 +452,15 @@ class StudentPortalController extends Controller
             $stmt = $pdo->prepare('UPDATE payments SET receipt_generated = 1 WHERE id = ?');
             $stmt->execute([$paymentId]);
 
+            // Get settings for contact details
+            $stmt = $pdo->prepare('SELECT phone, email, location FROM settings LIMIT 1');
+            $stmt->execute();
+            $settings = $stmt->fetch(PDO::FETCH_ASSOC);
+
             // Render receipt without layout for standalone display
-            $receiptPath = __DIR__ . '/../../app/views/student/receipt.php';
-            $receiptPath = realpath($receiptPath);
-            if (!$receiptPath || !file_exists($receiptPath)) {
-                flash('error', 'Receipt view not found.');
+            $receiptPath = __DIR__ . '/../../views/student/receipt.php';
+            if (!file_exists($receiptPath)) {
+                flash('error', 'Receipt view not found at: ' . $receiptPath);
                 $this->redirect('student/fees');
                 return;
             }
