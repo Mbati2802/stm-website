@@ -2377,6 +2377,7 @@ class AdminContentController extends Controller
         $shortYear = date('y');
         $month = date('m');
         $monthName = strtoupper(date('M'));
+        $monthInitial = strtoupper(substr(date('F'), 0, 1));
         $seq2 = str_pad((string)$studentId, 2, '0', STR_PAD_LEFT);
         $seq3 = str_pad((string)$studentId, 3, '0', STR_PAD_LEFT);
         $seq4 = str_pad((string)$studentId, 4, '0', STR_PAD_LEFT);
@@ -2390,6 +2391,7 @@ class AdminContentController extends Controller
             '{MM}' => $month,
             '{DD}' => date('d'),
             '{MON}' => $monthName,
+            '{M}' => $monthInitial,
             '{SEQ2}' => $seq2,
             '{SEQ3}' => $seq3,
             '{SEQ4}' => $seq4,
