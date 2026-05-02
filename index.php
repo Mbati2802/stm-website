@@ -3,6 +3,7 @@ require_once __DIR__ . '/bootstrap.php';
 
 require_once __DIR__ . '/app/controllers/admin/AdmissionNumberFormatsController.php';
 require_once __DIR__ . '/app/controllers/admin/AccountsController.php';
+require_once __DIR__ . '/app/controllers/CRMController.php';
 require_once __DIR__ . '/app/controllers/admin/GradingController.php';
 require_once __DIR__ . '/app/controllers/admin/SemesterController.php';
 
@@ -94,6 +95,19 @@ $router->add('GET', 'portal/exams', [StudentPortalController::class, 'exams']);
 $router->add('GET', 'portal/events', [StudentPortalController::class, 'events']);
 $router->add('GET', 'portal/clubs', [StudentPortalController::class, 'clubs']);
 $router->add('GET', 'portal/announcements', [StudentPortalController::class, 'announcements']);
+
+// CRM Routes
+$router->add('GET', 'crm', [CRMController::class, 'login']);
+$router->add('GET', 'crm/login', [CRMController::class, 'login']);
+$router->add('POST', 'crm/login', [CRMController::class, 'authenticate']);
+$router->add('GET', 'crm/logout', [CRMController::class, 'logout']);
+$router->add('GET', 'crm/dashboard', [CRMController::class, 'dashboard']);
+$router->add('GET', 'crm/leads', [CRMController::class, 'leads']);
+$router->add('GET', 'crm/leads/create', [CRMController::class, 'createLead']);
+$router->add('POST', 'crm/leads/create', [CRMController::class, 'createLead']);
+$router->add('GET', 'crm/leads/{id}', [CRMController::class, 'viewLead']);
+$router->add('POST', 'crm/leads/update-status', [CRMController::class, 'updateLeadStatus']);
+$router->add('POST', 'crm/leads/assign', [CRMController::class, 'assignLead']);
 
 // Student Portal Routes (must be defined before admin routes to avoid conflicts)
 $router->add('GET', 'student/receipt/{id}', [StudentPortalController::class, 'receipt']);
