@@ -117,7 +117,8 @@
                                     <td><?= e($payment['transaction_code'] ?? $payment['cheque_number'] ?? '-') ?></td>
                                     <td><?= e($payment['payment_date']) ?></td>
                                     <td>
-                                        <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('student/receipt/' . $payment['id'] . '?download=1')) ?>" title="Download Receipt"><i class="bi bi-download"></i></a>
+                                        <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('student/receipt/' . $payment['id'])) ?>" target="_blank" title="View Receipt"><i class="bi bi-eye"></i></a>
+                                        <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('student/receipt/' . $payment['id'] . '?download=1')) ?>" target="_blank" title="Download Receipt"><i class="bi bi-download"></i></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

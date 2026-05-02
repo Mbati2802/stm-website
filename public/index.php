@@ -94,9 +94,9 @@ $router->add('GET', 'portal/clubs', [StudentPortalController::class, 'clubs']);
 $router->add('GET', 'portal/announcements', [StudentPortalController::class, 'announcements']);
 
 // Student Portal Routes (must be defined before admin routes to avoid conflicts)
-$router->add('GET', 'student/fees', [StudentPortalController::class, 'fees']);
 $router->add('GET', 'student/receipt/{id}', [StudentPortalController::class, 'receipt']);
 $router->add('GET', 'student/invoice/{id}', [StudentPortalController::class, 'invoice']);
+$router->add('GET', 'student/fees', [StudentPortalController::class, 'fees']);
 
 // Student Portal - Services Section
 $router->add('GET', 'portal/fees', [StudentPortalController::class, 'fees']);
