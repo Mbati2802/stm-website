@@ -74,10 +74,26 @@ class AccountsController extends Controller
 
             // Check which tables exist to build query dynamically
             $tablesExist = [];
-            $checkTables = ['programmes', 'terms', 'academic_sessions'];
+            $checkTables = ['programmes', 'terms'];
             foreach ($checkTables as $table) {
                 $stmt = $pdo->query("SHOW TABLES LIKE '" . $table . "'");
                 $tablesExist[$table] = $stmt->rowCount() > 0;
+            }
+            
+            // Check for academic_sessions or sessions table
+            $stmt = $pdo->query("SHOW TABLES LIKE 'academic_sessions'");
+            if ($stmt->rowCount() > 0) {
+                $tablesExist['academic_sessions'] = true;
+                $sessionsTable = 'academic_sessions';
+            } else {
+                $stmt = $pdo->query("SHOW TABLES LIKE 'sessions'");
+                if ($stmt->rowCount() > 0) {
+                    $tablesExist['academic_sessions'] = true;
+                    $sessionsTable = 'sessions';
+                } else {
+                    $tablesExist['academic_sessions'] = false;
+                    $sessionsTable = 'academic_sessions';
+                }
             }
 
             // Build query with only existing tables
@@ -101,7 +117,7 @@ class AccountsController extends Controller
             }
             
             if ($tablesExist['academic_sessions']) {
-                $joins[] = 'LEFT JOIN academic_sessions ses ON i.academic_session_id = ses.id';
+                $joins[] = 'LEFT JOIN ' . $sessionsTable . ' ses ON i.academic_session_id = ses.id';
                 $selects[] = 'ses.name AS session_name';
             } else {
                 $selects[] = 'NULL AS session_name';
@@ -140,9 +156,18 @@ class AccountsController extends Controller
             
             $sessions = [];
             try {
+                // Try academic_sessions first, then sessions table
                 $sessions = $pdo->query('SELECT id, name FROM academic_sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                if (empty($sessions)) {
+                    $sessions = $pdo->query('SELECT id, name FROM sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                }
             } catch (PDOException $e) {
-                // academic_sessions table doesn't exist
+                // Try sessions table if academic_sessions fails
+                try {
+                    $sessions = $pdo->query('SELECT id, name FROM sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                } catch (PDOException $e2) {
+                    // Neither table exists
+                }
             }
             
             $this->view('admin/accounts/index', [
@@ -212,8 +237,8 @@ class AccountsController extends Controller
                 $termId = !empty($_POST['term_id']) ? (int)$_POST['term_id'] : null;
                 $sessionId = !empty($_POST['session_id']) ? (int)$_POST['session_id'] : null;
 
-                if ($studentId === 0 || empty($title) || $amount <= 0) {
-                    flash('error', 'Student, title, and amount are required.');
+                if ($studentId === 0 || empty($title) || $amount <= 0 || empty($termId) || empty($sessionId)) {
+                    flash('error', 'Student, title, amount, term, and session are required.');
                     $this->redirect('admin/accounts/create-invoice');
                     return;
                 }
@@ -273,9 +298,18 @@ class AccountsController extends Controller
             
             $sessions = [];
             try {
+                // Try academic_sessions first, then sessions table
                 $sessions = $pdo->query('SELECT id, name FROM academic_sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                if (empty($sessions)) {
+                    $sessions = $pdo->query('SELECT id, name FROM sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                }
             } catch (PDOException $e) {
-                // academic_sessions table doesn't exist
+                // Try sessions table if academic_sessions fails
+                try {
+                    $sessions = $pdo->query('SELECT id, name FROM sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                } catch (PDOException $e2) {
+                    // Neither table exists
+                }
             }
 
             $this->view('admin/accounts/create_invoice', [
@@ -314,25 +348,15 @@ class AccountsController extends Controller
                 $termId = !empty($_POST['term_id']) ? (int)$_POST['term_id'] : null;
                 $sessionId = !empty($_POST['session_id']) ? (int)$_POST['session_id'] : null;
 
-                if (empty($title) || $amount <= 0 || $programmeId === null) {
-                    flash('error', 'Title, amount, and programme are required.');
+                if (empty($title) || $amount <= 0 || $programmeId === null || empty($termId) || empty($sessionId)) {
+                    flash('error', 'Title, amount, programme, term, and session are required.');
                     $this->redirect('admin/accounts/bulk-create-invoice');
                     return;
                 }
 
                 // Build WHERE clause to find students
-                $where = ['s.programme_id = ?'];
-                $params = [$programmeId];
-                
-                if ($termId !== null) {
-                    $where[] = 's.term_id = ?';
-                    $params[] = $termId;
-                }
-                
-                if ($sessionId !== null) {
-                    $where[] = 's.academic_session_id = ?';
-                    $params[] = $sessionId;
-                }
+                $where = ['s.programme_id = ?', 's.term_id = ?', 's.academic_session_id = ?'];
+                $params = [$programmeId, $termId, $sessionId];
 
                 $whereClause = 'WHERE ' . implode(' AND ', $where);
 
@@ -405,9 +429,18 @@ class AccountsController extends Controller
             
             $sessions = [];
             try {
+                // Try academic_sessions first, then sessions table
                 $sessions = $pdo->query('SELECT id, name FROM academic_sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                if (empty($sessions)) {
+                    $sessions = $pdo->query('SELECT id, name FROM sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                }
             } catch (PDOException $e) {
-                // academic_sessions table doesn't exist
+                // Try sessions table if academic_sessions fails
+                try {
+                    $sessions = $pdo->query('SELECT id, name FROM sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                } catch (PDOException $e2) {
+                    // Neither table exists
+                }
             }
 
             $this->view('admin/accounts/bulk_create_invoice', [

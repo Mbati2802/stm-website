@@ -46,8 +46,8 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Term</label>
-                        <select name="term_id" class="form-select">
+                        <label class="form-label fw-semibold">Term *</label>
+                        <select name="term_id" class="form-select" required>
                             <option value="">Select Term</option>
                             <?php foreach ($terms as $term): ?>
                                 <option value="<?= (int)$term['id'] ?>"><?= e($term['name']) ?></option>
@@ -55,8 +55,8 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Academic Session</label>
-                        <select name="session_id" class="form-select">
+                        <label class="form-label fw-semibold">Academic Session *</label>
+                        <select name="session_id" class="form-select" required>
                             <option value="">Select Session</option>
                             <?php foreach ($sessions as $session): ?>
                                 <option value="<?= (int)$session['id'] ?>"><?= e($session['name']) ?></option>

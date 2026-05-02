@@ -41,18 +41,18 @@
                         <input type="date" name="due_date" class="form-control">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Term (Optional)</label>
-                        <select name="term_id" class="form-select">
-                            <option value="">All Terms</option>
+                        <label class="form-label fw-semibold">Term *</label>
+                        <select name="term_id" class="form-select" required>
+                            <option value="">Select Term</option>
                             <?php foreach ($terms as $term): ?>
                                 <option value="<?= (int)$term['id'] ?>"><?= e($term['name']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Academic Session (Optional)</label>
-                        <select name="session_id" class="form-select">
-                            <option value="">All Sessions</option>
+                        <label class="form-label fw-semibold">Academic Session *</label>
+                        <select name="session_id" class="form-select" required>
+                            <option value="">Select Session</option>
                             <?php foreach ($sessions as $session): ?>
                                 <option value="<?= (int)$session['id'] ?>"><?= e($session['name']) ?></option>
                             <?php endforeach; ?>
