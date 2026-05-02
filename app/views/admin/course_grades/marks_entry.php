@@ -424,19 +424,32 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
             },
             body: JSON.stringify({ 
                 marks: marksData,
                 _token: '<?= e(csrf_token()) ?>'
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Save response status:', response.status);
+            console.log('Save response headers:', response.headers);
+            return response.text().then(text => {
+                console.log('Save response text:', text);
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('Failed to parse JSON:', text);
+                    throw new Error('Server returned HTML instead of JSON');
+                }
+            });
+        })
         .then(data => {
-            console.log('Save response:', data);
+            console.log('Save response data:', data);
             if (data.success) {
                 alert('Marks saved successfully');
             } else {
-                alert('Error saving marks: ' + data.message);
+                alert('Error saving marks: ' + (data.message || data.error || 'Unknown error'));
             }
         })
         .catch(error => {
