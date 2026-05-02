@@ -125,6 +125,9 @@
                                         <?php if (Auth::canManageEntity('students') && $invoice['balance'] > 0): ?>
                                             <a class="btn btn-sm btn-action-edit" href="<?= e(base_url('admin/accounts/record-payment?invoice_id=' . $invoice['id'])) ?>" title="Record Payment"><i class="bi bi-cash"></i></a>
                                         <?php endif; ?>
+                                        <?php if ($invoice['paid_amount'] > 0): ?>
+                                            <a class="btn btn-sm btn-action-print" href="<?= e(base_url('admin/accounts/student-payments?student_id=' . $invoice['student_id'])) ?>" title="Payment History"><i class="bi bi-receipt"></i></a>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>

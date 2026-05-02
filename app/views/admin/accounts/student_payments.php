@@ -106,6 +106,9 @@
                                 <td class="col-actions">
                                     <div class="action-buttons">
                                         <a class="btn btn-sm btn-action-view" href="<?= e(base_url('admin/students?search=' . urlencode($student['admission_number'] ?? ''))) ?>" title="View Student"><i class="bi bi-person"></i></a>
+                                        <?php if ($student['total_paid'] > 0): ?>
+                                            <a class="btn btn-sm btn-action-print" href="<?= e(base_url('admin/accounts/student-payments?student_id=' . $student['id'] . '&view_receipts=1')) ?>" title="View Receipts"><i class="bi bi-receipt"></i></a>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>

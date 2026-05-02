@@ -23,13 +23,22 @@
             padding-bottom: 20px;
             margin-bottom: 20px;
         }
+        .receipt-header .logo {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 15px;
+            object-fit: contain;
+        }
         .receipt-header h1 {
             margin: 0;
             color: #333;
+            font-size: 22px;
         }
-        .receipt-header p {
+        .receipt-header h2 {
             margin: 5px 0;
             color: #666;
+            font-size: 16px;
+            font-weight: normal;
         }
         .receipt-info {
             margin-bottom: 30px;
@@ -99,8 +108,9 @@
     
     <div class="receipt-container">
         <div class="receipt-header">
+            <img src="<?= base_url('assets/images/college-logo.png') ?>" alt="College Logo" class="logo" onerror="this.style.display='none'">
             <h1>St. Mary's Mother and Child Hospital Medical Training College</h1>
-            <p>Official Payment Receipt</p>
+            <h2>Official Payment Receipt</h2>
         </div>
         
         <div class="receipt-info">
