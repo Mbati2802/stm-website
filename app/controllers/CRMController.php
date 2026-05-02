@@ -362,6 +362,124 @@ class CRMController
         }
     }
 
+    public function recordPayment(int $leadId): void
+    {
+        CRMAuth::requireLogin();
+
+        $config = require __DIR__ . '/../../config/crm_config.php';
+        $pdo = new PDO(
+            "mysql:host={$config['db']['host']};dbname={$config['db']['name']};charset={$config['db']['charset']}",
+            $config['db']['user'],
+            $config['db']['pass'],
+            $config['db']['options']
+        );
+
+        // Get lead details
+        $stmt = $pdo->prepare('SELECT * FROM leads WHERE id = ?');
+        $stmt->execute([$leadId]);
+        $lead = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$lead) {
+            header('Location: /crm/leads');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $amount = (float)($_POST['amount'] ?? 0);
+            $paymentMethod = $_POST['payment_method'] ?? 'mpesa';
+            $transactionCode = trim($_POST['transaction_code'] ?? '');
+            $paymentDate = $_POST['payment_date'] ?? date('Y-m-d');
+            $receiptNumber = trim($_POST['receipt_number'] ?? '');
+            $notes = trim($_POST['notes'] ?? '');
+
+            if ($amount <= 0 || $transactionCode === '') {
+                echo json_encode(['success' => false, 'message' => 'Amount and transaction code are required']);
+                exit;
+            }
+
+            try {
+                $stmt = $pdo->prepare('INSERT INTO crm_payments (lead_id, amount, payment_method, transaction_code, payment_date, receipt_number, notes, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+                $stmt->execute([$leadId, $amount, $paymentMethod, $transactionCode, $paymentDate, $receiptNumber, $notes, 'pending']);
+
+                echo json_encode(['success' => true, 'message' => 'Payment recorded successfully']);
+                exit;
+            } catch (PDOException $e) {
+                echo json_encode(['success' => false, 'message' => 'Database error']);
+                exit;
+            }
+        }
+
+        $this->view('crm/record_payment', [
+            'metaTitle' => 'Record Payment',
+            'lead' => $lead
+        ], 'crm');
+    }
+
+    public function verifyPayment(int $paymentId): void
+    {
+        CRMAuth::requireLogin();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request']);
+            exit;
+        }
+
+        $status = $_POST['status'] ?? 'pending';
+
+        try {
+            $config = require __DIR__ . '/../../config/crm_config.php';
+            $pdo = new PDO(
+                "mysql:host={$config['db']['host']};dbname={$config['db']['name']};charset={$config['db']['charset']}",
+                $config['db']['user'],
+                $config['db']['pass'],
+                $config['db']['options']
+            );
+
+            // Get payment details
+            $stmt = $pdo->prepare('SELECT * FROM crm_payments WHERE id = ?');
+            $stmt->execute([$paymentId]);
+            $payment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$payment) {
+                echo json_encode(['success' => false, 'message' => 'Payment not found']);
+                exit;
+            }
+
+            // Update payment status
+            $stmt = $pdo->prepare('UPDATE crm_payments SET status = ?, verified_by = ?, verified_at = CURRENT_TIMESTAMP WHERE id = ?');
+            $stmt->execute([$status, CRMAuth::id(), $paymentId]);
+
+            // If verified, update lead status to Registration Paid
+            if ($status === 'verified') {
+                // Get Registration Paid status ID
+                $stmt = $pdo->prepare('SELECT id FROM crm_statuses WHERE name = "Registration Paid"');
+                $stmt->execute();
+                $statusId = $stmt->fetchColumn();
+
+                if ($statusId) {
+                    // Get current status
+                    $stmt = $pdo->prepare('SELECT status_id FROM leads WHERE id = ?');
+                    $stmt->execute([$payment['lead_id']]);
+                    $currentStatusId = $stmt->fetchColumn();
+
+                    // Update lead status
+                    $stmt = $pdo->prepare('UPDATE leads SET status_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+                    $stmt->execute([$statusId, $payment['lead_id']]);
+
+                    // Log status change
+                    $stmt = $pdo->prepare('INSERT INTO lead_history (lead_id, old_status_id, new_status_id, changed_by, notes) VALUES (?, ?, ?, ?, ?)');
+                    $stmt->execute([$payment['lead_id'], $currentStatusId, $statusId, CRMAuth::id(), 'Registration fee paid']);
+                }
+            }
+
+            echo json_encode(['success' => true, 'message' => 'Payment verified successfully']);
+            exit;
+        } catch (PDOException $e) {
+            echo json_encode(['success' => false, 'message' => 'Database error']);
+            exit;
+        }
+    }
+
     private function redirect(string $path): void
     {
         header('Location: /' . ltrim($path, '/'));

@@ -104,8 +104,11 @@ $router->add('GET', 'crm/leads', [CRMController::class, 'leads']);
 $router->add('GET', 'crm/leads/create', [CRMController::class, 'createLead']);
 $router->add('POST', 'crm/leads/create', [CRMController::class, 'createLead']);
 $router->add('GET', 'crm/leads/{id}', [CRMController::class, 'viewLead']);
+$router->add('GET', 'crm/leads/{id}/record-payment', [CRMController::class, 'recordPayment']);
+$router->add('POST', 'crm/leads/{id}/record-payment', [CRMController::class, 'recordPayment']);
 $router->add('POST', 'crm/leads/update-status', [CRMController::class, 'updateLeadStatus']);
 $router->add('POST', 'crm/leads/assign', [CRMController::class, 'assignLead']);
+$router->add('POST', 'crm/payments/{id}/verify', [CRMController::class, 'verifyPayment']);
 
 // Student Portal Routes (must be defined before admin routes to avoid conflicts)
 $router->add('GET', 'student/receipt/{id}', [StudentPortalController::class, 'receipt']);

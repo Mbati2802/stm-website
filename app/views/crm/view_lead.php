@@ -81,6 +81,9 @@
                     <textarea id="statusNotes" class="form-control" rows="2"></textarea>
                 </div>
                 <button class="btn btn-primary w-100 mb-2" onclick="updateStatus()">Update Status</button>
+                <a class="btn btn-success w-100 mb-2" href="/crm/leads/<?= $lead['id'] ?>/record-payment">
+                    <i class="bi bi-cash"></i> Record Payment
+                </a>
                 <a href="/crm/leads" class="btn btn-secondary w-100">Back to Leads</a>
             </div>
         </div>
@@ -216,6 +219,8 @@
                                         <span class="badge bg-success">Verified</span>
                                     <?php elseif ($p['status'] === 'pending'): ?>
                                         <span class="badge bg-warning">Pending</span>
+                                        <button class="btn btn-sm btn-success ms-2" onclick="verifyPayment(<?= $p['id'] ?>, 'verified')">Verify</button>
+                                        <button class="btn btn-sm btn-danger ms-1" onclick="verifyPayment(<?= $p['id'] ?>, 'rejected')">Reject</button>
                                     <?php else: ?>
                                         <span class="badge bg-danger">Rejected</span>
                                     <?php endif; ?>
@@ -272,6 +277,32 @@
 </div>
 
 <script>
+function verifyPayment(paymentId, status) {
+    if (!confirm('Are you sure you want to ' + status + ' this payment?')) {
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('status', status);
+    
+    fetch('/crm/payments/' + paymentId + '/verify', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error verifying payment');
+    });
+}
+
 function updateStatus() {
     const statusId = document.getElementById('statusSelect').value;
     const notes = document.getElementById('statusNotes').value;
