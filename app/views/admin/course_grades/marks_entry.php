@@ -243,10 +243,13 @@ document.addEventListener('DOMContentLoaded', function() {
         noStudentsMessage.style.display = 'none';
         table.style.display = 'table';
         
-        // Build header with exam types
+        // Build header with exam types (exclude consolidated types as they are computed)
         let headerHTML = '<th>Admission No.</th><th>Student Name</th>';
         examTypes.forEach(type => {
-            headerHTML += `<th>${type.name}</th>`;
+            // Only show columns for non-consolidated exam types
+            if (type.type !== 'consolidated') {
+                headerHTML += `<th>${type.name}</th>`;
+            }
         });
         headerHTML += '<th>Total</th><th>Grade</th>';
         header.innerHTML = headerHTML;
@@ -261,18 +264,21 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             
             examTypes.forEach(type => {
-                rowHTML += `
-                    <td>
-                        <input type="number" 
-                               class="form-control marks-input" 
-                               data-exam-type-id="${type.id}" 
-                               data-student-id="${student.id}"
-                               min="0" 
-                               max="100" 
-                               step="0.01" 
-                               placeholder="0">
-                    </td>
-                `;
+                // Only show input fields for non-consolidated exam types
+                if (type.type !== 'consolidated') {
+                    rowHTML += `
+                        <td>
+                            <input type="number" 
+                                   class="form-control marks-input" 
+                                   data-exam-type-id="${type.id}" 
+                                   data-student-id="${student.id}"
+                                   min="0" 
+                                   max="100" 
+                                   step="0.01" 
+                                   placeholder="0">
+                        </td>
+                    `;
+                }
             });
             
             rowHTML += `
@@ -299,6 +305,11 @@ document.addEventListener('DOMContentLoaded', function() {
         inputs.forEach(input => {
             total += parseFloat(input.value) || 0;
         });
+        
+        // Ensure total does not exceed 100
+        if (total > 100) {
+            total = 100;
+        }
         
         row.querySelector('.total-marks').textContent = total.toFixed(2);
         
