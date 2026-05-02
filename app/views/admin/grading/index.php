@@ -70,12 +70,12 @@
             </div>
         </div>
 
-        <!-- Grading Systems Section -->
+        <!-- Exams Section -->
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Grading Systems</h5>
-                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#gradingSystemModal">
-                    <i class="bi bi-plus"></i> Add Grading System
+                <h5 class="mb-0">Exams</h5>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#examModal">
+                    <i class="bi bi-plus"></i> Add Exam
                 </button>
             </div>
             <div class="card-body">
@@ -83,7 +83,7 @@
                     <table class="table align-middle">
                         <thead>
                             <tr>
-                                <th>Name</th>
+                                <th>Exam Name</th>
                                 <th>Exam Type</th>
                                 <th>Description</th>
                                 <th>Default</th>
@@ -92,38 +92,38 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($gradingSystems as $system): ?>
+                            <?php foreach ($gradingSystems as $exam): ?>
                             <tr>
-                                <td><?= e((string)$system['name']) ?></td>
-                                <td><?= e((string)($system['exam_type_name'] ?? '-')) ?></td>
-                                <td><?= e((string)($system['description'] ?? '-')) ?></td>
+                                <td><?= e((string)$exam['name']) ?></td>
+                                <td><?= e((string)($exam['exam_type_name'] ?? '-')) ?></td>
+                                <td><?= e((string)($exam['description'] ?? '-')) ?></td>
                                 <td>
-                                    <?php if ($system['is_default']): ?>
+                                    <?php if ($exam['is_default']): ?>
                                     <span class="badge bg-primary">Default</span>
                                     <?php else: ?>
                                     -
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <span class="badge <?= $system['is_active'] ? 'bg-success' : 'bg-danger' ?>">
-                                        <?= $system['is_active'] ? 'Active' : 'Inactive' ?>
+                                    <span class="badge <?= $exam['is_active'] ? 'bg-success' : 'bg-danger' ?>">
+                                        <?= $exam['is_active'] ? 'Active' : 'Inactive' ?>
                                     </span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-action-edit" data-bs-toggle="modal" data-bs-target="#gradingSystemModal" 
-                                            data-id="<?= (int)$system['id'] ?>" 
-                                            data-name="<?= e((string)$system['name']) ?>" 
-                                            data-exam-type-id="<?= (int)$system['exam_type_id'] ?>" 
-                                            data-description="<?= e((string)($system['description'] ?? '')) ?>" 
-                                            data-is-default="<?= (int)$system['is_default'] ?>">
+                                    <button class="btn btn-sm btn-action-edit" data-bs-toggle="modal" data-bs-target="#examModal" 
+                                            data-id="<?= (int)$exam['id'] ?>" 
+                                            data-name="<?= e((string)$exam['name']) ?>" 
+                                            data-exam-type-id="<?= (int)$exam['exam_type_id'] ?>" 
+                                            data-description="<?= e((string)($exam['description'] ?? '')) ?>" 
+                                            data-is-default="<?= (int)$exam['is_default'] ?>">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-action-view" onclick="loadGradeRanges(<?= (int)$system['id'] ?>)">
+                                    <button class="btn btn-sm btn-action-view" onclick="loadGradeRanges(<?= (int)$exam['id'] ?>)">
                                         <i class="bi bi-list"></i> View Grades
                                     </button>
                                     <form method="POST" action="<?= e(base_url('admin/grading/grading-system/delete')) ?>" class="d-inline">
                                         <?= csrf_field() ?>
-                                        <input type="hidden" name="id" value="<?= (int)$system['id'] ?>">
+                                        <input type="hidden" name="id" value="<?= (int)$exam['id'] ?>">
                                         <button class="btn btn-sm btn-action-delete" onclick="return confirm('Are you sure?')">
                                             <i class="bi bi-trash"></i>
                                         </button>
@@ -143,10 +143,10 @@
                 <div class="d-flex align-items-center gap-3">
                     <h5 class="mb-0">Grade Ranges</h5>
                     <select class="form-select form-select-sm" id="gradingSystemSelector" style="max-width: 300px;">
-                        <option value="">Select Grading System (Module)</option>
-                        <?php foreach ($gradingSystems as $system): ?>
-                        <option value="<?= (int)$system['id'] ?>" <?= $system['is_default'] ? 'selected' : '' ?>>
-                            <?= e((string)$system['name']) ?> (<?= e((string)($system['exam_type_name'] ?? 'All')) ?>)
+                        <option value="">Select Exam</option>
+                        <?php foreach ($gradingSystems as $exam): ?>
+                        <option value="<?= (int)$exam['id'] ?>" <?= $exam['is_default'] ? 'selected' : '' ?>>
+                            <?= e((string)$exam['name']) ?> (<?= e((string)($exam['exam_type_name'] ?? 'All')) ?>)
                         </option>
                         <?php endforeach; ?>
                     </select>
@@ -171,7 +171,7 @@
                             </tr>
                         </thead>
                         <tbody id="gradeRangesTable">
-                            <tr><td colspan="6" class="text-center">Select a grading system (module) to view grade ranges</td></tr>
+                            <tr><td colspan="6" class="text-center">Select an exam to view grade ranges</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -225,25 +225,25 @@
         </div>
     </div>
 
-    <!-- Grading System Modal -->
-    <div class="modal fade" id="gradingSystemModal" tabindex="-1">
+    <!-- Exam Modal -->
+    <div class="modal fade" id="examModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="gradingSystemModalTitle">Add Grading System</h5>
+                    <h5 class="modal-title" id="examModalTitle">Add Exam</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form method="POST" action="<?= e(base_url('admin/grading/grading-system/create')) ?>">
                     <?= csrf_field() ?>
                     <div class="modal-body">
-                        <input type="hidden" name="id" id="gradingSystemId">
+                        <input type="hidden" name="id" id="examId">
                         <div class="mb-3">
-                            <label class="form-label">Name</label>
-                            <input type="text" class="form-control" name="name" id="gradingSystemName" required>
+                            <label class="form-label">Exam Name</label>
+                            <input type="text" class="form-control" name="name" id="examName" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Exam Type</label>
-                            <select class="form-select" name="exam_type_id" id="gradingSystemExamTypeId" required>
+                            <select class="form-select" name="exam_type_id" id="examExamTypeId" required>
                                 <option value="">Select Exam Type</option>
                                 <?php foreach ($examTypes as $type): ?>
                                 <option value="<?= (int)$type['id'] ?>"><?= e((string)$type['name']) ?></option>
@@ -252,11 +252,11 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Description</label>
-                            <textarea class="form-control" name="description" id="gradingSystemDescription" rows="3"></textarea>
+                            <textarea class="form-control" name="description" id="examDescription" rows="3"></textarea>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="is_default" id="gradingSystemIsDefault" value="1">
-                            <label class="form-check-label" for="gradingSystemIsDefault">Set as default for this exam type</label>
+                            <input class="form-check-input" type="checkbox" name="is_default" id="examIsDefault" value="1">
+                            <label class="form-check-label" for="examIsDefault">Set as default for this exam type</label>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -318,11 +318,11 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         const examTypeModal = document.getElementById('examTypeModal');
-        const gradingSystemModal = document.getElementById('gradingSystemModal');
+        const examModal = document.getElementById('examModal');
         const gradeRangeModal = document.getElementById('gradeRangeModal');
         const gradingSystemSelector = document.getElementById('gradingSystemSelector');
 
-        // Load grade ranges for default grading system on page load
+        // Load grade ranges for default exam on page load
         if (gradingSystemSelector) {
             const defaultSystemId = gradingSystemSelector.value;
             if (defaultSystemId) {
@@ -335,7 +335,7 @@
                 if (systemId) {
                     loadGradeRanges(systemId);
                 } else {
-                    document.getElementById('gradeRangesTable').innerHTML = '<tr><td colspan="6" class="text-center">Select a grading system (module) to view grade ranges</td></tr>';
+                    document.getElementById('gradeRangesTable').innerHTML = '<tr><td colspan="6" class="text-center">Select an exam to view grade ranges</td></tr>';
                 }
             });
         }
@@ -374,26 +374,26 @@
             });
         }
 
-        // Grading System Modal
-        if (gradingSystemModal) {
-            gradingSystemModal.addEventListener('show.bs.modal', function(event) {
+        // Exam Modal
+        if (examModal) {
+            examModal.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
                 const id = button.getAttribute('data-id');
 
                 if (id) {
-                    document.getElementById('gradingSystemModalTitle').textContent = 'Edit Grading System';
-                    document.getElementById('gradingSystemId').value = id;
-                    document.getElementById('gradingSystemName').value = button.getAttribute('data-name');
-                    document.getElementById('gradingSystemExamTypeId').value = button.getAttribute('data-exam-type-id');
-                    document.getElementById('gradingSystemDescription').value = button.getAttribute('data-description') || '';
-                    document.getElementById('gradingSystemIsDefault').checked = button.getAttribute('data-is-default') === '1';
+                    document.getElementById('examModalTitle').textContent = 'Edit Exam';
+                    document.getElementById('examId').value = id;
+                    document.getElementById('examName').value = button.getAttribute('data-name');
+                    document.getElementById('examExamTypeId').value = button.getAttribute('data-exam-type-id');
+                    document.getElementById('examDescription').value = button.getAttribute('data-description') || '';
+                    document.getElementById('examIsDefault').checked = button.getAttribute('data-is-default') === '1';
                 } else {
-                    document.getElementById('gradingSystemModalTitle').textContent = 'Add Grading System';
-                    document.getElementById('gradingSystemId').value = '';
-                    document.getElementById('gradingSystemName').value = '';
-                    document.getElementById('gradingSystemExamTypeId').value = '';
-                    document.getElementById('gradingSystemDescription').value = '';
-                    document.getElementById('gradingSystemIsDefault').checked = false;
+                    document.getElementById('examModalTitle').textContent = 'Add Exam';
+                    document.getElementById('examId').value = '';
+                    document.getElementById('examName').value = '';
+                    document.getElementById('examExamTypeId').value = '';
+                    document.getElementById('examDescription').value = '';
+                    document.getElementById('examIsDefault').checked = false;
                 }
             });
         }
@@ -436,7 +436,7 @@
                     const table = document.getElementById('gradeRangesTable');
                     table.innerHTML = '';
                     if (result.data.length === 0) {
-                        table.innerHTML = '<tr><td colspan="6" class="text-center">No grade ranges defined for this grading system</td></tr>';
+                        table.innerHTML = '<tr><td colspan="6" class="text-center">No grade ranges defined for this exam</td></tr>';
                         return;
                     }
                     result.data.forEach(range => {
