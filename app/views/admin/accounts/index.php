@@ -134,7 +134,7 @@
                                             $stmt->execute([$invoice['id']]);
                                             $latestPayment = $stmt->fetch(PDO::FETCH_ASSOC);
                                             if ($latestPayment): ?>
-                                                <a class="btn btn-sm btn-action-success" href="<?= e(base_url('admin/accounts/generate-receipt/' . $latestPayment['id'])) ?>" target="_blank" title="Download Receipt"><i class="bi bi-download"></i></a>
+                                                <a class="btn btn-sm btn-action-success" href="<?= e(base_url('admin/accounts/generate-receipt/' . $latestPayment['id'] . '?download=1')) ?>" target="_blank" title="Download Receipt"><i class="bi bi-download"></i></a>
                                             <?php endif; ?>
                                         <?php endif; ?>
                                     </div>

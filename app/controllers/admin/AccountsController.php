@@ -812,7 +812,8 @@ class AccountsController extends Controller
 
             // Render receipt without layout for standalone display
             $receiptPath = __DIR__ . '/../../app/views/admin/accounts/receipt.php';
-            if (!file_exists($receiptPath)) {
+            $receiptPath = realpath($receiptPath);
+            if (!$receiptPath || !file_exists($receiptPath)) {
                 flash('error', 'Receipt view not found.');
                 $this->redirect('admin/accounts');
                 return;

@@ -58,7 +58,7 @@
                                 <td class="col-actions">
                                     <div class="action-buttons">
                                         <a class="btn btn-sm btn-action-view" href="<?= e(base_url('admin/accounts/generate-receipt/' . $payment['id'])) ?>" target="_blank" title="View Receipt"><i class="bi bi-eye"></i></a>
-                                        <a class="btn btn-sm btn-action-print" href="<?= e(base_url('admin/accounts/generate-receipt/' . $payment['id'])) ?>" target="_blank" title="Download Receipt"><i class="bi bi-download"></i></a>
+                                        <a class="btn btn-sm btn-action-print" href="<?= e(base_url('admin/accounts/generate-receipt/' . $payment['id'] . '?download=1')) ?>" target="_blank" title="Download Receipt"><i class="bi bi-download"></i></a>
                                     </div>
                                 </td>
                             </tr>

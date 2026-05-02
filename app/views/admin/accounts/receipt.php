@@ -137,7 +137,7 @@
     
     <div class="receipt-container">
         <div class="receipt-header">
-            <img src="/assets/images/college-logo.png" alt="College Logo" class="logo" onerror="this.style.display='none'">
+            <img src="/assets/images/logo.png" alt="College Logo" class="logo" onerror="this.style.display='none'">
             <h1>St. Mary's Mother and Child Hospital Medical Training College</h1>
             <h2>Official Payment Receipt</h2>
             <div class="contact">
@@ -238,6 +238,16 @@
         function downloadPDF() {
             window.print();
         }
+        
+        // Auto-trigger download on load if URL has download parameter
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('download') === '1') {
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+            }
+        };
     </script>
 </body>
 </html>
