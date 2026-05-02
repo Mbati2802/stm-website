@@ -5,40 +5,7 @@
                 <h4 class="student-card-title"><i class="bi bi-gear me-2"></i>Account Settings</h4>
             </div>
             
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Theme Preference</label>
-                    <select class="form-select">
-                        <option>Light Mode</option>
-                        <option>Dark Mode</option>
-                        <option>System Default</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Language</label>
-                    <select class="form-select">
-                        <option>English</option>
-                        <option>Swahili</option>
-                    </select>
-                </div>
-                <div class="col-12">
-                    <div class="form-check form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" id="autoSave" checked>
-                        <label class="form-check-label" for="autoSave">Auto-save form data</label>
-                    </div>
-                    <div class="form-check form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" id="showOnline" checked>
-                        <label class="form-check-label" for="showOnline">Show online status</label>
-                    </div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="twoFactor">
-                        <label class="form-check-label" for="twoFactor">Enable two-factor authentication</label>
-                    </div>
-                </div>
-                <div class="col-12">
-                    <button class="btn btn-primary">Save Settings</button>
-                </div>
-            </div>
+            <p class="text-muted mb-0">Settings configuration is not yet implemented. Please check back later.</p>
         </div>
 
         <div class="student-card mt-4">
