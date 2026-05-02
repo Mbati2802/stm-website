@@ -218,77 +218,109 @@ class AccountsController extends Controller
             return;
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $studentId = (int)($_POST['student_id'] ?? 0);
-            $title = trim($_POST['title'] ?? '');
-            $description = trim($_POST['description'] ?? '');
-            $amount = (float)($_POST['amount'] ?? 0);
-            $dueDate = $_POST['due_date'] ?? '';
-            $programmeId = !empty($_POST['programme_id']) ? (int)$_POST['programme_id'] : null;
-            $termId = !empty($_POST['term_id']) ? (int)$_POST['term_id'] : null;
-            $sessionId = !empty($_POST['session_id']) ? (int)$_POST['session_id'] : null;
-            $courseId = !empty($_POST['course_id']) ? (int)$_POST['course_id'] : null;
+        try {
+            $pdo = Database::getInstance($this->config['db']);
 
-            if ($studentId === 0 || empty($title) || $amount <= 0) {
-                flash('error', 'Student, title, and amount are required.');
-                $this->redirect('admin/accounts/create-invoice');
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $studentId = (int)($_POST['student_id'] ?? 0);
+                $title = trim($_POST['title'] ?? '');
+                $description = trim($_POST['description'] ?? '');
+                $amount = (float)($_POST['amount'] ?? 0);
+                $dueDate = $_POST['due_date'] ?? '';
+                $programmeId = !empty($_POST['programme_id']) ? (int)$_POST['programme_id'] : null;
+                $termId = !empty($_POST['term_id']) ? (int)$_POST['term_id'] : null;
+                $sessionId = !empty($_POST['session_id']) ? (int)$_POST['session_id'] : null;
+                $courseId = !empty($_POST['course_id']) ? (int)$_POST['course_id'] : null;
+
+                if ($studentId === 0 || empty($title) || $amount <= 0) {
+                    flash('error', 'Student, title, and amount are required.');
+                    $this->redirect('admin/accounts/create-invoice');
+                    return;
+                }
+
+                // Generate invoice number
+                $invoiceNumber = $this->generateInvoiceNumber($pdo);
+
+                // Insert invoice
+                $stmt = $pdo->prepare('INSERT INTO invoices (invoice_number, student_id, programme_id, term_id, academic_session_id, course_id, title, description, amount, due_date, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                $stmt->execute([
+                    $invoiceNumber,
+                    $studentId,
+                    $programmeId,
+                    $termId,
+                    $sessionId,
+                    $courseId,
+                    $title,
+                    $description,
+                    $amount,
+                    $dueDate,
+                    'pending',
+                    $_SESSION['admin_id'] ?? null
+                ]);
+
+                $invoiceId = $pdo->lastInsertId();
+
+                // Add fee items if provided
+                if (!empty($_POST['fee_items'])) {
+                    foreach ($_POST['fee_items'] as $item) {
+                        if (!empty($item['description']) && !empty($item['amount'])) {
+                            $stmt = $pdo->prepare('INSERT INTO fee_items (invoice_id, description, amount) VALUES (?, ?, ?)');
+                            $stmt->execute([$invoiceId, trim($item['description']), (float)$item['amount']]);
+                        }
+                    }
+                }
+
+                flash('success', 'Invoice created successfully.');
+                $this->redirect('admin/accounts');
                 return;
             }
 
-            $pdo = Database::getInstance($this->config['db']);
-
-            // Generate invoice number
-            $invoiceNumber = $this->generateInvoiceNumber($pdo);
-
-            // Insert invoice
-            $stmt = $pdo->prepare('INSERT INTO invoices (invoice_number, student_id, programme_id, term_id, academic_session_id, course_id, title, description, amount, due_date, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-            $stmt->execute([
-                $invoiceNumber,
-                $studentId,
-                $programmeId,
-                $termId,
-                $sessionId,
-                $courseId,
-                $title,
-                $description,
-                $amount,
-                $dueDate,
-                'pending',
-                $_SESSION['admin_id'] ?? null
-            ]);
-
-            $invoiceId = $pdo->lastInsertId();
-
-            // Add fee items if provided
-            if (!empty($_POST['fee_items'])) {
-                foreach ($_POST['fee_items'] as $item) {
-                    if (!empty($item['description']) && !empty($item['amount'])) {
-                        $stmt = $pdo->prepare('INSERT INTO fee_items (invoice_id, description, amount) VALUES (?, ?, ?)');
-                        $stmt->execute([$invoiceId, trim($item['description']), (float)$item['amount']]);
-                    }
-                }
+            // Get data for form - handle missing tables gracefully
+            $students = $pdo->query('SELECT id, name, admission_number, programme_id FROM student_accounts ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+            
+            $programmes = [];
+            try {
+                $programmes = $pdo->query('SELECT id, name, abbreviation FROM programmes ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // Programmes table doesn't exist
+            }
+            
+            $terms = [];
+            try {
+                $terms = $pdo->query('SELECT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // Terms table doesn't exist
+            }
+            
+            $sessions = [];
+            try {
+                $sessions = $pdo->query('SELECT id, name FROM academic_sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // academic_sessions table doesn't exist
+            }
+            
+            $courses = [];
+            try {
+                $courses = $pdo->query('SELECT id, code, title FROM courses ORDER BY code')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // courses table doesn't exist
             }
 
-            flash('success', 'Invoice created successfully.');
+            $this->view('admin/accounts/create_invoice', [
+                'metaTitle' => 'Create Invoice',
+                'students' => $students,
+                'programmes' => $programmes,
+                'terms' => $terms,
+                'sessions' => $sessions,
+                'courses' => $courses
+            ]);
+        } catch (PDOException $e) {
+            flash('error', 'Database error: ' . $e->getMessage());
             $this->redirect('admin/accounts');
-            return;
+        } catch (Throwable $e) {
+            flash('error', 'Error: ' . $e->getMessage());
+            $this->redirect('admin/accounts');
         }
-
-        $pdo = Database::getInstance($this->config['db']);
-        $students = $pdo->query('SELECT id, name, admission_number, programme_id FROM student_accounts ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
-        $programmes = $pdo->query('SELECT id, name, abbreviation FROM programmes ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
-        $terms = $pdo->query('SELECT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
-        $sessions = $pdo->query('SELECT id, name FROM academic_sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
-        $courses = $pdo->query('SELECT id, code, title FROM courses ORDER BY code')->fetchAll(PDO::FETCH_ASSOC);
-
-        $this->view('admin/accounts/create_invoice', [
-            'metaTitle' => 'Create Invoice',
-            'students' => $students,
-            'programmes' => $programmes,
-            'terms' => $terms,
-            'sessions' => $sessions,
-            'courses' => $courses
-        ]);
     }
 
     public function viewInvoice(int $id): void
