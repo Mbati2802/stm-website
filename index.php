@@ -112,6 +112,7 @@ $router->add('GET', 'crm/leads/{id}/admission-letter', [CRMController::class, 'g
 $router->add('POST', 'crm/leads/update-status', [CRMController::class, 'updateLeadStatus']);
 $router->add('POST', 'crm/leads/assign', [CRMController::class, 'assignLead']);
 $router->add('POST', 'crm/payments/{id}/verify', [CRMController::class, 'verifyPayment']);
+$router->add('POST', 'crm/communication/send', [CRMController::class, 'sendCommunication']);
 
 // Student Portal Routes (must be defined before admin routes to avoid conflicts)
 $router->add('GET', 'student/receipt/{id}', [StudentPortalController::class, 'receipt']);

@@ -469,6 +469,11 @@ class CRMController
                     // Log status change
                     $stmt = $pdo->prepare('INSERT INTO lead_history (lead_id, old_status_id, new_status_id, changed_by, notes) VALUES (?, ?, ?, ?, ?)');
                     $stmt->execute([$payment['lead_id'], $currentStatusId, $statusId, CRMAuth::id(), 'Registration fee paid']);
+
+                    // Send payment confirmation SMS
+                    require_once __DIR__ . '/../core/CommunicationService.php';
+                    $commService = new CommunicationService($config);
+                    $commService->sendPaymentConfirmation($payment['lead_id'], $payment['amount'], $payment['transaction_code']);
                 }
             }
 
@@ -548,6 +553,71 @@ class CRMController
 
         require_once $letterPath;
         exit;
+    }
+
+    public function sendCommunication(): void
+    {
+        CRMAuth::requireLogin();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request']);
+            exit;
+        }
+
+        $leadId = (int)($_POST['lead_id'] ?? 0);
+        $type = $_POST['type'] ?? 'sms';
+        $message = trim($_POST['message'] ?? '');
+
+        if ($leadId === 0 || $message === '') {
+            echo json_encode(['success' => false, 'message' => 'Lead ID and message are required']);
+            exit;
+        }
+
+        try {
+            $config = require __DIR__ . '/../../config/crm_config.php';
+            $pdo = new PDO(
+                "mysql:host={$config['db']['host']};dbname={$config['db']['name']};charset={$config['db']['charset']}",
+                $config['db']['user'],
+                $config['db']['pass'],
+                $config['db']['options']
+            );
+
+            // Get lead details
+            $stmt = $pdo->prepare('SELECT * FROM leads WHERE id = ?');
+            $stmt->execute([$leadId]);
+            $lead = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$lead) {
+                echo json_encode(['success' => false, 'message' => 'Lead not found']);
+                exit;
+            }
+
+            // Initialize communication service
+            $commService = new CommunicationService($config);
+
+            // Send based on type
+            $sent = false;
+            if ($type === 'sms') {
+                $sent = $commService->sendSMS($lead['phone'], $message);
+            } elseif ($type === 'whatsapp') {
+                $sent = $commService->sendWhatsApp($lead['phone'], $message);
+            } elseif ($type === 'email' && $lead['email']) {
+                $sent = $commService->sendEmail($lead['email'], 'Message from St. Mary\'s MCH Medical Training College', $message);
+            }
+
+            // Log communication
+            $commService->logCommunication($leadId, $type, $message, CRMAuth::id());
+
+            if ($sent) {
+                echo json_encode(['success' => true, 'message' => 'Message sent successfully']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to send message']);
+            }
+            exit;
+        } catch (PDOException $e) {
+            echo json_encode(['success' => false, 'message' => 'Database error']);
+            exit;
+        }
     }
 
     private function redirect(string $path): void

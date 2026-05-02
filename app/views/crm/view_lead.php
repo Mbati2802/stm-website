@@ -132,8 +132,11 @@
 
 <!-- Communication History -->
 <div class="card mb-4">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
         <span><i class="bi bi-chat"></i> Communication History</span>
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#sendCommunicationModal">
+            <i class="bi bi-send"></i> Send Message
+        </button>
     </div>
     <div class="card-body">
         <?php if (empty($communications)): ?>
@@ -279,7 +282,62 @@
     </div>
 </div>
 
+<!-- Send Communication Modal -->
+<div class="modal fade" id="sendCommunicationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="communicationForm">
+                    <div class="mb-3">
+                        <label class="form-label">Communication Type *</label>
+                        <select name="type" class="form-select" required>
+                            <option value="sms">SMS</option>
+                            <option value="whatsapp">WhatsApp</option>
+                            <option value="email">Email</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message *</label>
+                        <textarea name="message" class="form-control" rows="5" required placeholder="Enter your message here..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="sendMessage()">Send Message</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+function sendMessage() {
+    const form = document.getElementById('communicationForm');
+    const formData = new FormData(form);
+    formData.append('lead_id', <?= $lead['id'] ?>);
+    
+    fetch('/crm/communication/send', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error sending message');
+    });
+}
+
 function verifyPayment(paymentId, status) {
     if (!confirm('Are you sure you want to ' + status + ' this payment?')) {
         return;
