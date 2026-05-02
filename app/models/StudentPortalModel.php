@@ -399,17 +399,23 @@ class StudentPortalModel
     public function getStudentBalance(int $studentId): array
     {
         try {
-            $stmt = $this->pdo->prepare('
-                SELECT 
-                    COALESCE(SUM(i.amount), 0) AS total_invoiced,
-                    COALESCE((SELECT SUM(amount) FROM payments WHERE invoice_id IN (SELECT id FROM invoices WHERE student_id = :student_id AND status != "cancelled")), 0) AS total_paid,
-                    COALESCE(SUM(i.amount), 0) - COALESCE((SELECT SUM(amount) FROM payments WHERE invoice_id IN (SELECT id FROM invoices WHERE student_id = :student_id AND status != "cancelled")), 0) AS balance
-                FROM invoices i
-                WHERE i.student_id = :student_id AND i.status != "cancelled"
-            ');
-            $stmt->execute(['student_id' => $studentId]);
-            $result = $stmt->fetch();
-            return $result ?: ['total_invoiced' => 0, 'total_paid' => 0, 'balance' => 0];
+            // Get total invoiced
+            $stmt = $this->pdo->prepare('SELECT COALESCE(SUM(amount), 0) AS total_invoiced FROM invoices WHERE student_id = ? AND status != "cancelled"');
+            $stmt->execute([$studentId]);
+            $totalInvoiced = $stmt->fetchColumn();
+
+            // Get total paid
+            $stmt = $this->pdo->prepare('SELECT COALESCE(SUM(p.amount), 0) AS total_paid FROM payments p LEFT JOIN invoices i ON p.invoice_id = i.id WHERE i.student_id = ? AND i.status != "cancelled"');
+            $stmt->execute([$studentId]);
+            $totalPaid = $stmt->fetchColumn();
+
+            $balance = $totalInvoiced - $totalPaid;
+
+            return [
+                'total_invoiced' => $totalInvoiced,
+                'total_paid' => $totalPaid,
+                'balance' => $balance
+            ];
         } catch (PDOException) {
             return ['total_invoiced' => 0, 'total_paid' => 0, 'balance' => 0];
         }
