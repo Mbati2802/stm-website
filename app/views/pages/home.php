@@ -153,6 +153,7 @@ foreach ($bannerCandidates as $candidate) {
                             src="<?= e($programmeImageSettings[$programme['name']] ?? $programmeImageSettings[$programme['category']] ?? $courseImageByCategory[$programme['category']] ?? 'https://images.unsplash.com/photo-1584433144859-1fc3ab64a957?w=900') ?>"
                             class="card-img-top course-card-image"
                             alt="<?= e($programme['name']) ?>"
+                            style="height: 200px; object-fit: cover;"
                         >
                         <div class="card-body">
                             <h3 class="h6"><?= e($programme['name']) ?></h3>
