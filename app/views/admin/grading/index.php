@@ -140,9 +140,18 @@
         <!-- Grade Ranges Section -->
         <div class="card mb-4" id="gradeRangesCard">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Grade Ranges</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <h5 class="mb-0">Grade Ranges</h5>
+                    <select class="form-select form-select-sm" id="gradingSystemSelector" style="max-width: 300px;">
+                        <option value="">Select Grading System (Module)</option>
+                        <?php foreach ($gradingSystems as $system): ?>
+                        <option value="<?= (int)$system['id'] ?>" <?= $system['is_default'] ? 'selected' : '' ?>>
+                            <?= e((string)$system['name']) ?> (<?= e((string)($system['exam_type_name'] ?? 'All')) ?>)
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 <div>
-                    <button class="btn btn-sm btn-secondary" onclick="hideGradeRanges()">Close</button>
                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#gradeRangeModal">
                         <i class="bi bi-plus"></i> Add Grade Range
                     </button>
@@ -162,7 +171,7 @@
                             </tr>
                         </thead>
                         <tbody id="gradeRangesTable">
-                            <tr><td colspan="6" class="text-center">Select a grading system to view grade ranges</td></tr>
+                            <tr><td colspan="6" class="text-center">Select a grading system (module) to view grade ranges</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -311,6 +320,25 @@
         const examTypeModal = document.getElementById('examTypeModal');
         const gradingSystemModal = document.getElementById('gradingSystemModal');
         const gradeRangeModal = document.getElementById('gradeRangeModal');
+        const gradingSystemSelector = document.getElementById('gradingSystemSelector');
+
+        // Load grade ranges for default grading system on page load
+        if (gradingSystemSelector) {
+            const defaultSystemId = gradingSystemSelector.value;
+            if (defaultSystemId) {
+                loadGradeRanges(defaultSystemId);
+            }
+            
+            // Load grade ranges when selector changes
+            gradingSystemSelector.addEventListener('change', function() {
+                const systemId = this.value;
+                if (systemId) {
+                    loadGradeRanges(systemId);
+                } else {
+                    document.getElementById('gradeRangesTable').innerHTML = '<tr><td colspan="6" class="text-center">Select a grading system (module) to view grade ranges</td></tr>';
+                }
+            });
+        }
 
         // Exam Type Modal
         if (examTypeModal) {
@@ -407,6 +435,10 @@
                 if (result.success) {
                     const table = document.getElementById('gradeRangesTable');
                     table.innerHTML = '';
+                    if (result.data.length === 0) {
+                        table.innerHTML = '<tr><td colspan="6" class="text-center">No grade ranges defined for this grading system</td></tr>';
+                        return;
+                    }
                     result.data.forEach(range => {
                         table.innerHTML += `
                             <tr>
@@ -436,7 +468,6 @@
                             </tr>
                         `;
                     });
-                    document.getElementById('gradeRangesCard').style.display = 'block';
                 }
             });
     }
