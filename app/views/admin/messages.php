@@ -32,7 +32,9 @@
                         <td class="col-lg" title="<?= e((string)$row['email']) ?>"><?= e($row['email']) ?></td>
                         <td class="col-sm" title="<?= e((string)$row['phone']) ?>"><?= e($row['phone']) ?></td>
                         <td class="col-md" title="<?= e((string)$row['subject']) ?>"><?= e($row['subject']) ?></td>
-                        <td class="col-xl" title="<?= e((string)$row['message']) ?>"><?= e((string)$row['message']) ?></td>
+                        <td class="col-xl" title="<?= e((string)$row['message']) ?>">
+                            <div class="message-truncate"><?= e((string)$row['message']) ?></div>
+                        </td>
                         <td class="col-sm" title="<?= e((string)$row['created_at']) ?>"><?= e($row['created_at']) ?></td>
                         <td class="col-actions">
                             <?php if (!empty($row['replied_at'])): ?>
@@ -57,3 +59,15 @@
         </div>
     </div>
 </section>
+
+<style>
+.message-truncate {
+    max-height: 60px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+}
+</style>
