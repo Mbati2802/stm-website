@@ -92,6 +92,12 @@
                     </div>
 
                     <div class="col-12">
+                        <label class="form-label fw-semibold">Transaction/Reference Number (Optional)</label>
+                        <input type="text" name="transaction_code_general" class="form-control" placeholder="Enter transaction code or reference number for any payment method">
+                        <small class="text-muted">This field can be used for any payment method</small>
+                    </div>
+
+                    <div class="col-12">
                         <label class="form-label fw-semibold">Notes</label>
                         <textarea name="notes" class="form-control" rows="3" placeholder="Payment notes or additional information..."></textarea>
                     </div>

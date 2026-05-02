@@ -563,9 +563,19 @@ class AccountsController extends Controller
                 $paymentMethodId = (int)($_POST['payment_method_id'] ?? 0);
                 $paymentDate = $_POST['payment_date'] ?? date('Y-m-d');
                 $transactionCode = trim($_POST['transaction_code'] ?? '');
+                $transactionCodeGeneral = trim($_POST['transaction_code_general'] ?? '');
+                // Use general transaction code if provided, otherwise use method-specific
+                if (!empty($transactionCodeGeneral)) {
+                    $transactionCode = $transactionCodeGeneral;
+                }
                 $chequeNumber = trim($_POST['cheque_number'] ?? '');
                 $bankName = trim($_POST['bank_name'] ?? '');
                 $notes = trim($_POST['notes'] ?? '');
+
+                // Debug: Log transaction code
+                if (empty($transactionCode) && empty($chequeNumber)) {
+                    // No transaction code or cheque number provided
+                }
 
                 if ($invoiceId === 0 || $studentId === 0 || $amount <= 0 || $paymentMethodId === 0) {
                     flash('error', 'Invoice, student, amount, and payment method are required.');
@@ -799,6 +809,11 @@ class AccountsController extends Controller
                 flash('error', 'Payment not found.');
                 $this->redirect('admin/accounts');
                 return;
+            }
+
+            // Debug: Check if transaction_code is being fetched
+            if (empty($payment['transaction_code']) && empty($payment['cheque_number'])) {
+                // No transaction data found
             }
 
             // Get invoice balance info
