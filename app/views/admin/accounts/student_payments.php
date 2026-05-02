@@ -47,17 +47,6 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-semibold">Course</label>
-                        <select name="course_id" class="form-select">
-                            <option value="">All Courses</option>
-                            <?php foreach ($courses as $course): ?>
-                                <option value="<?= (int)$course['id'] ?>" <?= $filters['course_id'] == $course['id'] ? 'selected' : '' ?>>
-                                    <?= e($course['code']) ?> - <?= e($course['title']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary w-100">Filter</button>
                     </div>

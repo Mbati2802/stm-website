@@ -452,11 +452,9 @@ class StudentPortalController extends Controller
             $stmt = $pdo->prepare('UPDATE payments SET receipt_generated = 1 WHERE id = ?');
             $stmt->execute([$paymentId]);
 
-            $this->view('student/receipt', [
-                'metaTitle' => 'Receipt ' . $payment['payment_number'],
-                'payment' => $payment,
-                'totalPaid' => $totalPaid
-            ], 'student');
+            // Render receipt without layout for standalone display
+            require_once __DIR__ . '/../../app/views/student/receipt.php';
+            exit;
         } catch (PDOException $e) {
             flash('error', 'Database error: ' . $e->getMessage());
             $this->redirect('student/fees');

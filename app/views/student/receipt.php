@@ -5,78 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receipt <?= e($payment['payment_number']) ?></title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #f5f5f5;
+            background: white;
+            padding: 15px;
+            font-size: 12px;
         }
         .receipt-container {
-            max-width: 800px;
+            max-width: 700px;
             margin: 0 auto;
             background: white;
-            padding: 40px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
         }
         .receipt-header {
             text-align: center;
             border-bottom: 2px solid #333;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
         .receipt-header .logo {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 15px;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
             object-fit: contain;
         }
         .receipt-header h1 {
             margin: 0;
             color: #333;
-            font-size: 22px;
+            font-size: 16px;
         }
         .receipt-header h2 {
-            margin: 5px 0;
+            margin: 3px 0;
             color: #666;
-            font-size: 16px;
+            font-size: 13px;
             font-weight: normal;
         }
         .receipt-info {
-            margin-bottom: 30px;
+            margin-bottom: 15px;
+        }
+        .receipt-info h3 {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #333;
         }
         .receipt-info table {
             width: 100%;
             border-collapse: collapse;
         }
         .receipt-info td {
-            padding: 8px 0;
+            padding: 4px 0;
             border-bottom: 1px solid #eee;
+            font-size: 12px;
         }
         .receipt-info td:first-child {
             font-weight: bold;
-            width: 40%;
+            width: 45%;
             color: #555;
         }
         .receipt-amount {
             background: #f8f9fa;
-            padding: 20px;
+            padding: 12px;
             text-align: center;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             color: #28a745;
-            margin: 20px 0;
+            margin: 15px 0;
         }
         .receipt-footer {
-            margin-top: 40px;
-            padding-top: 20px;
+            margin-top: 20px;
+            padding-top: 10px;
             border-top: 1px solid #eee;
             text-align: center;
             color: #666;
-            font-size: 12px;
+            font-size: 10px;
         }
-        .print-btn {
+        .receipt-footer p {
+            margin: 2px 0;
+        }
+        .btn-group {
             position: fixed;
             top: 20px;
             right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
             padding: 10px 20px;
             background: #007bff;
             color: white;
@@ -84,12 +102,13 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
+            text-decoration: none;
         }
-        .print-btn:hover {
+        .btn:hover {
             background: #0056b3;
         }
         @media print {
-            .print-btn {
+            .btn-group {
                 display: none;
             }
             body {
@@ -97,18 +116,23 @@
                 padding: 0;
             }
             .receipt-container {
-                box-shadow: none;
-                padding: 20px;
+                padding: 0;
+            }
+            @page {
+                margin: 10mm;
             }
         }
     </style>
 </head>
 <body>
-    <button class="print-btn" onclick="window.print()">Print Receipt</button>
+    <div class="btn-group">
+        <button class="btn" onclick="window.print()">Print Receipt</button>
+        <button class="btn" onclick="downloadPDF()">Download PDF</button>
+    </div>
     
     <div class="receipt-container">
         <div class="receipt-header">
-            <img src="<?= base_url('assets/images/college-logo.png') ?>" alt="College Logo" class="logo" onerror="this.style.display='none'">
+            <img src="/assets/images/college-logo.png" alt="College Logo" class="logo" onerror="this.style.display='none'">
             <h1>St. Mary's Mother and Child Hospital Medical Training College</h1>
             <h2>Official Payment Receipt</h2>
         </div>
@@ -201,5 +225,11 @@
             <p>Generated on: <?= date('F j, Y g:i A') ?></p>
         </div>
     </div>
+
+    <script>
+        function downloadPDF() {
+            window.print();
+        }
+    </script>
 </body>
 </html>

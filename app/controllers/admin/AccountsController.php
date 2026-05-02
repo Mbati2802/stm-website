@@ -640,75 +640,87 @@ class AccountsController extends Controller
             return;
         }
 
-        $pdo = Database::getInstance($this->config['db']);
-        
-        // Get filters
-        $programmeId = $_GET['programme_id'] ?? '';
-        $termId = $_GET['term_id'] ?? '';
-        $sessionId = $_GET['session_id'] ?? '';
-        $courseId = $_GET['course_id'] ?? '';
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            
+            // Get filters
+            $programmeId = $_GET['programme_id'] ?? '';
+            $termId = $_GET['term_id'] ?? '';
+            $sessionId = $_GET['session_id'] ?? '';
 
-        // Build query with filters
-        $where = [];
-        $params = [];
-        
-        if (!empty($programmeId)) {
-            $where[] = 's.programme_id = ?';
-            $params[] = (int)$programmeId;
+            // Build query with filters
+            $where = [];
+            $params = [];
+            
+            if (!empty($programmeId)) {
+                $where[] = 's.programme_id = ?';
+                $params[] = (int)$programmeId;
+            }
+
+            $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+
+            // Get student payment info
+            $sql = "SELECT s.id AS student_id, s.name, s.admission_number, s.email,
+                           p.name AS programme_name, p.abbreviation AS programme_abbr,
+                           COALESCE(SUM(i.amount), 0) AS total_invoiced,
+                           COALESCE(SUM(pay.amount), 0) AS total_paid,
+                           COALESCE(SUM(i.amount), 0) - COALESCE(SUM(pay.amount), 0) AS balance
+                    FROM student_accounts s
+                    LEFT JOIN programmes p ON s.programme_id = p.id
+                    LEFT JOIN invoices i ON s.id = i.student_id AND i.status != 'cancelled'
+                    LEFT JOIN payments pay ON i.id = pay.invoice_id
+                    $whereClause
+                    GROUP BY s.id, s.name, s.admission_number, s.email, p.name, p.abbreviation
+                    ORDER BY s.name";
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Get filter options
+            $programmes = [];
+            try {
+                $programmes = $pdo->query('SELECT id, name, abbreviation FROM programmes ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // Programmes table doesn't exist
+            }
+            
+            $terms = [];
+            try {
+                $terms = $pdo->query('SELECT id, name FROM terms GROUP BY name ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // Terms table doesn't exist
+            }
+            
+            $sessions = [];
+            try {
+                $sessions = $pdo->query('SELECT id, name FROM academic_sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                if (empty($sessions)) {
+                    $sessions = $pdo->query('SELECT id, name FROM sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                }
+            } catch (PDOException $e) {
+                // Sessions table doesn't exist
+            }
+
+            $this->view('admin/accounts/student_payments', [
+                'metaTitle' => 'Student Payments',
+                'students' => $students,
+                'programmes' => $programmes,
+                'terms' => $terms,
+                'sessions' => $sessions,
+                'filters' => [
+                    'programme_id' => $programmeId,
+                    'term_id' => $termId,
+                    'session_id' => $sessionId,
+                ]
+            ]);
+        } catch (PDOException $e) {
+            flash('error', 'Database error: ' . $e->getMessage());
+            $this->redirect('admin/accounts');
+        } catch (Throwable $e) {
+            flash('error', 'Error: ' . $e->getMessage());
+            $this->redirect('admin/accounts');
         }
-        if (!empty($termId)) {
-            $where[] = 'i.term_id = ?';
-            $params[] = (int)$termId;
-        }
-        if (!empty($sessionId)) {
-            $where[] = 'i.academic_session_id = ?';
-            $params[] = (int)$sessionId;
-        }
-        if (!empty($courseId)) {
-            $where[] = 'i.course_id = ?';
-            $params[] = (int)$courseId;
-        }
-
-        $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-
-        // Get student payment info
-        $sql = "SELECT s.id AS student_id, s.name, s.admission_number, s.email,
-                       p.name AS programme_name, p.abbreviation AS programme_abbr,
-                       COALESCE(SUM(i.amount), 0) AS total_invoiced,
-                       COALESCE(SUM(pay.amount), 0) AS total_paid,
-                       COALESCE(SUM(i.amount), 0) - COALESCE(SUM(pay.amount), 0) AS balance
-                FROM student_accounts s
-                LEFT JOIN programmes p ON s.programme_id = p.id
-                LEFT JOIN invoices i ON s.id = i.student_id AND i.status != 'cancelled'
-                LEFT JOIN payments pay ON i.id = pay.invoice_id
-                $whereClause
-                GROUP BY s.id, s.name, s.admission_number, s.email, p.name, p.abbreviation
-                ORDER BY s.name";
-
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Get filter options
-        $programmes = $pdo->query('SELECT id, name, abbreviation FROM programmes ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
-        $terms = $pdo->query('SELECT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
-        $sessions = $pdo->query('SELECT id, name FROM academic_sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
-        $courses = $pdo->query('SELECT id, code, title FROM courses ORDER BY code')->fetchAll(PDO::FETCH_ASSOC);
-
-        $this->view('admin/accounts/student_payments', [
-            'metaTitle' => 'Student Payments',
-            'students' => $students,
-            'programmes' => $programmes,
-            'terms' => $terms,
-            'sessions' => $sessions,
-            'courses' => $courses,
-            'filters' => [
-                'programme_id' => $programmeId,
-                'term_id' => $termId,
-                'session_id' => $sessionId,
-                'course_id' => $courseId,
-            ]
-        ]);
     }
 
     public function generateReceipt(int $paymentId): void
