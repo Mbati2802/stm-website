@@ -102,6 +102,7 @@ $router->add('GET', 'portal/certificates', [StudentPortalController::class, 'cer
 $router->add('GET', 'portal/support', [StudentPortalController::class, 'support']);
 $router->add('POST', 'portal/support', [StudentPortalController::class, 'submitSupportTicket']);
 $router->add('GET', 'student/receipt/{id}', [StudentPortalController::class, 'receipt']);
+$router->add('GET', 'student/invoice/{id}', [StudentPortalController::class, 'invoice']);
 
 // Student Portal - Account Section
 $router->add('GET', 'portal/profile', [StudentPortalController::class, 'profile']);

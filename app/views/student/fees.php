@@ -48,6 +48,7 @@
                                 <th>Balance</th>
                                 <th>Status</th>
                                 <th>Due Date</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -73,6 +74,9 @@
                                         <span class="badge <?= $statusClass ?>"><?= ucfirst($invoice['status']) ?></span>
                                     </td>
                                     <td><?= e($invoice['due_date'] ?? '-') ?></td>
+                                    <td>
+                                        <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('student/invoice/' . $invoice['id'] . '?download=1')) ?>" target="_blank" title="Download Invoice"><i class="bi bi-download"></i></a>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>

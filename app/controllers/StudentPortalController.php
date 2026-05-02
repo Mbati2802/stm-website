@@ -479,6 +479,69 @@ class StudentPortalController extends Controller
         }
     }
 
+    public function invoice(int $invoiceId): void
+    {
+        $student = $this->requireStudent();
+        $model = new StudentPortalModel($this->config);
+        
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            
+            // Get invoice details
+            $invoice = $model->getInvoiceById($invoiceId);
+            
+            if (!$invoice) {
+                flash('error', 'Invoice not found.');
+                $this->redirect('student/fees');
+                return;
+            }
+            
+            // Check if this invoice belongs to the logged-in student
+            if ($invoice['student_id'] != $student['id']) {
+                flash('error', 'Access denied.');
+                $this->redirect('student/fees');
+                return;
+            }
+            
+            // Get fee items
+            $stmt = $pdo->prepare('SELECT * FROM fee_items WHERE invoice_id = ?');
+            $stmt->execute([$invoiceId]);
+            $feeItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Get payments
+            $stmt = $pdo->prepare('SELECT COALESCE(SUM(amount), 0) AS total_paid FROM payments WHERE invoice_id = ?');
+            $stmt->execute([$invoiceId]);
+            $totalPaid = $stmt->fetch(PDO::FETCH_ASSOC)['total_paid'];
+            
+            $balance = $invoice['amount'] - $totalPaid;
+            
+            // Get settings for contact details
+            $stmt = $pdo->prepare('SELECT setting_key, setting_value FROM settings WHERE setting_key IN (?, ?, ?)');
+            $stmt->execute(['phone', 'email', 'location']);
+            $settingsRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $settings = [];
+            foreach ($settingsRows as $row) {
+                $settings[$row['setting_key']] = $row['setting_value'];
+            }
+            
+            // Render invoice without layout for standalone display
+            $invoicePath = __DIR__ . '/../../views/student/invoice.php';
+            if (!file_exists($invoicePath)) {
+                flash('error', 'Invoice view not found at: ' . $invoicePath);
+                $this->redirect('student/fees');
+                return;
+            }
+            require_once $invoicePath;
+            exit;
+        } catch (PDOException $e) {
+            flash('error', 'Database error: ' . $e->getMessage());
+            $this->redirect('student/fees');
+        } catch (Throwable $e) {
+            flash('error', 'Error: ' . $e->getMessage());
+            $this->redirect('student/fees');
+        }
+    }
+
     public function submitSupportTicket(): void
     {
         $student = $this->requireStudent();
