@@ -78,19 +78,16 @@
                         <th class="col-sm">Invoice #</th>
                         <th class="col-md">Student</th>
                         <th class="col-md">Programme</th>
-                        <th class="col-md">Title</th>
                         <th class="col-sm">Amount</th>
                         <th class="col-sm">Paid</th>
                         <th class="col-sm">Balance</th>
                         <th class="col-sm">Status</th>
-                        <th class="col-sm">Due Date</th>
-                        <th class="col-sm">Transaction #</th>
                         <th class="col-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($invoices)): ?>
-                        <tr><td colspan="11" class="text-center py-4">No invoices found. <a href="<?= e(base_url('admin/accounts/create-invoice')) ?>">Create one</a></td></tr>
+                        <tr><td colspan="8" class="text-center py-4">No invoices found. <a href="<?= e(base_url('admin/accounts/create-invoice')) ?>">Create one</a></td></tr>
                     <?php else: ?>
                         <?php foreach ($invoices as $invoice): ?>
                             <tr>
@@ -100,9 +97,8 @@
                                     <small class="text-muted"><?= e($invoice['admission_number']) ?></small>
                                 </td>
                                 <td><?= e($invoice['programme_abbr'] ?? '-') ?></td>
-                                <td><?= e($invoice['title']) ?></td>
                                 <td>KES <?= number_format($invoice['amount'], 2) ?></td>
-                                <td>KES <?= number_format($invoice['paid_amount'], 2) ?></td>
+                                <td class="text-success">KES <?= number_format($invoice['paid_amount'], 2) ?></td>
                                 <td class="<?= $invoice['balance'] > 0 ? 'text-danger' : 'text-success' ?>">
                                     <strong>KES <?= number_format($invoice['balance'], 2) ?></strong>
                                 </td>
@@ -118,20 +114,6 @@
                                     };
                                     ?>
                                     <span class="badge <?= $statusClass ?>"><?= ucfirst($invoice['status']) ?></span>
-                                </td>
-                                <td><?= e($invoice['due_date'] ?? '-') ?></td>
-                                <td>
-                                    <?php 
-                                    // Get the latest payment transaction code for this invoice
-                                    $pdo = \Database::getInstance($config['db'] ?? []);
-                                    $stmt = $pdo->prepare('SELECT transaction_code, cheque_number FROM payments WHERE invoice_id = ? ORDER BY payment_date DESC LIMIT 1');
-                                    $stmt->execute([$invoice['id']]);
-                                    $latestPayment = $stmt->fetch(PDO::FETCH_ASSOC);
-                                    if ($latestPayment): ?>
-                                        <?= e($latestPayment['transaction_code'] ?: $latestPayment['cheque_number'] ?: '-') ?>
-                                    <?php else: ?>
-                                        -
-                                    <?php endif; ?>
                                 </td>
                                 <td class="col-actions">
                                     <div class="action-buttons">

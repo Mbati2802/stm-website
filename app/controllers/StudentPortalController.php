@@ -453,9 +453,13 @@ class StudentPortalController extends Controller
             $stmt->execute([$paymentId]);
 
             // Get settings for contact details
-            $stmt = $pdo->prepare('SELECT phone, email, location FROM settings LIMIT 1');
-            $stmt->execute();
-            $settings = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt = $pdo->prepare('SELECT setting_key, setting_value FROM settings WHERE setting_key IN (?, ?, ?)');
+            $stmt->execute(['phone', 'email', 'location']);
+            $settingsRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $settings = [];
+            foreach ($settingsRows as $row) {
+                $settings[$row['setting_key']] = $row['setting_value'];
+            }
 
             // Render receipt without layout for standalone display
             $receiptPath = __DIR__ . '/../../views/student/receipt.php';
