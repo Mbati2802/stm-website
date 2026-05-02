@@ -63,15 +63,6 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Course</label>
-                        <select name="course_id" class="form-select">
-                            <option value="">Select Course</option>
-                            <?php foreach ($courses as $course): ?>
-                                <option value="<?= (int)$course['id'] ?>"><?= e($course['code']) ?> - <?= e($course['title']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
                     <div class="col-12">
                         <label class="form-label fw-semibold">Description</label>
                         <textarea name="description" class="form-control" rows="3" placeholder="Invoice description or notes..."></textarea>

@@ -53,17 +53,6 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold">Course</label>
-                        <select name="course_id" class="form-select">
-                            <option value="">All Courses</option>
-                            <?php foreach ($courses as $course): ?>
-                                <option value="<?= (int)$course['id'] ?>" <?= $filters['course_id'] == $course['id'] ? 'selected' : '' ?>>
-                                    <?= e($course['code']) ?> - <?= e($course['title']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
                         <label class="form-label fw-semibold">Status</label>
                         <select name="status" class="form-select">
                             <option value="">All Status</option>

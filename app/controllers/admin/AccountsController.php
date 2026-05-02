@@ -47,7 +47,6 @@ class AccountsController extends Controller
             $programmeId = $_GET['programme_id'] ?? '';
             $termId = $_GET['term_id'] ?? '';
             $sessionId = $_GET['session_id'] ?? '';
-            $courseId = $_GET['course_id'] ?? '';
             $status = $_GET['status'] ?? '';
 
             // Build query with filters
@@ -66,10 +65,6 @@ class AccountsController extends Controller
                 $where[] = 'i.academic_session_id = ?';
                 $params[] = (int)$sessionId;
             }
-            if (!empty($courseId)) {
-                $where[] = 'i.course_id = ?';
-                $params[] = (int)$courseId;
-            }
             if (!empty($status)) {
                 $where[] = 'i.status = ?';
                 $params[] = $status;
@@ -79,7 +74,7 @@ class AccountsController extends Controller
 
             // Check which tables exist to build query dynamically
             $tablesExist = [];
-            $checkTables = ['programmes', 'terms', 'academic_sessions', 'courses'];
+            $checkTables = ['programmes', 'terms', 'academic_sessions'];
             foreach ($checkTables as $table) {
                 $stmt = $pdo->query("SHOW TABLES LIKE '" . $table . "'");
                 $tablesExist[$table] = $stmt->rowCount() > 0;
@@ -138,7 +133,7 @@ class AccountsController extends Controller
             
             $terms = [];
             try {
-                $terms = $pdo->query('SELECT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                $terms = $pdo->query('SELECT DISTINCT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
             } catch (PDOException $e) {
                 // Terms table doesn't exist
             }
@@ -150,25 +145,16 @@ class AccountsController extends Controller
                 // academic_sessions table doesn't exist
             }
             
-            $courses = [];
-            try {
-                $courses = $pdo->query('SELECT id, code, title FROM courses ORDER BY code')->fetchAll(PDO::FETCH_ASSOC);
-            } catch (PDOException $e) {
-                // courses table doesn't exist
-            }
-
             $this->view('admin/accounts/index', [
                 'metaTitle' => 'Accounts & Billing',
                 'invoices' => $invoices,
                 'programmes' => $programmes,
                 'terms' => $terms,
                 'sessions' => $sessions,
-                'courses' => $courses,
                 'filters' => [
                     'programme_id' => $programmeId,
                     'term_id' => $termId,
                     'session_id' => $sessionId,
-                    'course_id' => $courseId,
                     'status' => $status,
                 ]
             ]);
@@ -179,12 +165,10 @@ class AccountsController extends Controller
                 'programmes' => [],
                 'terms' => [],
                 'sessions' => [],
-                'courses' => [],
                 'filters' => [
                     'programme_id' => '',
                     'term_id' => '',
                     'session_id' => '',
-                    'course_id' => '',
                     'status' => '',
                 ],
                 'error' => 'Database error: ' . $e->getMessage()
@@ -196,12 +180,10 @@ class AccountsController extends Controller
                 'programmes' => [],
                 'terms' => [],
                 'sessions' => [],
-                'courses' => [],
                 'filters' => [
                     'programme_id' => '',
                     'term_id' => '',
                     'session_id' => '',
-                    'course_id' => '',
                     'status' => '',
                 ],
                 'error' => 'Error: ' . $e->getMessage()
@@ -229,7 +211,6 @@ class AccountsController extends Controller
                 $programmeId = !empty($_POST['programme_id']) ? (int)$_POST['programme_id'] : null;
                 $termId = !empty($_POST['term_id']) ? (int)$_POST['term_id'] : null;
                 $sessionId = !empty($_POST['session_id']) ? (int)$_POST['session_id'] : null;
-                $courseId = !empty($_POST['course_id']) ? (int)$_POST['course_id'] : null;
 
                 if ($studentId === 0 || empty($title) || $amount <= 0) {
                     flash('error', 'Student, title, and amount are required.');
@@ -241,14 +222,13 @@ class AccountsController extends Controller
                 $invoiceNumber = $this->generateInvoiceNumber($pdo);
 
                 // Insert invoice
-                $stmt = $pdo->prepare('INSERT INTO invoices (invoice_number, student_id, programme_id, term_id, academic_session_id, course_id, title, description, amount, due_date, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                $stmt = $pdo->prepare('INSERT INTO invoices (invoice_number, student_id, programme_id, term_id, academic_session_id, title, description, amount, due_date, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
                 $stmt->execute([
                     $invoiceNumber,
                     $studentId,
                     $programmeId,
                     $termId,
                     $sessionId,
-                    $courseId,
                     $title,
                     $description,
                     $amount,
@@ -286,7 +266,7 @@ class AccountsController extends Controller
             
             $terms = [];
             try {
-                $terms = $pdo->query('SELECT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                $terms = $pdo->query('SELECT DISTINCT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
             } catch (PDOException $e) {
                 // Terms table doesn't exist
             }
@@ -297,21 +277,13 @@ class AccountsController extends Controller
             } catch (PDOException $e) {
                 // academic_sessions table doesn't exist
             }
-            
-            $courses = [];
-            try {
-                $courses = $pdo->query('SELECT id, code, title FROM courses ORDER BY code')->fetchAll(PDO::FETCH_ASSOC);
-            } catch (PDOException $e) {
-                // courses table doesn't exist
-            }
 
             $this->view('admin/accounts/create_invoice', [
                 'metaTitle' => 'Create Invoice',
                 'students' => $students,
                 'programmes' => $programmes,
                 'terms' => $terms,
-                'sessions' => $sessions,
-                'courses' => $courses
+                'sessions' => $sessions
             ]);
         } catch (PDOException $e) {
             flash('error', 'Database error: ' . $e->getMessage());
@@ -341,7 +313,6 @@ class AccountsController extends Controller
                 $programmeId = !empty($_POST['programme_id']) ? (int)$_POST['programme_id'] : null;
                 $termId = !empty($_POST['term_id']) ? (int)$_POST['term_id'] : null;
                 $sessionId = !empty($_POST['session_id']) ? (int)$_POST['session_id'] : null;
-                $courseId = !empty($_POST['course_id']) ? (int)$_POST['course_id'] : null;
 
                 if (empty($title) || $amount <= 0 || $programmeId === null) {
                     flash('error', 'Title, amount, and programme are required.');
@@ -382,14 +353,13 @@ class AccountsController extends Controller
                 foreach ($students as $student) {
                     $invoiceNumber = $this->generateInvoiceNumber($pdo);
                     
-                    $stmt = $pdo->prepare('INSERT INTO invoices (invoice_number, student_id, programme_id, term_id, academic_session_id, course_id, title, description, amount, due_date, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                    $stmt = $pdo->prepare('INSERT INTO invoices (invoice_number, student_id, programme_id, term_id, academic_session_id, title, description, amount, due_date, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
                     $stmt->execute([
                         $invoiceNumber,
                         $student['id'],
                         $programmeId,
                         $termId,
                         $sessionId,
-                        $courseId,
                         $title,
                         $description,
                         $amount,
@@ -428,7 +398,7 @@ class AccountsController extends Controller
             
             $terms = [];
             try {
-                $terms = $pdo->query('SELECT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                $terms = $pdo->query('SELECT DISTINCT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
             } catch (PDOException $e) {
                 // Terms table doesn't exist
             }
@@ -439,20 +409,12 @@ class AccountsController extends Controller
             } catch (PDOException $e) {
                 // academic_sessions table doesn't exist
             }
-            
-            $courses = [];
-            try {
-                $courses = $pdo->query('SELECT id, code, title FROM courses ORDER BY code')->fetchAll(PDO::FETCH_ASSOC);
-            } catch (PDOException $e) {
-                // courses table doesn't exist
-            }
 
             $this->view('admin/accounts/bulk_create_invoice', [
                 'metaTitle' => 'Bulk Create Invoice',
                 'programmes' => $programmes,
                 'terms' => $terms,
-                'sessions' => $sessions,
-                'courses' => $courses
+                'sessions' => $sessions
             ]);
         } catch (PDOException $e) {
             flash('error', 'Database error: ' . $e->getMessage());
