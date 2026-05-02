@@ -1,6 +1,14 @@
 <?php
 class StudentPortalController extends Controller
 {
+    private PDO $pdo;
+
+    public function __construct(array $config)
+    {
+        parent::__construct($config);
+        $this->pdo = Database::getInstance($config['db']);
+    }
+
     public function registerForm(): void
     {
         $this->view('pages/portal_register', ['metaTitle' => 'Student Portal - Register']);
@@ -289,7 +297,16 @@ class StudentPortalController extends Controller
     public function events(): void
     {
         $student = $this->requireStudent();
-        $this->view('student/events', ['metaTitle' => 'Student Portal - Campus Events'], 'student');
+        try {
+            $stmt = $this->pdo->query('SELECT * FROM events ORDER BY starts_at DESC');
+            $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException) {
+            $events = [];
+        }
+        $this->view('student/events', [
+            'metaTitle' => 'Student Portal - Campus Events',
+            'events' => $events,
+        ], 'student');
     }
 
     public function clubs(): void
@@ -301,7 +318,11 @@ class StudentPortalController extends Controller
     public function announcements(): void
     {
         $student = $this->requireStudent();
-        $this->view('student/announcements', ['metaTitle' => 'Student Portal - Announcements'], 'student');
+        $model = new StudentPortalModel($this->config);
+        $this->view('student/announcements', [
+            'metaTitle' => 'Student Portal - Announcements',
+            'announcements' => $model->latestAnnouncements(20),
+        ], 'student');
     }
 
     // Services Section
@@ -367,7 +388,22 @@ class StudentPortalController extends Controller
     public function profile(): void
     {
         $student = $this->requireStudent();
-        $this->view('student/profile', ['metaTitle' => 'Student Portal - Profile'], 'student');
+        $model = new StudentPortalModel($this->config);
+        
+        // Fetch programme information
+        $programmeName = '';
+        if (!empty($student['programme_id'])) {
+            $stmt = $this->pdo->prepare('SELECT name FROM programmes WHERE id = ? LIMIT 1');
+            $stmt->execute([(int)$student['programme_id']]);
+            $programme = $stmt->fetch(PDO::FETCH_ASSOC);
+            $programmeName = $programme['name'] ?? '';
+        }
+        
+        $this->view('student/profile', [
+            'metaTitle' => 'Student Portal - Profile',
+            'student' => $student,
+            'programmeName' => $programmeName,
+        ], 'student');
     }
 
     public function settings(): void

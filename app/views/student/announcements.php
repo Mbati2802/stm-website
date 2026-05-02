@@ -13,29 +13,21 @@
                 </div>
             </div>
             
-            <?php 
-            $announcements = [
-                ['Schedule Update', 'Tomorrow\'s CS301 lecture moved to Room 205', 'Jan 18, 2024', 'info', true],
-                ['Library Maintenance', 'Digital library will be unavailable this weekend for system upgrades', 'Jan 17, 2024', 'warning', true],
-                ['Exam Schedule Released', 'Mid-term examination schedule for Semester 2 has been released', 'Jan 16, 2024', 'success', false],
-                ['Holiday Notice', 'College closed on January 26th for Republic Day', 'Jan 15, 2024', 'info', false],
-                ['Scholarship Opportunity', 'New merit-based scholarships available for deserving students', 'Jan 14, 2024', 'success', false],
-                ['Campus Security', 'Enhanced security measures implemented across campus', 'Jan 13, 2024', 'warning', false],
-            ];
-            foreach ($announcements as $announcement): ?>
-            <div class="alert-student alert-<?= $announcement[3] ?>">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <strong><?= $announcement[0] ?></strong>
-                        <p class="mb-1 small mt-1"><?= $announcement[1] ?></p>
-                        <small class="text-white-50"><i class="bi bi-clock me-1"></i><?= $announcement[2] ?></small>
+            <?php if ($announcements === []): ?>
+                <p class="text-muted mb-0">No announcements yet.</p>
+            <?php else: ?>
+                <?php foreach ($announcements as $announcement): ?>
+                <div class="alert-student alert-info">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong><?= e((string)$announcement['title']) ?></strong>
+                            <p class="mb-1 small mt-1"><?= e((string)$announcement['body']) ?></p>
+                            <small class="text-white-50"><i class="bi bi-clock me-1"></i><?= e((string)$announcement['created_at']) ?></small>
+                        </div>
                     </div>
-                    <?php if ($announcement[4]): ?>
-                        <span class="badge bg-white text-<?= $announcement[3] ?>">New</span>
-                    <?php endif; ?>
                 </div>
-            </div>
-            <?php endforeach; ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </section>

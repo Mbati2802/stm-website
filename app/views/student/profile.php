@@ -7,9 +7,9 @@
                         <i class="bi bi-person-fill"></i>
                     </div>
                     <div class="student-details">
-                        <h3><?= e($_SESSION['student_name'] ?? 'John Doe') ?></h3>
-                        <p><i class="bi bi-envelope me-2"></i><?= e($_SESSION['student_email'] ?? 'student@stmarysmchmcollege.ac.ke') ?></p>
-                        <p><i class="bi bi-credit-card me-2"></i><?= e($_SESSION['student_admission_number'] ?? 'STM/2024/0001') ?></p>
+                        <h3><?= e($student['name'] ?? 'John Doe') ?></h3>
+                        <p><i class="bi bi-envelope me-2"></i><?= e($student['email'] ?? 'student@stmarysmchmcollege.ac.ke') ?></p>
+                        <p><i class="bi bi-credit-card me-2"></i><?= e($student['admission_number'] ?? 'STM/2024/0001') ?></p>
                     </div>
                 </div>
             </div>
@@ -25,31 +25,55 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Full Name</label>
-                            <input type="text" class="form-control" value="<?= e($_SESSION['student_name'] ?? 'John Doe') ?>" readonly>
+                            <input type="text" class="form-control" value="<?= e($student['name'] ?? '') ?>" readonly>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control" value="<?= e($_SESSION['student_email'] ?? 'student@stmarysmchmcollege.ac.ke') ?>" readonly>
+                            <input type="email" class="form-control" value="<?= e($student['email'] ?? '') ?>" readonly>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" value="+254 700 123 456" readonly>
+                            <input type="tel" class="form-control" value="<?= e($student['phone'] ?? '') ?>" readonly>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Date of Birth</label>
-                            <input type="date" class="form-control" value="2000-05-15" readonly>
+                            <input type="date" class="form-control" value="<?= e($student['date_of_birth'] ?? '') ?>" readonly>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Admission Number</label>
-                            <input type="text" class="form-control" value="<?= e($_SESSION['student_admission_number'] ?? 'STM/2024/0001') ?>" readonly>
+                            <input type="text" class="form-control" value="<?= e($student['admission_number'] ?? '') ?>" readonly>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Programme</label>
-                            <input type="text" class="form-control" value="Computer Science" readonly>
+                            <input type="text" class="form-control" value="<?= e($programmeName ?? '') ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">National ID</label>
+                            <input type="text" class="form-control" value="<?= e($student['national_id'] ?? '') ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Gender</label>
+                            <input type="text" class="form-control" value="<?= e($student['gender'] ?? '') ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">County</label>
+                            <input type="text" class="form-control" value="<?= e($student['county'] ?? '') ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Sub County</label>
+                            <input type="text" class="form-control" value="<?= e($student['sub_county'] ?? '') ?>" readonly>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Address</label>
-                            <textarea class="form-control" rows="2" readonly>Nairobi, Kenya</textarea>
+                            <label class="form-label">Guardian Name</label>
+                            <input type="text" class="form-control" value="<?= e($student['guardian_name'] ?? '') ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Guardian Relationship</label>
+                            <input type="text" class="form-control" value="<?= e($student['guardian_relationship'] ?? '') ?>" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Guardian Phone</label>
+                            <input type="tel" class="form-control" value="<?= e($student['guardian_phone'] ?? '') ?>" readonly>
                         </div>
                     </div>
                 </div>
