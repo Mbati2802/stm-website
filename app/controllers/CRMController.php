@@ -2,8 +2,6 @@
 
 require_once __DIR__ . '/../core/CRMAuth.php';
 
-use app\core\CRMAuth;
-
 class CRMController
 {
     private array $config;
