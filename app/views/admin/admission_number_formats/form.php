@@ -45,6 +45,7 @@
                 <div class="col-md-3"><code>{YY}</code> - Short Year (e.g., 26)</div>
                 <div class="col-md-3"><code>{MM}</code> - Month Number (e.g., 05)</div>
                 <div class="col-md-3"><code>{MON}</code> - Month Name (e.g., MAY)</div>
+                <div class="col-md-3"><code>{M}</code> - Month Initial (e.g., J)</div>
                 <div class="col-md-3"><code>{SEQ4}</code> - Sequential 4-digit (e.g., 0001)</div>
                 <div class="col-md-3"><code>{SEQ3}</code> - Sequential 3-digit (e.g., 001)</div>
                 <div class="col-md-3"><code>{SEQ2}</code> - Sequential 2-digit (e.g., 01)</div>
@@ -55,6 +56,7 @@
                     <li><code>STM/{YYYY}/{SEQ4}</code> → STM/2026/0001</li>
                     <li><code>{PROG_ABBR}/{YYYY}/{MM}/{SEQ3}</code> → DPTT/2026/05/001</li>
                     <li><code>{PROG_ABBR}/{SEQ4}/{MON}/{YYYY}</code> → DPTT/0001/MAY/2026</li>
+                    <li><code>{PROG_ABBR}/{M}/{YYYY}/{SEQ3}</code> → DPTT/J/2026/001</li>
                 </ul>
             </div>
         </div>

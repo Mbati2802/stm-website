@@ -183,6 +183,7 @@ class AdmissionNumberFormatsController extends Controller
         $shortYear = date('y');
         $month = date('m');
         $monthName = strtoupper(date('M'));
+        $monthInitial = strtoupper(substr(date('F'), 0, 1));
 
         // Format sequence number with padding
         $seq4 = str_pad((string)$sequenceNumber, 4, '0', STR_PAD_LEFT);
@@ -196,6 +197,7 @@ class AdmissionNumberFormatsController extends Controller
         $admissionNumber = str_replace('{YY}', $shortYear, $admissionNumber);
         $admissionNumber = str_replace('{MM}', $month, $admissionNumber);
         $admissionNumber = str_replace('{MON}', $monthName, $admissionNumber);
+        $admissionNumber = str_replace('{M}', $monthInitial, $admissionNumber);
         $admissionNumber = str_replace('{SEQ4}', $seq4, $admissionNumber);
         $admissionNumber = str_replace('{SEQ3}', $seq3, $admissionNumber);
         $admissionNumber = str_replace('{SEQ2}', $seq2, $admissionNumber);
