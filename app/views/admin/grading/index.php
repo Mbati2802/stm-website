@@ -138,7 +138,7 @@
         </div>
 
         <!-- Grade Ranges Section -->
-        <div class="card mb-4" id="gradeRangesCard" style="display: none;">
+        <div class="card mb-4" id="gradeRangesCard">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Grade Ranges</h5>
                 <div>
@@ -162,7 +162,7 @@
                             </tr>
                         </thead>
                         <tbody id="gradeRangesTable">
-                            <!-- Grade ranges will be loaded here -->
+                            <tr><td colspan="6" class="text-center">Select a grading system to view grade ranges</td></tr>
                         </tbody>
                     </table>
                 </div>

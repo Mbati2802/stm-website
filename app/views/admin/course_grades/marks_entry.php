@@ -334,6 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('saveAllMarks').addEventListener('click', function() {
         const sessionId = document.getElementById('sessionFilter').value;
         const termId = document.getElementById('termFilter').value;
+        const unitId = document.getElementById('unitFilter').value;
         
         const marksData = [];
         document.querySelectorAll('#marksTableBody tr').forEach(row => {
@@ -344,10 +345,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (marks) {
                     marksData.push({
                         student_id: studentId,
+                        course_id: unitId,
                         exam_type_id: examTypeId,
                         marks: marks,
                         academic_session_id: sessionId,
-                        term_id: termId
+                        term_id: termId,
+                        grading_system_id: 1 // Default grading system ID
                     });
                 }
             });
@@ -358,6 +361,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        console.log('Saving marks:', marksData);
+        
         fetch('<?= e(base_url('admin/course-grades/bulk-save')) ?>', {
             method: 'POST',
             headers: {
@@ -367,11 +372,16 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
+            console.log('Save response:', data);
             if (data.success) {
                 alert('Marks saved successfully');
             } else {
                 alert('Error saving marks: ' + data.message);
             }
+        })
+        .catch(error => {
+            console.error('Error saving marks:', error);
+            alert('Error saving marks: ' + error.message);
         });
     });
 });
