@@ -352,14 +352,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Calculate grade using grade ranges from grading system
         let grade = '-';
+        console.log('Calculating grade for total:', total, 'with grade ranges:', window.gradeRanges);
+        
         if (window.gradeRanges && window.gradeRanges.length > 0) {
             for (const range of window.gradeRanges) {
+                console.log(`Checking range: ${range.grade_letter}, min: ${range.min_marks}, max: ${range.max_marks}`);
                 if (total >= range.min_marks && total <= range.max_marks) {
                     grade = range.grade_letter;
+                    console.log(`Grade assigned: ${grade}`);
                     break;
                 }
             }
         } else {
+            console.log('No grade ranges loaded, using fallback calculation');
             // Fallback to simple grade calculation if no grade ranges loaded
             if (total >= 70) grade = 'A';
             else if (total >= 60) grade = 'B';
