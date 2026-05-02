@@ -81,8 +81,7 @@ class AccountsController extends Controller
             $tablesExist = [];
             $checkTables = ['programmes', 'terms', 'academic_sessions', 'courses'];
             foreach ($checkTables as $table) {
-                $stmt = $pdo->prepare("SHOW TABLES LIKE ?");
-                $stmt->execute([$table]);
+                $stmt = $pdo->query("SHOW TABLES LIKE '" . $table . "'");
                 $tablesExist[$table] = $stmt->rowCount() > 0;
             }
 
