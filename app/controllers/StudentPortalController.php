@@ -105,11 +105,46 @@ class StudentPortalController extends Controller
             $programmeName = $programme['name'] ?? '';
         }
         
-        // Fetch student's courses
-        $courses = $model->allPortalCourses();
+        // Fetch student's courses based on their programme
+        $courses = [];
+        if (!empty($student['programme_id'])) {
+            try {
+                $stmt = $this->pdo->prepare('
+                    SELECT pc.*, p.name AS programme_name, u.name AS teacher_name
+                    FROM portal_courses pc
+                    LEFT JOIN programmes p ON p.id = pc.programme_id
+                    LEFT JOIN users u ON u.id = pc.teacher_id
+                    WHERE pc.programme_id = ?
+                    ORDER BY pc.created_at DESC
+                ');
+                $stmt->execute([(int)$student['programme_id']]);
+                $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException) {
+                $courses = [];
+            }
+        }
         
-        // Fetch assignments
-        $assignments = $model->allAssignments();
+        // Fetch assignments for student's courses
+        $assignments = [];
+        if (!empty($courses)) {
+            $courseIds = array_column($courses, 'id');
+            if (!empty($courseIds)) {
+                try {
+                    $placeholders = implode(',', array_fill(0, count($courseIds), '?'));
+                    $stmt = $this->pdo->prepare("
+                        SELECT ca.*, pc.title AS course_title, pc.code AS course_code
+                        FROM course_assignments ca
+                        LEFT JOIN portal_courses pc ON pc.id = ca.course_id
+                        WHERE ca.course_id IN ($placeholders)
+                        ORDER BY ca.created_at DESC
+                    ");
+                    $stmt->execute($courseIds);
+                    $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                } catch (PDOException) {
+                    $assignments = [];
+                }
+            }
+        }
         
         $this->view('student/dashboard', [
             'metaTitle' => 'Student Portal - Dashboard',
