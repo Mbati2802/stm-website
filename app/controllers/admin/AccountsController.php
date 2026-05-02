@@ -149,7 +149,8 @@ class AccountsController extends Controller
             
             $terms = [];
             try {
-                $terms = $pdo->query('SELECT DISTINCT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                // Get unique terms by grouping
+                $terms = $pdo->query('SELECT id, name FROM terms GROUP BY name ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
             } catch (PDOException $e) {
                 // Terms table doesn't exist
             }
@@ -291,7 +292,8 @@ class AccountsController extends Controller
             
             $terms = [];
             try {
-                $terms = $pdo->query('SELECT DISTINCT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                // Get unique terms by grouping
+                $terms = $pdo->query('SELECT id, name FROM terms GROUP BY name ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
             } catch (PDOException $e) {
                 // Terms table doesn't exist
             }
@@ -424,7 +426,8 @@ class AccountsController extends Controller
             
             $terms = [];
             try {
-                $terms = $pdo->query('SELECT DISTINCT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+                // Get unique terms by grouping
+                $terms = $pdo->query('SELECT id, name FROM terms GROUP BY name ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
             } catch (PDOException $e) {
                 // Terms table doesn't exist
             }
