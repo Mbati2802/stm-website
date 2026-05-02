@@ -33,34 +33,51 @@ class CRMController
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
 
+        error_log("CRM Login Attempt - Username: " . $username);
+
         if ($username === '' || $password === '') {
+            error_log("CRM Login Error: Empty username or password");
             header('Location: /crm/login?error=Please fill in all fields');
             exit;
         }
 
         try {
             $config = require __DIR__ . '/../../config/crm_config.php';
+            error_log("CRM Config loaded - DB: " . $config['db']['name'] . ", User: " . $config['db']['user']);
+
             $pdo = new PDO(
                 "mysql:host={$config['db']['host']};dbname={$config['db']['name']};charset={$config['db']['charset']}",
                 $config['db']['user'],
                 $config['db']['pass'],
                 $config['db']['options']
             );
+            error_log("CRM Database connection successful");
 
             $stmt = $pdo->prepare('SELECT * FROM crm_users WHERE username = ? AND status = "active"');
             $stmt->execute([$username]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$user || !CRMAuth::verifyPassword($password, $user['password_hash'])) {
+            if (!$user) {
+                error_log("CRM Login Error: User not found - " . $username);
                 header('Location: /crm/login?error=Invalid credentials');
                 exit;
             }
 
+            error_log("CRM User found: " . $user['username'] . ", ID: " . $user['id']);
+
+            if (!CRMAuth::verifyPassword($password, $user['password_hash'])) {
+                error_log("CRM Login Error: Password verification failed for " . $username);
+                header('Location: /crm/login?error=Invalid credentials');
+                exit;
+            }
+
+            error_log("CRM Login successful for: " . $username);
             CRMAuth::login($user['id'], $user['username'], $user['role']);
             header('Location: /crm/dashboard');
             exit;
         } catch (PDOException $e) {
-            header('Location: /crm/login?error=Database error');
+            error_log("CRM Login Database Error: " . $e->getMessage());
+            header('Location: /crm/login?error=Database error: ' . $e->getMessage());
             exit;
         }
     }
