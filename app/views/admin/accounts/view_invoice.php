@@ -144,7 +144,7 @@
                                             <?php if ($payment['receipt_generated']): ?>
                                                 <span class="badge bg-success">Generated</span>
                                             <?php else: ?>
-                                                <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/accounts/generate-receipt/' . $payment['id'])) ?>">
+                                                <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('admin/accounts/generate-receipt/' . $payment['id'])) ?>" target="_blank">
                                                     <i class="bi bi-receipt"></i> Generate
                                                 </a>
                                             <?php endif; ?>

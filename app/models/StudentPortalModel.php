@@ -402,12 +402,10 @@ class StudentPortalModel
             $stmt = $this->pdo->prepare('
                 SELECT 
                     COALESCE(SUM(i.amount), 0) AS total_invoiced,
-                    COALESCE(SUM(pay.amount), 0) AS total_paid,
-                    COALESCE(SUM(i.amount), 0) - COALESCE(SUM(pay.amount), 0) AS balance
-                FROM student_accounts s
-                LEFT JOIN invoices i ON s.id = i.student_id AND i.status != "cancelled"
-                LEFT JOIN payments pay ON i.id = pay.invoice_id
-                WHERE s.id = :student_id
+                    COALESCE((SELECT SUM(amount) FROM payments WHERE invoice_id IN (SELECT id FROM invoices WHERE student_id = :student_id AND status != "cancelled")), 0) AS total_paid,
+                    COALESCE(SUM(i.amount), 0) - COALESCE((SELECT SUM(amount) FROM payments WHERE invoice_id IN (SELECT id FROM invoices WHERE student_id = :student_id AND status != "cancelled")), 0) AS balance
+                FROM invoices i
+                WHERE i.student_id = :student_id AND i.status != "cancelled"
             ');
             $stmt->execute(['student_id' => $studentId]);
             $result = $stmt->fetch();
