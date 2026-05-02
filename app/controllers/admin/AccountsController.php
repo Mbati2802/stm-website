@@ -20,6 +20,29 @@ class AccountsController extends Controller
         try {
             $pdo = Database::getInstance($this->config['db']);
             
+            // Check if invoices table exists
+            $stmt = $pdo->prepare("SHOW TABLES LIKE 'invoices'");
+            $stmt->execute();
+            if ($stmt->rowCount() === 0) {
+                $this->view('admin/accounts/index', [
+                    'metaTitle' => 'Accounts & Billing',
+                    'invoices' => [],
+                    'programmes' => [],
+                    'terms' => [],
+                    'sessions' => [],
+                    'courses' => [],
+                    'filters' => [
+                        'programme_id' => '',
+                        'term_id' => '',
+                        'session_id' => '',
+                        'course_id' => '',
+                        'status' => '',
+                    ],
+                    'error' => 'Database tables not found. Please run the migration: database/migration_accounts_billing.sql'
+                ]);
+                return;
+            }
+            
             // Get filters
             $programmeId = $_GET['programme_id'] ?? '';
             $termId = $_GET['term_id'] ?? '';
@@ -96,11 +119,39 @@ class AccountsController extends Controller
                 ]
             ]);
         } catch (PDOException $e) {
-            flash('error', 'Database error: ' . $e->getMessage());
-            $this->redirect('admin');
+            $this->view('admin/accounts/index', [
+                'metaTitle' => 'Accounts & Billing',
+                'invoices' => [],
+                'programmes' => [],
+                'terms' => [],
+                'sessions' => [],
+                'courses' => [],
+                'filters' => [
+                    'programme_id' => '',
+                    'term_id' => '',
+                    'session_id' => '',
+                    'course_id' => '',
+                    'status' => '',
+                ],
+                'error' => 'Database error: ' . $e->getMessage()
+            ]);
         } catch (Throwable $e) {
-            flash('error', 'Error: ' . $e->getMessage());
-            $this->redirect('admin');
+            $this->view('admin/accounts/index', [
+                'metaTitle' => 'Accounts & Billing',
+                'invoices' => [],
+                'programmes' => [],
+                'terms' => [],
+                'sessions' => [],
+                'courses' => [],
+                'filters' => [
+                    'programme_id' => '',
+                    'term_id' => '',
+                    'session_id' => '',
+                    'course_id' => '',
+                    'status' => '',
+                ],
+                'error' => 'Error: ' . $e->getMessage()
+            ]);
         }
     }
 
