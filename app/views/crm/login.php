@@ -11,6 +11,7 @@
             </div>
         <?php endif; ?>
         <form method="POST" action="/crm/login">
+            <input type="hidden" name="_csrf" value="<?= csrf_token() ?>">
             <div class="mb-3">
                 <label class="form-label">Username</label>
                 <input type="text" name="username" class="form-control" required autofocus>
