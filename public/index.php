@@ -121,13 +121,14 @@ $router->add('GET', 'admin/admission-number-formats/set-default/{id}', ['Admissi
 $router->add('GET', 'admin/accounts', ['AccountsController', 'index']);
 $router->add('GET', 'admin/accounts/create-invoice', ['AccountsController', 'createInvoice']);
 $router->add('POST', 'admin/accounts/create-invoice', ['AccountsController', 'createInvoice']);
-$router->add('GET', 'admin/accounts/bulk-create-invoice', ['AccountsController', 'bulkCreateInvoice']);
-$router->add('POST', 'admin/accounts/bulk-create-invoice', ['AccountsController', 'bulkCreateInvoice']);
-$router->add('GET', 'admin/accounts/view-invoice/{id}', ['AccountsController', 'viewInvoice']);
-$router->add('GET', 'admin/accounts/record-payment', ['AccountsController', 'recordPayment']);
-$router->add('POST', 'admin/accounts/record-payment', ['AccountsController', 'recordPayment']);
-$router->add('GET', 'admin/accounts/student-payments', ['AccountsController', 'studentPayments']);
-$router->add('GET', 'admin/accounts/generate-receipt/{id}', ['AccountsController', 'generateReceipt']);
+$router->add('GET', 'admin/accounts/bulk-create-invoice', [AccountsController::class, 'bulkCreateInvoice']);
+$router->add('POST', 'admin/accounts/bulk-create-invoice', [AccountsController::class, 'bulkCreateInvoice']);
+$router->add('GET', 'admin/accounts/view-invoice/{id}', [AccountsController::class, 'viewInvoice']);
+$router->add('GET', 'admin/accounts/record-payment', [AccountsController::class, 'recordPayment']);
+$router->add('POST', 'admin/accounts/record-payment', [AccountsController::class, 'recordPayment']);
+$router->add('GET', 'admin/accounts/student-payments', [AccountsController::class, 'studentPayments']);
+$router->add('GET', 'admin/accounts/student-payment-history/{id}', [AccountsController::class, 'studentPaymentHistory']);
+$router->add('GET', 'admin/accounts/generate-receipt/{id}', [AccountsController::class, 'generateReceipt']);
 
 $router->add('GET', 'admin/list/{entity}', [AdminContentController::class, 'list']);
 $router->add('GET', 'admin/create/{entity}', [AdminContentController::class, 'create']);

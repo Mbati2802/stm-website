@@ -24,7 +24,7 @@
         }
         .receipt-header {
             text-align: center;
-            border-bottom: 2px solid #333;
+            border-bottom: 3px solid #007bff;
             padding-bottom: 10px;
             margin-bottom: 15px;
         }
@@ -36,7 +36,7 @@
         }
         .receipt-header h1 {
             margin: 0;
-            color: #333;
+            color: #007bff;
             font-size: 16px;
         }
         .receipt-header h2 {
@@ -44,6 +44,11 @@
             color: #666;
             font-size: 13px;
             font-weight: normal;
+        }
+        .receipt-header .contact {
+            margin-top: 5px;
+            font-size: 11px;
+            color: #555;
         }
         .receipt-info {
             margin-bottom: 15px;
@@ -135,6 +140,9 @@
             <img src="/assets/images/college-logo.png" alt="College Logo" class="logo" onerror="this.style.display='none'">
             <h1>St. Mary's Mother and Child Hospital Medical Training College</h1>
             <h2>Official Payment Receipt</h2>
+            <div class="contact">
+                <p>Email: finance@stmarysmchmcollege.ac.ke | Phone: +254 700 000 000 / +254 733 000 000</p>
+            </div>
         </div>
         
         <div class="receipt-info">
@@ -153,7 +161,7 @@
                 </tr>
                 <tr>
                     <td>Transaction/Cheque #:</td>
-                    <td><?= e($payment['transaction_code'] ?? $payment['cheque_number'] ?? 'N/A') ?></td>
+                    <td><?= e($payment['transaction_code'] ?: $payment['cheque_number'] ?: 'N/A') ?></td>
                 </tr>
                 <?php if ($payment['bank_name']): ?>
                 <tr>

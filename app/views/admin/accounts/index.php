@@ -126,7 +126,16 @@
                                             <a class="btn btn-sm btn-action-edit" href="<?= e(base_url('admin/accounts/record-payment?invoice_id=' . $invoice['id'])) ?>" title="Record Payment"><i class="bi bi-cash"></i></a>
                                         <?php endif; ?>
                                         <?php if ($invoice['paid_amount'] > 0): ?>
-                                            <a class="btn btn-sm btn-action-print" href="<?= e(base_url('admin/accounts/student-payments?student_id=' . $invoice['student_id'])) ?>" title="Payment History"><i class="bi bi-receipt"></i></a>
+                                            <a class="btn btn-sm btn-action-print" href="<?= e(base_url('admin/accounts/student-payment-history/' . $invoice['student_id'])) ?>" title="Payment History"><i class="bi bi-receipt"></i></a>
+                                            <?php 
+                                            // Get the latest payment for this invoice to download receipt
+                                            $pdo = \Database::getInstance($config['db'] ?? []);
+                                            $stmt = $pdo->prepare('SELECT id FROM payments WHERE invoice_id = ? ORDER BY payment_date DESC LIMIT 1');
+                                            $stmt->execute([$invoice['id']]);
+                                            $latestPayment = $stmt->fetch(PDO::FETCH_ASSOC);
+                                            if ($latestPayment): ?>
+                                                <a class="btn btn-sm btn-action-success" href="<?= e(base_url('admin/accounts/generate-receipt/' . $latestPayment['id'])) ?>" target="_blank" title="Download Receipt"><i class="bi bi-download"></i></a>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </div>
                                 </td>

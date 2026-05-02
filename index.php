@@ -128,8 +128,9 @@ $router->add('POST', 'admin/accounts/bulk-create-invoice', ['AccountsController'
 $router->add('GET', 'admin/accounts/view-invoice/{id}', ['AccountsController', 'viewInvoice']);
 $router->add('GET', 'admin/accounts/record-payment', ['AccountsController', 'recordPayment']);
 $router->add('POST', 'admin/accounts/record-payment', ['AccountsController', 'recordPayment']);
-$router->add('GET', 'admin/accounts/student-payments', ['AccountsController', 'studentPayments']);
-$router->add('GET', 'admin/accounts/generate-receipt/{id}', ['AccountsController', 'generateReceipt']);
+$router->add('GET', 'admin/accounts/student-payments', [AccountsController::class, 'studentPayments']);
+$router->add('GET', 'admin/accounts/student-payment-history/{id}', [AccountsController::class, 'studentPaymentHistory']);
+$router->add('GET', 'admin/accounts/generate-receipt/{id}', [AccountsController::class, 'generateReceipt']);
 
 $router->add('POST', 'admin/course-grades/bulk-save', [AdminContentController::class, 'bulkSaveCourseGrades']);
 $router->add('GET', 'admin/list/{entity}', [AdminContentController::class, 'list']);

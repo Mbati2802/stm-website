@@ -723,6 +723,55 @@ class AccountsController extends Controller
         }
     }
 
+    public function studentPaymentHistory(int $studentId): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canViewEntity('students')) {
+            $this->redirect('admin');
+            return;
+        }
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            
+            // Get student info
+            $stmt = $pdo->prepare('SELECT s.*, p.name AS programme_name, p.abbreviation AS programme_abbr 
+                                    FROM student_accounts s 
+                                    LEFT JOIN programmes p ON s.programme_id = p.id 
+                                    WHERE s.id = ?');
+            $stmt->execute([$studentId]);
+            $student = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$student) {
+                flash('error', 'Student not found.');
+                $this->redirect('admin/accounts');
+                return;
+            }
+
+            // Get payments for this student
+            $stmt = $pdo->prepare('SELECT p.*, i.invoice_number, i.title AS invoice_title, pm.name AS payment_method_name
+                                    FROM payments p
+                                    LEFT JOIN invoices i ON p.invoice_id = i.id
+                                    LEFT JOIN payment_methods pm ON p.payment_method_id = pm.id
+                                    WHERE p.student_id = ?
+                                    ORDER BY p.payment_date DESC');
+            $stmt->execute([$studentId]);
+            $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $this->view('admin/accounts/student_payment_history', [
+                'metaTitle' => 'Payment History - ' . e($student['name']),
+                'student' => $student,
+                'payments' => $payments
+            ]);
+        } catch (PDOException $e) {
+            flash('error', 'Database error: ' . $e->getMessage());
+            $this->redirect('admin/accounts');
+        } catch (Throwable $e) {
+            flash('error', 'Error: ' . $e->getMessage());
+            $this->redirect('admin/accounts');
+        }
+    }
+
     public function generateReceipt(int $paymentId): void
     {
         Auth::requireAdmin();
@@ -760,11 +809,9 @@ class AccountsController extends Controller
         $stmt = $pdo->prepare('UPDATE payments SET receipt_generated = 1 WHERE id = ?');
         $stmt->execute([$paymentId]);
 
-        $this->view('admin/accounts/receipt', [
-            'metaTitle' => 'Receipt ' . $payment['payment_number'],
-            'payment' => $payment,
-            'totalPaid' => $totalPaid
-        ]);
+        // Render receipt without layout for standalone display
+        require_once __DIR__ . '/../../app/views/admin/accounts/receipt.php';
+        exit;
     }
 
     private function generateInvoiceNumber(PDO $pdo): string
