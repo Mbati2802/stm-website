@@ -140,12 +140,12 @@
     <div class="receipt-container">
         <div class="receipt-header">
             <img src="/assets/images/logo.png" alt="College Logo" class="logo" onerror="this.style.display='none'">
+            <h1>St. Mary's Mother and Child Hospital Medical Training College</h1>
             <div class="contact">
                 <?php if (!empty($settings['email'])): ?><p>Email: <?= e($settings['email']) ?></p><?php endif; ?>
                 <?php if (!empty($settings['phone'])): ?><p>Phone: <?= e($settings['phone']) ?></p><?php endif; ?>
-                <?php if (!empty($settings['location'])): ?><p>Location: <?= e($settings['location']) ?></p><?php endif; ?>
             </div>
-            <h1>St. Mary's Mother and Child Hospital Medical Training College</h1>
+            <?php if (!empty($settings['location'])): ?><p class="location"><?= e($settings['location']) ?></p><?php endif; ?>
         </div>
         <h2 style="text-align: center; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 15px 0; color: #666; font-size: 13px;">Official Payment Receipt</h2>
         
@@ -240,6 +240,8 @@
 
     <script>
         function downloadPDF() {
+            // Use browser's print to PDF functionality
+            // The user can then save as PDF
             window.print();
         }
         
@@ -247,6 +249,8 @@
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('download') === '1') {
+                // Set document title for better filename
+                document.title = 'Receipt_' + '<?= e($payment['payment_number']) ?>';
                 setTimeout(() => {
                     window.print();
                 }, 500);
