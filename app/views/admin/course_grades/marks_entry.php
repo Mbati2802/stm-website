@@ -368,7 +368,10 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ marks: marksData })
+            body: JSON.stringify({ 
+                marks: marksData,
+                _token: '<?= e(csrf_token()) ?>'
+            })
         })
         .then(response => response.json())
         .then(data => {
