@@ -346,7 +346,17 @@ class StudentPortalModel
     public function getStudentInvoices(int $studentId): array
     {
         try {
-            $stmt = $this->pdo->prepare('
+            // Check which session table exists
+            $sessionsTable = 'academic_sessions';
+            $stmt = $this->pdo->query("SHOW TABLES LIKE 'academic_sessions'");
+            if ($stmt->rowCount() === 0) {
+                $stmt = $this->pdo->query("SHOW TABLES LIKE 'sessions'");
+                if ($stmt->rowCount() > 0) {
+                    $sessionsTable = 'sessions';
+                }
+            }
+
+            $sql = "
                 SELECT i.*, p.name AS programme_name, p.abbreviation AS programme_abbr,
                        t.name AS term_name, ses.name AS session_name,
                        COALESCE(SUM(pay.amount), 0) AS paid_amount,
@@ -354,12 +364,13 @@ class StudentPortalModel
                 FROM invoices i
                 LEFT JOIN programmes p ON i.programme_id = p.id
                 LEFT JOIN terms t ON i.term_id = t.id
-                LEFT JOIN academic_sessions ses ON i.academic_session_id = ses.id
+                LEFT JOIN {$sessionsTable} ses ON i.academic_session_id = ses.id
                 LEFT JOIN payments pay ON i.id = pay.invoice_id
-                WHERE i.student_id = :student_id AND i.status != "cancelled"
+                WHERE i.student_id = :student_id AND i.status != 'cancelled'
                 GROUP BY i.id
                 ORDER BY i.created_at DESC
-            ');
+            ";
+            $stmt = $this->pdo->prepare($sql);
             $stmt->execute(['student_id' => $studentId]);
             return $stmt->fetchAll();
         } catch (PDOException) {
