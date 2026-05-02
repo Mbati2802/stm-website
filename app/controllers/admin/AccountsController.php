@@ -562,15 +562,16 @@ class AccountsController extends Controller
                 $amount = (float)($_POST['amount'] ?? 0);
                 $paymentMethodId = (int)($_POST['payment_method_id'] ?? 0);
                 $paymentDate = $_POST['payment_date'] ?? date('Y-m-d');
+                $mpesaTransactionCode = trim($_POST['mpesa_transaction_code'] ?? '');
                 $transactionCode = trim($_POST['transaction_code'] ?? '');
-                $transactionCodeGeneral = trim($_POST['transaction_code_general'] ?? '');
-                // Use general transaction code if provided, otherwise use method-specific
-                if (!empty($transactionCodeGeneral)) {
-                    $transactionCode = $transactionCodeGeneral;
-                }
                 $chequeNumber = trim($_POST['cheque_number'] ?? '');
                 $bankName = trim($_POST['bank_name'] ?? '');
                 $notes = trim($_POST['notes'] ?? '');
+
+                // Use M-PESA transaction code if provided, otherwise use general transaction code
+                if (!empty($mpesaTransactionCode)) {
+                    $transactionCode = $mpesaTransactionCode;
+                }
 
                 // Debug: Log transaction code
                 if (empty($transactionCode) && empty($chequeNumber)) {
