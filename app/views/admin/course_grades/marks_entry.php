@@ -52,17 +52,6 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Grading System (Exam)</label>
-                    <select class="form-select" id="gradingSystemFilter" required>
-                        <option value="">Select grading system</option>
-                        <?php foreach ($gradingSystems ?? [] as $system): ?>
-                        <option value="<?= (int)$system['id'] ?>" <?= $system['is_default'] ? 'selected' : '' ?>>
-                            <?= e((string)$system['name']) ?> (<?= e((string)($system['exam_type_name'] ?? 'All')) ?>)
-                        </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
             </form>
         </div>
     </div>
@@ -110,8 +99,9 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Marks Entry: DOM loaded');
     
     // Exam types will be loaded dynamically from grading system
-    window.examTypes = [];
+    window.exams = [];
     window.gradeRanges = [];
+    window.defaultGradingSystemId = 0;
 
     // Load terms when session is selected
     document.getElementById('sessionFilter').addEventListener('change', function() {
@@ -159,10 +149,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Marks Entry: Unit changed');
         checkAndLoadStudents();
     });
-    document.getElementById('gradingSystemFilter').addEventListener('change', function() {
-        console.log('Marks Entry: Grading system changed');
-        loadGradeRangesForGradingSystem(this.value);
-    });
 
     function checkAndLoadStudents() {
         const programmeId = document.getElementById('programmeFilter').value;
@@ -170,40 +156,54 @@ document.addEventListener('DOMContentLoaded', function() {
         const termId = document.getElementById('termFilter').value;
         const studentSessionId = document.getElementById('studentSessionFilter').value;
         const unitId = document.getElementById('unitFilter').value;
-        const gradingSystemId = document.getElementById('gradingSystemFilter').value;
         
         console.log('Marks Entry: checkAndLoadStudents called with', {
             programmeId,
             sessionId,
             termId,
             studentSessionId,
-            unitId,
-            gradingSystemId
+            unitId
         });
         
-        if (programmeId && sessionId && termId && studentSessionId && unitId && gradingSystemId) {
-            // Load exam types if not already loaded
-            if (!window.examTypes || window.examTypes.length === 0) {
-                console.log('Marks Entry: Exam types not loaded, loading them first');
-                fetch(`<?= e(base_url('admin/exam-types/by-grading-system')) ?>?grading_system_id=${gradingSystemId}`)
+        if (programmeId && sessionId && termId && studentSessionId && unitId) {
+            // Load exams (grading systems) if not already loaded
+            if (!window.exams || window.exams.length === 0) {
+                console.log('Marks Entry: Exams not loaded, loading them first');
+                fetch(`<?= e(base_url('admin/grading/exams')) ?>`)
                     .then(response => response.json())
                     .then(data => {
-                        console.log('Marks Entry: Exam types received', data);
-                        window.examTypes = data;
-                        loadGradeRangesForGradingSystem(gradingSystemId);
+                        console.log('Marks Entry: Exams received', data);
+                        window.exams = data;
+                        // Load default grading system for grade calculation
+                        loadDefaultGradingSystem();
                         loadStudents(programmeId, sessionId, termId, studentSessionId, unitId);
                     })
                     .catch(error => {
-                        console.error('Marks Entry: Error fetching exam types', error);
+                        console.error('Marks Entry: Error fetching exams', error);
                     });
             } else {
                 console.log('Marks Entry: All filters set, loading students');
-                loadGradeRangesForGradingSystem(gradingSystemId);
                 loadStudents(programmeId, sessionId, termId, studentSessionId, unitId);
             }
         } else {
             console.log('Marks Entry: Not all filters set yet');
         }
+    }
+
+    function loadDefaultGradingSystem() {
+        console.log('Marks Entry: Loading default grading system');
+        fetch(`<?= e(base_url('admin/grading/default')) ?>`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Marks Entry: Default grading system received', data);
+                if (data.success && data.data) {
+                    window.defaultGradingSystemId = data.data.id;
+                    loadGradeRangesForGradingSystem(data.data.id);
+                }
+            })
+            .catch(error => {
+                console.error('Marks Entry: Error fetching default grading system', error);
+            });
     }
 
     function loadGradeRangesForGradingSystem(gradingSystemId) {
@@ -280,12 +280,12 @@ document.addEventListener('DOMContentLoaded', function() {
         noStudentsMessage.style.display = 'none';
         table.style.display = 'table';
         
-        // Build header with exam types (exclude consolidated types as they are computed)
+        // Build header with exams (exclude consolidated types as they are computed)
         let headerHTML = '<th>Admission No.</th><th>Student Name</th>';
-        examTypes.forEach(type => {
+        window.exams.forEach(exam => {
             // Only show columns for non-consolidated exam types
-            if (type.type !== 'consolidated') {
-                headerHTML += `<th>${type.name}</th>`;
+            if (exam.type !== 'consolidated') {
+                headerHTML += `<th>${exam.name}</th>`;
             }
         });
         headerHTML += '<th>Total</th><th>Grade</th>';
@@ -300,14 +300,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${student.name}</td>
             `;
             
-            examTypes.forEach(type => {
+            window.exams.forEach(exam => {
                 // Only show input fields for non-consolidated exam types
-                if (type.type !== 'consolidated') {
+                if (exam.type !== 'consolidated') {
                     rowHTML += `
                         <td>
                             <input type="number" 
                                    class="form-control marks-input" 
-                                   data-exam-type-id="${type.id}" 
+                                   data-exam-id="${exam.id}" 
                                    data-student-id="${student.id}"
                                    min="0" 
                                    max="100" 
@@ -382,10 +382,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const sessionId = document.getElementById('sessionFilter').value;
         const termId = document.getElementById('termFilter').value;
         const unitId = document.getElementById('unitFilter').value;
-        const gradingSystemId = document.getElementById('gradingSystemFilter').value;
         
-        if (!gradingSystemId) {
-            alert('Please select a grading system');
+        if (!window.defaultGradingSystemId) {
+            alert('No default grading system found. Please create a grading system in the Grading System page.');
             return;
         }
         
@@ -393,17 +392,17 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('#marksTableBody tr').forEach(row => {
             const studentId = row.dataset.studentId;
             row.querySelectorAll('.marks-input').forEach(input => {
-                const examTypeId = input.dataset.examTypeId;
+                const examId = input.dataset.examId;
                 const marks = input.value;
                 if (marks) {
                     marksData.push({
                         student_id: studentId,
                         course_id: unitId,
-                        exam_type_id: examTypeId,
+                        exam_type_id: examId,
                         marks: marks,
                         academic_session_id: sessionId,
                         term_id: termId,
-                        grading_system_id: gradingSystemId
+                        grading_system_id: window.defaultGradingSystemId
                     });
                 }
             });
