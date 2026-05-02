@@ -780,38 +780,52 @@ class AccountsController extends Controller
             return;
         }
 
-        $pdo = Database::getInstance($this->config['db']);
-        
-        // Get payment details
-        $stmt = $pdo->prepare('SELECT p.*, i.invoice_number, i.title AS invoice_title, i.amount AS invoice_amount,
-                                      s.name AS student_name, s.admission_number, s.email AS student_email,
-                                      pm.name AS payment_method_name
-                               FROM payments p
-                               LEFT JOIN invoices i ON p.invoice_id = i.id
-                               LEFT JOIN student_accounts s ON p.student_id = s.id
-                               LEFT JOIN payment_methods pm ON p.payment_method_id = pm.id
-                               WHERE p.id = ?');
-        $stmt->execute([$paymentId]);
-        $payment = $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            
+            // Get payment details
+            $stmt = $pdo->prepare('SELECT p.*, i.invoice_number, i.title AS invoice_title, i.amount AS invoice_amount,
+                                          s.name AS student_name, s.admission_number, s.email AS student_email,
+                                          pm.name AS payment_method_name
+                                   FROM payments p
+                                   LEFT JOIN invoices i ON p.invoice_id = i.id
+                                   LEFT JOIN student_accounts s ON p.student_id = s.id
+                                   LEFT JOIN payment_methods pm ON p.payment_method_id = pm.id
+                                   WHERE p.id = ?');
+            $stmt->execute([$paymentId]);
+            $payment = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$payment) {
-            flash('error', 'Payment not found.');
+            if (!$payment) {
+                flash('error', 'Payment not found.');
+                $this->redirect('admin/accounts');
+                return;
+            }
+
+            // Get invoice balance info
+            $stmt = $pdo->prepare('SELECT COALESCE(SUM(amount), 0) AS total_paid FROM payments WHERE invoice_id = ?');
+            $stmt->execute([$payment['invoice_id']]);
+            $totalPaid = $stmt->fetch(PDO::FETCH_ASSOC)['total_paid'];
+
+            // Mark receipt as generated
+            $stmt = $pdo->prepare('UPDATE payments SET receipt_generated = 1 WHERE id = ?');
+            $stmt->execute([$paymentId]);
+
+            // Render receipt without layout for standalone display
+            $receiptPath = __DIR__ . '/../../app/views/admin/accounts/receipt.php';
+            if (!file_exists($receiptPath)) {
+                flash('error', 'Receipt view not found.');
+                $this->redirect('admin/accounts');
+                return;
+            }
+            require_once $receiptPath;
+            exit;
+        } catch (PDOException $e) {
+            flash('error', 'Database error: ' . $e->getMessage());
             $this->redirect('admin/accounts');
-            return;
+        } catch (Throwable $e) {
+            flash('error', 'Error: ' . $e->getMessage());
+            $this->redirect('admin/accounts');
         }
-
-        // Get invoice balance info
-        $stmt = $pdo->prepare('SELECT COALESCE(SUM(amount), 0) AS total_paid FROM payments WHERE invoice_id = ?');
-        $stmt->execute([$payment['invoice_id']]);
-        $totalPaid = $stmt->fetch(PDO::FETCH_ASSOC)['total_paid'];
-
-        // Mark receipt as generated
-        $stmt = $pdo->prepare('UPDATE payments SET receipt_generated = 1 WHERE id = ?');
-        $stmt->execute([$paymentId]);
-
-        // Render receipt without layout for standalone display
-        require_once __DIR__ . '/../../app/views/admin/accounts/receipt.php';
-        exit;
     }
 
     private function generateInvoiceNumber(PDO $pdo): string

@@ -453,7 +453,13 @@ class StudentPortalController extends Controller
             $stmt->execute([$paymentId]);
 
             // Render receipt without layout for standalone display
-            require_once __DIR__ . '/../../app/views/student/receipt.php';
+            $receiptPath = __DIR__ . '/../../app/views/student/receipt.php';
+            if (!file_exists($receiptPath)) {
+                flash('error', 'Receipt view not found.');
+                $this->redirect('student/fees');
+                return;
+            }
+            require_once $receiptPath;
             exit;
         } catch (PDOException $e) {
             flash('error', 'Database error: ' . $e->getMessage());
