@@ -108,6 +108,7 @@ $router->add('POST', 'crm/leads/create', [CRMController::class, 'createLead']);
 $router->add('GET', 'crm/leads/{id}', [CRMController::class, 'viewLead']);
 $router->add('GET', 'crm/leads/{id}/record-payment', [CRMController::class, 'recordPayment']);
 $router->add('POST', 'crm/leads/{id}/record-payment', [CRMController::class, 'recordPayment']);
+$router->add('GET', 'crm/leads/{id}/admission-letter', [CRMController::class, 'generateAdmissionLetter']);
 $router->add('POST', 'crm/leads/update-status', [CRMController::class, 'updateLeadStatus']);
 $router->add('POST', 'crm/leads/assign', [CRMController::class, 'assignLead']);
 $router->add('POST', 'crm/payments/{id}/verify', [CRMController::class, 'verifyPayment']);

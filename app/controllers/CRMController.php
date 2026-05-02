@@ -480,6 +480,76 @@ class CRMController
         }
     }
 
+    public function generateAdmissionLetter(int $leadId): void
+    {
+        CRMAuth::requireLogin();
+
+        $config = require __DIR__ . '/../../config/crm_config.php';
+        $pdo = new PDO(
+            "mysql:host={$config['db']['host']};dbname={$config['db']['name']};charset={$config['db']['charset']}",
+            $config['db']['user'],
+            $config['db']['pass'],
+            $config['db']['options']
+        );
+
+        // Get lead details with status
+        $stmt = $pdo->prepare('SELECT l.*, s.name as status_name, s.order_index as status_order, i.name as intake_name
+                                 FROM leads l 
+                                 LEFT JOIN crm_statuses s ON l.status_id = s.id 
+                                 LEFT JOIN intakes i ON l.intake_id = i.id
+                                 WHERE l.id = ?');
+        $stmt->execute([$leadId]);
+        $lead = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$lead) {
+            header('Location: /crm/leads');
+            exit;
+        }
+
+        // Determine letter type based on status
+        $offerType = ($lead['status_order'] >= 6) ? 'confirmed' : 'provisional';
+
+        // Check if admission offer already exists
+        $stmt = $pdo->prepare('SELECT * FROM admission_offers WHERE lead_id = ? ORDER BY created_at DESC LIMIT 1');
+        $stmt->execute([$leadId]);
+        $existingOffer = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existingOffer && $existingOffer['letter_generated']) {
+            // Use existing offer
+            $offer = $existingOffer;
+        } else {
+            // Create new admission offer
+            $expiryDate = date('Y-m-d', strtotime('+14 days'));
+            $stmt = $pdo->prepare('INSERT INTO admission_offers (lead_id, offer_type, issued_date, expiry_date, letter_generated) VALUES (?, ?, ?, ?, ?)');
+            $stmt->execute([$leadId, $offerType, date('Y-m-d'), $expiryDate, true]);
+            $offerId = $pdo->lastInsertId();
+            
+            // Get the created offer
+            $stmt = $pdo->prepare('SELECT * FROM admission_offers WHERE id = ?');
+            $stmt->execute([$offerId]);
+            $offer = $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+
+        // Get CRM settings for college details
+        $stmt = $pdo->prepare('SELECT setting_key, setting_value FROM crm_settings WHERE setting_key IN (?, ?, ?)');
+        $stmt->execute(['phone', 'email', 'location']);
+        $settingsRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $settings = [];
+        foreach ($settingsRows as $row) {
+            $settings[$row['setting_key']] = $row['setting_value'];
+        }
+
+        // Render admission letter without layout
+        $letterPath = __DIR__ . '/../views/crm/admission_letter.php';
+        if (!file_exists($letterPath)) {
+            echo 'Admission letter view not found';
+            exit;
+        }
+
+        require_once $letterPath;
+        exit;
+    }
+
     private function redirect(string $path): void
     {
         header('Location: /' . ltrim($path, '/'));

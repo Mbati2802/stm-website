@@ -84,6 +84,9 @@
                 <a class="btn btn-success w-100 mb-2" href="/crm/leads/<?= $lead['id'] ?>/record-payment">
                     <i class="bi bi-cash"></i> Record Payment
                 </a>
+                <a class="btn btn-info w-100 mb-2" href="/crm/leads/<?= $lead['id'] ?>/admission-letter" target="_blank">
+                    <i class="bi bi-file-earmark-text"></i> Admission Letter
+                </a>
                 <a href="/crm/leads" class="btn btn-secondary w-100">Back to Leads</a>
             </div>
         </div>
