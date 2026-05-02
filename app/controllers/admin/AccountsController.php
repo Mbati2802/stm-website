@@ -77,18 +77,50 @@ class AccountsController extends Controller
 
             $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
-            // Get invoices with student and programme info
-            $sql = "SELECT i.*, s.name AS student_name, s.admission_number, 
-                           p.name AS programme_name, p.abbreviation AS programme_abbr,
-                           t.name AS term_name, ses.name AS session_name,
+            // Check which tables exist to build query dynamically
+            $tablesExist = [];
+            $checkTables = ['programmes', 'terms', 'academic_sessions', 'courses'];
+            foreach ($checkTables as $table) {
+                $stmt = $pdo->prepare("SHOW TABLES LIKE ?");
+                $stmt->execute([$table]);
+                $tablesExist[$table] = $stmt->rowCount() > 0;
+            }
+
+            // Build query with only existing tables
+            $joins = [];
+            $selects = ['i.*', 's.name AS student_name', 's.admission_number'];
+            
+            if ($tablesExist['programmes']) {
+                $joins[] = 'LEFT JOIN programmes p ON i.programme_id = p.id';
+                $selects[] = 'p.name AS programme_name';
+                $selects[] = 'p.abbreviation AS programme_abbr';
+            } else {
+                $selects[] = 'NULL AS programme_name';
+                $selects[] = 'NULL AS programme_abbr';
+            }
+            
+            if ($tablesExist['terms']) {
+                $joins[] = 'LEFT JOIN terms t ON i.term_id = t.id';
+                $selects[] = 't.name AS term_name';
+            } else {
+                $selects[] = 'NULL AS term_name';
+            }
+            
+            if ($tablesExist['academic_sessions']) {
+                $joins[] = 'LEFT JOIN academic_sessions ses ON i.academic_session_id = ses.id';
+                $selects[] = 'ses.name AS session_name';
+            } else {
+                $selects[] = 'NULL AS session_name';
+            }
+
+            $joins[] = 'LEFT JOIN payments pay ON i.id = pay.invoice_id';
+
+            $sql = "SELECT " . implode(', ', $selects) . ",
                            COALESCE(SUM(pay.amount), 0) AS paid_amount,
                            i.amount - COALESCE(SUM(pay.amount), 0) AS balance
                     FROM invoices i
                     LEFT JOIN student_accounts s ON i.student_id = s.id
-                    LEFT JOIN programmes p ON i.programme_id = p.id
-                    LEFT JOIN terms t ON i.term_id = t.id
-                    LEFT JOIN academic_sessions ses ON i.academic_session_id = ses.id
-                    LEFT JOIN payments pay ON i.id = pay.invoice_id
+                    " . implode(' ', $joins) . "
                     $whereClause
                     GROUP BY i.id
                     ORDER BY i.created_at DESC";
