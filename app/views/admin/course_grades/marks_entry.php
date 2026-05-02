@@ -52,6 +52,17 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label">Grading System (Exam)</label>
+                    <select class="form-select" id="gradingSystemFilter" required>
+                        <option value="">Select grading system</option>
+                        <?php foreach ($gradingSystems ?? [] as $system): ?>
+                        <option value="<?= (int)$system['id'] ?>" <?= $system['is_default'] ? 'selected' : '' ?>>
+                            <?= e((string)$system['name']) ?> (<?= e((string)($system['exam_type_name'] ?? 'All')) ?>)
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </form>
         </div>
     </div>
@@ -100,6 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Exam types will be loaded dynamically from grading system
     window.examTypes = [];
+    window.gradeRanges = [];
 
     // Load terms when session is selected
     document.getElementById('sessionFilter').addEventListener('change', function() {
@@ -147,6 +159,10 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Marks Entry: Unit changed');
         checkAndLoadStudents();
     });
+    document.getElementById('gradingSystemFilter').addEventListener('change', function() {
+        console.log('Marks Entry: Grading system changed');
+        loadGradeRangesForGradingSystem(this.value);
+    });
 
     function checkAndLoadStudents() {
         const programmeId = document.getElementById('programmeFilter').value;
@@ -154,24 +170,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const termId = document.getElementById('termFilter').value;
         const studentSessionId = document.getElementById('studentSessionFilter').value;
         const unitId = document.getElementById('unitFilter').value;
+        const gradingSystemId = document.getElementById('gradingSystemFilter').value;
         
         console.log('Marks Entry: checkAndLoadStudents called with', {
             programmeId,
             sessionId,
             termId,
             studentSessionId,
-            unitId
+            unitId,
+            gradingSystemId
         });
         
-        if (programmeId && sessionId && termId && studentSessionId && unitId) {
+        if (programmeId && sessionId && termId && studentSessionId && unitId && gradingSystemId) {
             // Load exam types if not already loaded
             if (!window.examTypes || window.examTypes.length === 0) {
                 console.log('Marks Entry: Exam types not loaded, loading them first');
-                fetch(`<?= e(base_url('admin/exam-types/by-grading-system')) ?>`)
+                fetch(`<?= e(base_url('admin/exam-types/by-grading-system')) ?>?grading_system_id=${gradingSystemId}`)
                     .then(response => response.json())
                     .then(data => {
                         console.log('Marks Entry: Exam types received', data);
                         window.examTypes = data;
+                        loadGradeRangesForGradingSystem(gradingSystemId);
                         loadStudents(programmeId, sessionId, termId, studentSessionId, unitId);
                     })
                     .catch(error => {
@@ -179,11 +198,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
             } else {
                 console.log('Marks Entry: All filters set, loading students');
+                loadGradeRangesForGradingSystem(gradingSystemId);
                 loadStudents(programmeId, sessionId, termId, studentSessionId, unitId);
             }
         } else {
             console.log('Marks Entry: Not all filters set yet');
         }
+    }
+
+    function loadGradeRangesForGradingSystem(gradingSystemId) {
+        if (!gradingSystemId) return;
+        
+        console.log('Marks Entry: Loading grade ranges for grading system', gradingSystemId);
+        fetch(`<?= e(base_url('admin/grading/grade-ranges')) ?>?grading_system_id=${gradingSystemId}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Marks Entry: Grade ranges received', data);
+                if (data.success) {
+                    window.gradeRanges = data.data;
+                }
+            })
+            .catch(error => {
+                console.error('Marks Entry: Error fetching grade ranges', error);
+            });
     }
 
     function loadStudents(programmeId, sessionId, termId, studentSessionId, unitId) {
@@ -313,13 +350,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         row.querySelector('.total-marks').textContent = total.toFixed(2);
         
-        // Simple grade calculation (can be customized)
+        // Calculate grade using grade ranges from grading system
         let grade = '-';
-        if (total >= 70) grade = 'A';
-        else if (total >= 60) grade = 'B';
-        else if (total >= 50) grade = 'C';
-        else if (total >= 40) grade = 'D';
-        else if (total > 0) grade = 'F';
+        if (window.gradeRanges && window.gradeRanges.length > 0) {
+            for (const range of window.gradeRanges) {
+                if (total >= range.min_marks && total <= range.max_marks) {
+                    grade = range.grade_letter;
+                    break;
+                }
+            }
+        } else {
+            // Fallback to simple grade calculation if no grade ranges loaded
+            if (total >= 70) grade = 'A';
+            else if (total >= 60) grade = 'B';
+            else if (total >= 50) grade = 'C';
+            else if (total >= 40) grade = 'D';
+            else if (total > 0) grade = 'F';
+        }
         
         row.querySelector('.grade-display').textContent = grade;
     }
@@ -335,6 +382,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const sessionId = document.getElementById('sessionFilter').value;
         const termId = document.getElementById('termFilter').value;
         const unitId = document.getElementById('unitFilter').value;
+        const gradingSystemId = document.getElementById('gradingSystemFilter').value;
+        
+        if (!gradingSystemId) {
+            alert('Please select a grading system');
+            return;
+        }
         
         const marksData = [];
         document.querySelectorAll('#marksTableBody tr').forEach(row => {
@@ -350,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         marks: marks,
                         academic_session_id: sessionId,
                         term_id: termId,
-                        grading_system_id: 1 // Default grading system ID
+                        grading_system_id: gradingSystemId
                     });
                 }
             });
