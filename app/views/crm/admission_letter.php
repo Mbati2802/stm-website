@@ -184,17 +184,17 @@
             <?= e($lead['email'] ?? '') ?><br>
             <?= e($lead['phone']) ?></p>
             
-            <p><strong>Subject:</strong> Admission to <?= e($lead['course_interest'] ?? 'Medical Training Program') ?></p>
+            <p><strong>Subject:</strong> Admission to <?= e($lead['program_interest'] ?? 'Medical Training Program') ?></p>
             
             <p>Dear <?= e(explode(' ', $lead['name'])[0]) ?>,</p>
             
-            <p>We are pleased to inform you that you have been offered admission to pursue the <strong><?= e($lead['course_interest'] ?? 'Medical Training Program') ?></strong> at St. Mary's MCH Medical Training College for the <strong><?= e($lead['intake_name'] ?? 'Upcoming Intake') ?></strong>.</p>
-            
+            <p>We are pleased to inform you that you have been offered admission to pursue the <strong><?= e($lead['program_interest'] ?? 'Medical Training Program') ?></strong> at St. Mary's MCH Medical Training College for the <strong><?= e($lead['intake_name'] ?? 'Upcoming Intake') ?></strong>.</p>
+
             <div class="student-details">
                 <strong>Student Details:</strong><br>
                 Name: <?= e($lead['name']) ?><br>
                 Phone: <?= e($lead['phone']) ?><br>
-                Course: <?= e($lead['course_interest'] ?? '-') ?><br>
+                Program: <?= e($lead['program_interest'] ?? '-') ?><br>
                 Intake: <?= e($lead['intake_name'] ?? '-') ?>
             </div>
             

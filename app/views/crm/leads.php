@@ -15,7 +15,7 @@
                         <th>Name</th>
                         <th>Phone</th>
                         <th>Email</th>
-                        <th>Course Interest</th>
+                        <th>Program Interest</th>
                         <th>Source</th>
                         <th>Status</th>
                         <th>Assigned Officer</th>
@@ -29,7 +29,7 @@
                             <td><strong><?= e($lead['name']) ?></strong></td>
                             <td><?= e($lead['phone']) ?></td>
                             <td><?= e($lead['email'] ?? '-') ?></td>
-                            <td><?= e($lead['course_interest'] ?? '-') ?></td>
+                            <td><?= e($lead['program_interest'] ?? '-') ?></td>
                             <td><?= e(ucwords(str_replace('_', ' ', $lead['lead_source']))) ?></td>
                             <td>
                                 <span class="status-badge" style="background: <?= $lead['status_color'] ?>; color: white;">
@@ -74,15 +74,20 @@
                         <input type="email" name="email" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Course Interest</label>
-                        <input type="text" name="course_interest" class="form-control">
+                        <label class="form-label">Program Interest</label>
+                        <select name="program_interest" class="form-select">
+                            <option value="">Select Program</option>
+                            <?php foreach ($programs ?? [] as $program): ?>
+                                <option value="<?= e($program['name']) ?>"><?= e($program['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Intake</label>
                         <select name="intake_id" class="form-select">
                             <option value="">Select Intake</option>
                             <?php foreach ($intakes ?? [] as $intake): ?>
-                                <option value="<?= $intake['id'] ?>"><?= e($intake['name']) ?> (<?= date('M Y', strtotime($intake['start_date'])) ?>)</option>
+                                <option value="<?= $intake['id'] ?>"><?= e($intake['name']) ?> (<?= e($intake['code']) ?>)</option>
                             <?php endforeach; ?>
                         </select>
                     </div>

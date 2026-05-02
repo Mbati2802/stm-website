@@ -25,8 +25,8 @@
                         <div><?= e(ucwords(str_replace('_', ' ', $lead['lead_source']))) ?></div>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label text-muted">Course Interest</label>
-                        <div><?= e($lead['course_interest'] ?? '-') ?></div>
+                        <label class="form-label text-muted">Program Interest</label>
+                        <div><?= e($lead['program_interest'] ?? '-') ?></div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label text-muted">Intake</label>

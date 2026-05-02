@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS leads (
     name VARCHAR(100) NOT NULL,
     phone VARCHAR(20) NOT NULL,
     email VARCHAR(100),
-    course_interest VARCHAR(100),
+    program_interest VARCHAR(100),
     intake_id INT,
     location VARCHAR(100),
     lead_source ENUM('website', 'social_media', 'whatsapp', 'call', 'walk_in', 'referral', 'other') NOT NULL,

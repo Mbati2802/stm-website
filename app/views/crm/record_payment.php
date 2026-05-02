@@ -16,7 +16,7 @@
         <div class="alert alert-info">
             <strong>Lead:</strong> <?= e($lead['name']) ?><br>
             <strong>Phone:</strong> <?= e($lead['phone']) ?><br>
-            <strong>Course:</strong> <?= e($lead['course_interest'] ?? '-') ?><br>
+            <strong>Program:</strong> <?= e($lead['program_interest'] ?? '-') ?><br>
             <strong>Registration Fee:</strong> KES 5,000
         </div>
 

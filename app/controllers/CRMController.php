@@ -150,16 +150,25 @@ class CRMController
     {
         CRMAuth::requireLogin();
 
-        $config = require __DIR__ . '/../../config/crm_config.php';
-        $pdo = new PDO(
-            "mysql:host={$config['db']['host']};dbname={$config['db']['name']};charset={$config['db']['charset']}",
-            $config['db']['user'],
-            $config['db']['pass'],
-            $config['db']['options']
+        $crmConfig = require __DIR__ . '/../../config/crm_config.php';
+        $crmPdo = new PDO(
+            "mysql:host={$crmConfig['db']['host']};dbname={$crmConfig['db']['name']};charset={$crmConfig['db']['charset']}",
+            $crmConfig['db']['user'],
+            $crmConfig['db']['pass'],
+            $crmConfig['db']['options']
+        );
+
+        // Connect to main database for programs and intakes
+        $mainConfig = require __DIR__ . '/../../config/config.php';
+        $mainPdo = new PDO(
+            "mysql:host={$mainConfig['db']['host']};dbname={$mainConfig['db']['name']};charset={$mainConfig['db']['charset']}",
+            $mainConfig['db']['user'],
+            $mainConfig['db']['pass'],
+            $mainConfig['db']['options']
         );
 
         // Get all leads with status
-        $stmt = $pdo->prepare('SELECT l.*, s.name as status_name, s.color as status_color, u.name as officer_name
+        $stmt = $crmPdo->prepare('SELECT l.*, s.name as status_name, s.color as status_color, u.name as officer_name
                                  FROM leads l 
                                  LEFT JOIN crm_statuses s ON l.status_id = s.id 
                                  LEFT JOIN crm_users u ON l.assigned_officer_id = u.id
@@ -168,13 +177,23 @@ class CRMController
         $leads = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Get all statuses
-        $stmt = $pdo->query('SELECT * FROM crm_statuses ORDER BY order_index');
+        $stmt = $crmPdo->query('SELECT * FROM crm_statuses ORDER BY order_index');
         $statuses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Get programs from main database
+        $stmt = $mainPdo->query('SELECT id, name FROM programmes ORDER BY name ASC');
+        $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Get intakes from main database
+        $stmt = $mainPdo->query('SELECT id, name, code, start_date FROM intakes WHERE is_active = 1 ORDER BY start_date DESC');
+        $intakes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $this->view('crm/leads', [
             'metaTitle' => 'Leads',
             'leads' => $leads,
-            'statuses' => $statuses
+            'statuses' => $statuses,
+            'programs' => $programs,
+            'intakes' => $intakes
         ], 'crm');
     }
 
@@ -182,19 +201,28 @@ class CRMController
     {
         CRMAuth::requireLogin();
 
-        $config = require __DIR__ . '/../../config/crm_config.php';
-        $pdo = new PDO(
-            "mysql:host={$config['db']['host']};dbname={$config['db']['name']};charset={$config['db']['charset']}",
-            $config['db']['user'],
-            $config['db']['pass'],
-            $config['db']['options']
+        $crmConfig = require __DIR__ . '/../../config/crm_config.php';
+        $crmPdo = new PDO(
+            "mysql:host={$crmConfig['db']['host']};dbname={$crmConfig['db']['name']};charset={$crmConfig['db']['charset']}",
+            $crmConfig['db']['user'],
+            $crmConfig['db']['pass'],
+            $crmConfig['db']['options']
+        );
+
+        // Connect to main database for programs and intakes
+        $mainConfig = require __DIR__ . '/../../config/config.php';
+        $mainPdo = new PDO(
+            "mysql:host={$mainConfig['db']['host']};dbname={$mainConfig['db']['name']};charset={$mainConfig['db']['charset']}",
+            $mainConfig['db']['user'],
+            $mainConfig['db']['pass'],
+            $mainConfig['db']['options']
         );
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $name = trim($_POST['name'] ?? '');
             $phone = trim($_POST['phone'] ?? '');
             $email = trim($_POST['email'] ?? '');
-            $courseInterest = trim($_POST['course_interest'] ?? '');
+            $programInterest = trim($_POST['program_interest'] ?? '');
             $intakeId = (int)($_POST['intake_id'] ?? 0);
             $location = trim($_POST['location'] ?? '');
             $leadSource = $_POST['lead_source'] ?? 'other';
@@ -206,22 +234,27 @@ class CRMController
             }
 
             // Get first status (New Inquiry)
-            $stmt = $pdo->query('SELECT id FROM crm_statuses ORDER BY order_index LIMIT 1');
+            $stmt = $crmPdo->query('SELECT id FROM crm_statuses ORDER BY order_index LIMIT 1');
             $statusId = $stmt->fetchColumn();
 
-            $stmt = $pdo->prepare('INSERT INTO leads (name, phone, email, course_interest, intake_id, location, lead_source, status_id, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-            $stmt->execute([$name, $phone, $email, $courseInterest, $intakeId ?: null, $location, $leadSource, $statusId, $notes]);
+            $stmt = $crmPdo->prepare('INSERT INTO leads (name, phone, email, program_interest, intake_id, location, lead_source, status_id, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$name, $phone, $email, $programInterest, $intakeId ?: null, $location, $leadSource, $statusId, $notes]);
 
             echo json_encode(['success' => true, 'message' => 'Lead created successfully']);
             exit;
         }
 
-        // Get intakes
-        $stmt = $pdo->query('SELECT * FROM intakes WHERE status != "inactive" ORDER BY start_date DESC');
+        // Get programs from main database
+        $stmt = $mainPdo->query('SELECT id, name FROM programmes ORDER BY name ASC');
+        $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Get intakes from main database
+        $stmt = $mainPdo->query('SELECT id, name, code FROM intakes WHERE is_active = 1 ORDER BY start_date DESC');
         $intakes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $this->view('crm/create_lead', [
             'metaTitle' => 'Create Lead',
+            'programs' => $programs,
             'intakes' => $intakes
         ], 'crm');
     }

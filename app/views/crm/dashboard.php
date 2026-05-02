@@ -75,7 +75,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Phone</th>
-                        <th>Course</th>
+                        <th>Program</th>
                         <th>Source</th>
                         <th>Status</th>
                         <th>Date</th>
@@ -86,7 +86,7 @@
                         <tr>
                             <td><strong><?= e($lead['name']) ?></strong></td>
                             <td><?= e($lead['phone']) ?></td>
-                            <td><?= e($lead['course_interest'] ?? '-') ?></td>
+                            <td><?= e($lead['program_interest'] ?? '-') ?></td>
                             <td><?= e(ucwords(str_replace('_', ' ', $lead['lead_source']))) ?></td>
                             <td>
                                 <span class="status-badge" style="background: <?= $lead['status_color'] ?>; color: white;">
