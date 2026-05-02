@@ -122,6 +122,8 @@ $router->add('GET', 'admin/admission-number-formats/set-default/{id}', ['Admissi
 $router->add('GET', 'admin/accounts', ['AccountsController', 'index']);
 $router->add('GET', 'admin/accounts/create-invoice', ['AccountsController', 'createInvoice']);
 $router->add('POST', 'admin/accounts/create-invoice', ['AccountsController', 'createInvoice']);
+$router->add('GET', 'admin/accounts/bulk-create-invoice', ['AccountsController', 'bulkCreateInvoice']);
+$router->add('POST', 'admin/accounts/bulk-create-invoice', ['AccountsController', 'bulkCreateInvoice']);
 $router->add('GET', 'admin/accounts/view-invoice/{id}', ['AccountsController', 'viewInvoice']);
 $router->add('GET', 'admin/accounts/record-payment', ['AccountsController', 'recordPayment']);
 $router->add('POST', 'admin/accounts/record-payment', ['AccountsController', 'recordPayment']);

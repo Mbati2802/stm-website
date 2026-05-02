@@ -322,6 +322,147 @@ class AccountsController extends Controller
         }
     }
 
+    public function bulkCreateInvoice(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            $this->redirect('admin');
+            return;
+        }
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $title = trim($_POST['title'] ?? '');
+                $description = trim($_POST['description'] ?? '');
+                $amount = (float)($_POST['amount'] ?? 0);
+                $dueDate = $_POST['due_date'] ?? '';
+                $programmeId = !empty($_POST['programme_id']) ? (int)$_POST['programme_id'] : null;
+                $termId = !empty($_POST['term_id']) ? (int)$_POST['term_id'] : null;
+                $sessionId = !empty($_POST['session_id']) ? (int)$_POST['session_id'] : null;
+                $courseId = !empty($_POST['course_id']) ? (int)$_POST['course_id'] : null;
+
+                if (empty($title) || $amount <= 0 || $programmeId === null) {
+                    flash('error', 'Title, amount, and programme are required.');
+                    $this->redirect('admin/accounts/bulk-create-invoice');
+                    return;
+                }
+
+                // Build WHERE clause to find students
+                $where = ['s.programme_id = ?'];
+                $params = [$programmeId];
+                
+                if ($termId !== null) {
+                    $where[] = 's.term_id = ?';
+                    $params[] = $termId;
+                }
+                
+                if ($sessionId !== null) {
+                    $where[] = 's.academic_session_id = ?';
+                    $params[] = $sessionId;
+                }
+
+                $whereClause = 'WHERE ' . implode(' AND ', $where);
+
+                // Get all matching students
+                $sql = "SELECT s.id, s.name, s.admission_number FROM student_accounts s $whereClause ORDER BY s.name";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute($params);
+                $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                if (empty($students)) {
+                    flash('error', 'No students found matching the selected criteria.');
+                    $this->redirect('admin/accounts/bulk-create-invoice');
+                    return;
+                }
+
+                // Create invoice for each student
+                $createdCount = 0;
+                foreach ($students as $student) {
+                    $invoiceNumber = $this->generateInvoiceNumber($pdo);
+                    
+                    $stmt = $pdo->prepare('INSERT INTO invoices (invoice_number, student_id, programme_id, term_id, academic_session_id, course_id, title, description, amount, due_date, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                    $stmt->execute([
+                        $invoiceNumber,
+                        $student['id'],
+                        $programmeId,
+                        $termId,
+                        $sessionId,
+                        $courseId,
+                        $title,
+                        $description,
+                        $amount,
+                        $dueDate,
+                        'pending',
+                        $_SESSION['admin_id'] ?? null
+                    ]);
+                    
+                    $invoiceId = $pdo->lastInsertId();
+
+                    // Add fee items if provided
+                    if (!empty($_POST['fee_items'])) {
+                        foreach ($_POST['fee_items'] as $item) {
+                            if (!empty($item['description']) && !empty($item['amount'])) {
+                                $stmt = $pdo->prepare('INSERT INTO fee_items (invoice_id, description, amount) VALUES (?, ?, ?)');
+                                $stmt->execute([$invoiceId, trim($item['description']), (float)$item['amount']]);
+                            }
+                        }
+                    }
+                    
+                    $createdCount++;
+                }
+
+                flash('success', "Successfully created $createdCount invoices.");
+                $this->redirect('admin/accounts');
+                return;
+            }
+
+            // Get data for form - handle missing tables gracefully
+            $programmes = [];
+            try {
+                $programmes = $pdo->query('SELECT id, name, abbreviation FROM programmes ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // Programmes table doesn't exist
+            }
+            
+            $terms = [];
+            try {
+                $terms = $pdo->query('SELECT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // Terms table doesn't exist
+            }
+            
+            $sessions = [];
+            try {
+                $sessions = $pdo->query('SELECT id, name FROM academic_sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // academic_sessions table doesn't exist
+            }
+            
+            $courses = [];
+            try {
+                $courses = $pdo->query('SELECT id, code, title FROM courses ORDER BY code')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // courses table doesn't exist
+            }
+
+            $this->view('admin/accounts/bulk_create_invoice', [
+                'metaTitle' => 'Bulk Create Invoice',
+                'programmes' => $programmes,
+                'terms' => $terms,
+                'sessions' => $sessions,
+                'courses' => $courses
+            ]);
+        } catch (PDOException $e) {
+            flash('error', 'Database error: ' . $e->getMessage());
+            $this->redirect('admin/accounts');
+        } catch (Throwable $e) {
+            flash('error', 'Error: ' . $e->getMessage());
+            $this->redirect('admin/accounts');
+        }
+    }
+
     public function viewInvoice(int $id): void
     {
         Auth::requireAdmin();

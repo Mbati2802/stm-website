@@ -5,6 +5,7 @@
             <div class="d-flex flex-wrap gap-2">
                 <?php if (Auth::canManageEntity('students')): ?>
                     <a class="btn btn-primary" href="<?= e(base_url('admin/accounts/create-invoice')) ?>"><i class="bi bi-plus-circle me-1"></i>Create Invoice</a>
+                    <a class="btn btn-outline-primary" href="<?= e(base_url('admin/accounts/bulk-create-invoice')) ?>"><i class="bi bi-stack me-1"></i>Bulk Create</a>
                     <a class="btn btn-outline-primary" href="<?= e(base_url('admin/accounts/student-payments')) ?>"><i class="bi bi-people me-1"></i>Student Payments</a>
                 <?php endif; ?>
                 <a class="btn btn-outline-secondary" href="<?= e(base_url('admin')) ?>"><i class="bi bi-arrow-left me-1"></i>Dashboard</a>
