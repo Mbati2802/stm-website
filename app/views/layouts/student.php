@@ -134,7 +134,7 @@ $studentPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '');
     
     <!-- Main Content -->
     <main class="student-main">
-        <header class="student-topbar">
+        <header class="student-topbar sticky-top">
             <button class="btn btn-outline-primary btn-sm" type="button" id="studentSidebarToggle">
                 <i class="bi bi-list"></i>
             </button>

@@ -8,9 +8,9 @@
                         <i class="bi bi-person-fill"></i>
                     </div>
                     <div class="student-details">
-                        <h3>Welcome back, <?= e($_SESSION['student_name'] ?? 'Student') ?>!</h3>
-                        <p><i class="bi bi-book me-2"></i><?= e($_SESSION['programme'] ?? 'Computer Science') ?> - Year <?= e($_SESSION['year'] ?? '2') ?></p>
-                        <p><i class="bi bi-geo-alt me-2"></i>Student ID: <?= e($_SESSION['student_id'] ?? 'STM2024001') ?></p>
+                        <h3>Welcome back, <?= e($student['name'] ?? 'Student') ?>!</h3>
+                        <p><i class="bi bi-book me-2"></i><?= e($programmeName ?? 'Not assigned') ?></p>
+                        <p><i class="bi bi-geo-alt me-2"></i>Admission Number: <?= e($student['admission_number'] ?? 'Not assigned') ?></p>
                     </div>
                 </div>
             </div>
@@ -22,29 +22,29 @@
                 <div class="student-card-icon primary">
                     <i class="bi bi-book"></i>
                 </div>
-                <div class="student-stat-value">6</div>
-                <div class="student-stat-label">Active Units</div>
+                <div class="student-stat-value"><?= count($courses ?? []) ?></div>
+                <div class="student-stat-label">Available Courses</div>
             </div>
             <div class="student-stat-card">
                 <div class="student-card-icon warning">
                     <i class="bi bi-file-earmark-text"></i>
                 </div>
-                <div class="student-stat-value">3</div>
-                <div class="student-stat-label">Pending Assignments</div>
+                <div class="student-stat-value"><?= count($assignments ?? []) ?></div>
+                <div class="student-stat-label">Assignments</div>
             </div>
             <div class="student-stat-card">
                 <div class="student-card-icon success">
-                    <i class="bi bi-award"></i>
+                    <i class="bi bi-megaphone"></i>
                 </div>
-                <div class="student-stat-value">78%</div>
-                <div class="student-stat-label">Average Grade</div>
+                <div class="student-stat-value"><?= count($announcements ?? []) ?></div>
+                <div class="student-stat-label">Announcements</div>
             </div>
             <div class="student-stat-card">
                 <div class="student-card-icon danger">
                     <i class="bi bi-calendar-check"></i>
                 </div>
-                <div class="student-stat-value">92%</div>
-                <div class="student-stat-label">Attendance Rate</div>
+                <div class="student-stat-value"><?= count($timetables ?? []) ?></div>
+                <div class="student-stat-label">Timetables</div>
             </div>
         </div>
 
@@ -59,29 +59,31 @@
                         <a href="<?= e(base_url('student/courses')) ?>" class="btn btn-sm btn-outline-primary">View All</a>
                     </div>
                     
-                    <?php for ($i = 1; $i <= 3; $i++): ?>
-                    <div class="unit-card">
-                        <div class="unit-header">
-                            <div>
-                                <h5 class="unit-title">Advanced Web Development</h5>
-                                <div class="unit-code">CS<?= 300 + $i ?> - Web Technologies</div>
-                                <div class="unit-instructor"><i class="bi bi-person me-1"></i>Dr. John Smith</div>
+                    <?php if (!empty($courses)): ?>
+                        <?php foreach (array_slice($courses, 0, 3) as $course): ?>
+                        <div class="unit-card">
+                            <div class="unit-header">
+                                <div>
+                                    <h5 class="unit-title"><?= e($course['title'] ?? 'Course') ?></h5>
+                                    <div class="unit-code"><?= e($course['code'] ?? 'CODE') ?></div>
+                                    <div class="unit-instructor"><i class="bi bi-person me-1"></i><?= e($course['teacher_name'] ?? 'Not assigned') ?></div>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">Active</span>
                             </div>
-                            <span class="badge bg-<?= $i == 1 ? 'success' : ($i == 2 ? 'warning' : 'info') ?> rounded-pill">
-                                <?= $i == 1 ? 'Active' : ($i == 2 ? 'In Progress' : 'Upcoming') ?>
-                            </span>
+                            <div class="unit-progress">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted">Ongoing</small>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: 50%"></div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="unit-progress">
-                            <div class="d-flex justify-content-between mb-1">
-                                <small class="text-muted">Progress</small>
-                                <small class="text-muted"><?= 60 + ($i * 10) ?>%</small>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar" style="width: <?= 60 + ($i * 10) ?>%"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endfor; ?>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p class="text-muted mb-0">No courses available yet.</p>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -91,46 +93,26 @@
                 <div class="student-card">
                     <div class="student-card-header">
                         <h4 class="student-card-title">
-                            <i class="bi bi-calendar-check me-2"></i>Upcoming Deadlines
+                            <i class="bi bi-calendar-check me-2"></i>Assignments
                         </h4>
                     </div>
                     
-                    <div class="assignment-card urgent">
-                        <div class="assignment-header">
-                            <div>
-                                <h6 class="assignment-title">Database Design Project</h6>
-                                <small class="text-muted">CS301 - Database Systems</small>
+                    <?php if (!empty($assignments)): ?>
+                        <?php foreach (array_slice($assignments, 0, 3) as $assignment): ?>
+                        <div class="assignment-card">
+                            <div class="assignment-header">
+                                <div>
+                                    <h6 class="assignment-title"><?= e($assignment['title'] ?? 'Assignment') ?></h6>
+                                    <small class="text-muted"><?= e($assignment['course_title'] ?? 'Course') ?></small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">Active</span>
                             </div>
-                            <span class="badge bg-danger rounded-pill">2 days</span>
+                            <p class="assignment-description"><?= e(substr((string)($assignment['instructions'] ?? ''), 0, 100)) ?>...</p>
                         </div>
-                        <p class="assignment-description">Design and implement a complete database system for a library management system.</p>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-primary">Start Assignment</button>
-                            <button class="btn btn-sm btn-outline-secondary">View Details</button>
-                        </div>
-                    </div>
-
-                    <div class="assignment-card">
-                        <div class="assignment-header">
-                            <div>
-                                <h6 class="assignment-title">Algorithm Analysis Report</h6>
-                                <small class="text-muted">CS302 - Algorithms</small>
-                            </div>
-                            <span class="badge bg-warning rounded-pill">5 days</span>
-                        </div>
-                        <p class="assignment-description">Analyze time and space complexity of sorting algorithms.</p>
-                    </div>
-
-                    <div class="assignment-card completed">
-                        <div class="assignment-header">
-                            <div>
-                                <h6 class="assignment-title">Web Development Quiz</h6>
-                                <small class="text-muted">CS303 - Web Technologies</small>
-                            </div>
-                            <span class="badge bg-success rounded-pill">Completed</span>
-                        </div>
-                        <p class="assignment-description">HTML, CSS, and JavaScript fundamentals quiz.</p>
-                    </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p class="text-muted mb-0">No assignments available yet.</p>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Recent Announcements -->

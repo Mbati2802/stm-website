@@ -95,11 +95,30 @@ class StudentPortalController extends Controller
     {
         $student = $this->requireStudent();
         $model = new StudentPortalModel($this->config);
+        
+        // Fetch programme information
+        $programmeName = '';
+        if (!empty($student['programme_id'])) {
+            $stmt = $this->pdo->prepare('SELECT name FROM programmes WHERE id = ? LIMIT 1');
+            $stmt->execute([(int)$student['programme_id']]);
+            $programme = $stmt->fetch(PDO::FETCH_ASSOC);
+            $programmeName = $programme['name'] ?? '';
+        }
+        
+        // Fetch student's courses
+        $courses = $model->allPortalCourses();
+        
+        // Fetch assignments
+        $assignments = $model->allAssignments();
+        
         $this->view('student/dashboard', [
             'metaTitle' => 'Student Portal - Dashboard',
             'student' => $student,
+            'programmeName' => $programmeName,
             'timetables' => $model->latestTimetables(8),
             'announcements' => $model->latestAnnouncements(8),
+            'courses' => $courses,
+            'assignments' => $assignments,
         ], 'student');
     }
 
