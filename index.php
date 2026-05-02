@@ -131,6 +131,7 @@ $router->add('GET', 'admin/messages/export', [AdminContentController::class, 'ex
 $router->add('GET', 'admin/event-registrations', [AdminContentController::class, 'eventRegistrations']);
 $router->add('POST', 'admin/event-registrations/email/{id}', [AdminContentController::class, 'emailEventRegistrant']);
 $router->add('GET', 'admin/students', [AdminContentController::class, 'students']);
+$router->add('GET', 'admin/students/export', [AdminContentController::class, 'exportStudents']);
 $router->add('GET', 'admin/students/view', [AdminContentController::class, 'viewStudent']);
 $router->add('GET', 'admin/students/edit-form', [AdminContentController::class, 'editStudentForm']);
 $router->add('POST', 'admin/students/edit', [AdminContentController::class, 'editStudent']);

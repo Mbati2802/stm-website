@@ -2052,6 +2052,84 @@ class AdminContentController extends Controller
         return $root . DIRECTORY_SEPARATOR . $relative;
     }
 
+    public function exportStudents(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canViewEntity('students')) {
+            $this->redirect('admin');
+        }
+        
+        $portalModel = new StudentPortalModel($this->config);
+        $rows = $portalModel->allStudents();
+
+        $filename = 'students_export_' . date('Ymd_His') . '.xls';
+        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        echo "\xEF\xBB\xBF";
+        $columns = [
+            'ID',
+            'Name',
+            'Email',
+            'Admission Number',
+            'National ID',
+            'Gender',
+            'Date of Birth',
+            'Phone',
+            'County',
+            'Sub County',
+            'Guardian Name',
+            'Guardian Relationship',
+            'Guardian Phone',
+            'Guardian Email',
+            'Previous School',
+            'KCSE Year',
+            'KCSE Grade',
+            'KCSE Index',
+            'Preferred Intake',
+            'Disability Status',
+            'Referral Source',
+            'Additional Notes',
+            'Status',
+            'Created At'
+        ];
+        echo implode("\t", $columns) . "\n";
+
+        foreach ($rows as $row) {
+            $status = !empty($row['is_suspended']) ? 'Suspended' : 'Active';
+            $line = [
+                $this->cleanExportValue((string)($row['id'] ?? '')),
+                $this->cleanExportValue((string)($row['name'] ?? '')),
+                $this->cleanExportValue((string)($row['email'] ?? '')),
+                $this->cleanExportValue((string)($row['admission_number'] ?? 'Not assigned')),
+                $this->cleanExportValue((string)($row['national_id'] ?? '')),
+                $this->cleanExportValue((string)($row['gender'] ?? '')),
+                $this->cleanExportValue((string)($row['date_of_birth'] ?? '')),
+                $this->cleanExportValue((string)($row['phone'] ?? '')),
+                $this->cleanExportValue((string)($row['county'] ?? '')),
+                $this->cleanExportValue((string)($row['sub_county'] ?? '')),
+                $this->cleanExportValue((string)($row['guardian_name'] ?? '')),
+                $this->cleanExportValue((string)($row['guardian_relationship'] ?? '')),
+                $this->cleanExportValue((string)($row['guardian_phone'] ?? '')),
+                $this->cleanExportValue((string)($row['guardian_email'] ?? '')),
+                $this->cleanExportValue((string)($row['previous_school'] ?? '')),
+                $this->cleanExportValue((string)($row['kcse_year'] ?? '')),
+                $this->cleanExportValue((string)($row['kcse_grade'] ?? '')),
+                $this->cleanExportValue((string)($row['kcse_index'] ?? '')),
+                $this->cleanExportValue((string)($row['preferred_intake'] ?? '')),
+                $this->cleanExportValue((string)($row['disability_status'] ?? '')),
+                $this->cleanExportValue((string)($row['referral_source'] ?? '')),
+                $this->cleanExportValue((string)($row['additional_notes'] ?? '')),
+                $this->cleanExportValue($status),
+                $this->cleanExportValue((string)($row['created_at'] ?? '')),
+            ];
+            echo implode("\t", $line) . "\n";
+        }
+        exit;
+    }
+
     private function cleanExportValue(string $value): string
     {
         $value = str_replace(["\r\n", "\r"], "\n", $value);

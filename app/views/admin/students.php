@@ -5,14 +5,19 @@
                 <h1 class="h4 fw-bold mb-1">Student Accounts</h1>
                 <p class="text-muted mb-0">Assign or generate admission numbers for student portal access.</p>
             </div>
-            <?php if (Auth::canManageEntity('students')): ?>
-            <form method="POST" action="<?= e(base_url('admin/students/bulk-assign')) ?>">
-                <?= csrf_field() ?>
-                <button class="btn btn-primary">
-                    <i class="bi bi-magic me-1"></i>Generate Missing Admission Numbers
-                </button>
-            </form>
-            <?php endif; ?>
+            <div class="d-flex gap-2">
+                <a href="<?= e(base_url('admin/students/export')) ?>" class="btn btn-success">
+                    <i class="bi bi-file-earmark-excel me-1"></i>Download Excel
+                </a>
+                <?php if (Auth::canManageEntity('students')): ?>
+                <form method="POST" action="<?= e(base_url('admin/students/bulk-assign')) ?>">
+                    <?= csrf_field() ?>
+                    <button class="btn btn-primary">
+                        <i class="bi bi-magic me-1"></i>Generate Missing Admission Numbers
+                    </button>
+                </form>
+                <?php endif; ?>
+            </div>
         </div>
         <?php if ($msg = flash('success')): ?><div class="alert alert-success"><?= e($msg) ?></div><?php endif; ?>
         <?php if ($msg = flash('error')): ?><div class="alert alert-danger"><?= e($msg) ?></div><?php endif; ?>
