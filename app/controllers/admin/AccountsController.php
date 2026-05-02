@@ -471,55 +471,72 @@ class AccountsController extends Controller
             return;
         }
 
-        $pdo = Database::getInstance($this->config['db']);
-        
-        // Get invoice details
-        $stmt = $pdo->prepare('SELECT i.*, s.name AS student_name, s.admission_number, s.email AS student_email,
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            
+            // Check which session table exists
+            $sessionsTable = 'academic_sessions';
+            $stmt = $pdo->query("SHOW TABLES LIKE 'academic_sessions'");
+            if ($stmt->rowCount() === 0) {
+                $stmt = $pdo->query("SHOW TABLES LIKE 'sessions'");
+                if ($stmt->rowCount() > 0) {
+                    $sessionsTable = 'sessions';
+                }
+            }
+            
+            // Get invoice details
+            $sql = "SELECT i.*, s.name AS student_name, s.admission_number, s.email AS student_email,
                                       p.name AS programme_name, p.abbreviation AS programme_abbr,
-                                      t.name AS term_name, ses.name AS session_name,
-                                      c.code AS course_code, c.title AS course_title
+                                      t.name AS term_name, ses.name AS session_name
                                FROM invoices i
                                LEFT JOIN student_accounts s ON i.student_id = s.id
                                LEFT JOIN programmes p ON i.programme_id = p.id
                                LEFT JOIN terms t ON i.term_id = t.id
-                               LEFT JOIN academic_sessions ses ON i.academic_session_id = ses.id
-                               LEFT JOIN courses c ON i.course_id = c.id
-                               WHERE i.id = ?');
-        $stmt->execute([$id]);
-        $invoice = $stmt->fetch(PDO::FETCH_ASSOC);
+                               LEFT JOIN {$sessionsTable} ses ON i.academic_session_id = ses.id
+                               WHERE i.id = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$id]);
+            $invoice = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$invoice) {
-            flash('error', 'Invoice not found.');
+            if (!$invoice) {
+                flash('error', 'Invoice not found.');
+                $this->redirect('admin/accounts');
+                return;
+            }
+
+            // Get fee items
+            $stmt = $pdo->prepare('SELECT * FROM fee_items WHERE invoice_id = ?');
+            $stmt->execute([$id]);
+            $feeItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Get payments
+            $stmt = $pdo->prepare('SELECT p.*, pm.name AS payment_method_name 
+                                   FROM payments p
+                                   LEFT JOIN payment_methods pm ON p.payment_method_id = pm.id
+                                   WHERE p.invoice_id = ? 
+                                   ORDER BY p.payment_date DESC');
+            $stmt->execute([$id]);
+            $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Calculate totals
+            $totalPaid = array_sum(array_column($payments, 'amount'));
+            $balance = $invoice['amount'] - $totalPaid;
+
+            $this->view('admin/accounts/view_invoice', [
+                'metaTitle' => 'Invoice ' . $invoice['invoice_number'],
+                'invoice' => $invoice,
+                'feeItems' => $feeItems,
+                'payments' => $payments,
+                'totalPaid' => $totalPaid,
+                'balance' => $balance
+            ]);
+        } catch (PDOException $e) {
+            flash('error', 'Database error: ' . $e->getMessage());
             $this->redirect('admin/accounts');
-            return;
+        } catch (Throwable $e) {
+            flash('error', 'Error: ' . $e->getMessage());
+            $this->redirect('admin/accounts');
         }
-
-        // Get fee items
-        $stmt = $pdo->prepare('SELECT * FROM fee_items WHERE invoice_id = ?');
-        $stmt->execute([$id]);
-        $feeItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Get payments
-        $stmt = $pdo->prepare('SELECT p.*, pm.name AS payment_method_name 
-                               FROM payments p
-                               LEFT JOIN payment_methods pm ON p.payment_method_id = pm.id
-                               WHERE p.invoice_id = ? 
-                               ORDER BY p.payment_date DESC');
-        $stmt->execute([$id]);
-        $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Calculate totals
-        $totalPaid = array_sum(array_column($payments, 'amount'));
-        $balance = $invoice['amount'] - $totalPaid;
-
-        $this->view('admin/accounts/view_invoice', [
-            'metaTitle' => 'Invoice ' . $invoice['invoice_number'],
-            'invoice' => $invoice,
-            'feeItems' => $feeItems,
-            'payments' => $payments,
-            'totalPaid' => $totalPaid,
-            'balance' => $balance
-        ]);
     }
 
     public function recordPayment(): void
