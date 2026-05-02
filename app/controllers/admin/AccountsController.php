@@ -97,11 +97,34 @@ class AccountsController extends Controller
             $stmt->execute($params);
             $invoices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Get filter options
-            $programmes = $pdo->query('SELECT id, name, abbreviation FROM programmes ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
-            $terms = $pdo->query('SELECT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
-            $sessions = $pdo->query('SELECT id, name FROM academic_sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
-            $courses = $pdo->query('SELECT id, code, title FROM courses ORDER BY code')->fetchAll(PDO::FETCH_ASSOC);
+            // Get filter options - handle missing tables gracefully
+            $programmes = [];
+            try {
+                $programmes = $pdo->query('SELECT id, name, abbreviation FROM programmes ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // Programmes table doesn't exist
+            }
+            
+            $terms = [];
+            try {
+                $terms = $pdo->query('SELECT id, name FROM terms ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // Terms table doesn't exist
+            }
+            
+            $sessions = [];
+            try {
+                $sessions = $pdo->query('SELECT id, name FROM academic_sessions ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // academic_sessions table doesn't exist
+            }
+            
+            $courses = [];
+            try {
+                $courses = $pdo->query('SELECT id, code, title FROM courses ORDER BY code')->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                // courses table doesn't exist
+            }
 
             $this->view('admin/accounts/index', [
                 'metaTitle' => 'Accounts & Billing',
