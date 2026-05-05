@@ -995,36 +995,82 @@ class AdminContentController extends Controller
             $this->redirect('admin/students');
         }
 
-        $name = trim($_POST['name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
-        $county = trim($_POST['county'] ?? '');
-        $subCounty = trim($_POST['sub_county'] ?? '');
-        $guardianName = trim($_POST['guardian_name'] ?? '');
-        $guardianPhone = trim($_POST['guardian_phone'] ?? '');
-        $programmeId = (int)($_POST['programme_id'] ?? 0);
-        $preferredIntake = trim($_POST['preferred_intake'] ?? '');
+        $name              = trim($_POST['name'] ?? '');
+        $email             = trim($_POST['email'] ?? '');
+        $gender            = trim($_POST['gender'] ?? '');
+        $dateOfBirth       = trim($_POST['date_of_birth'] ?? '');
+        $nationalId        = trim($_POST['national_id'] ?? '');
+        $phone             = trim($_POST['phone'] ?? '');
+        $county            = trim($_POST['county'] ?? '');
+        $subCounty         = trim($_POST['sub_county'] ?? '');
+        $guardianName      = trim($_POST['guardian_name'] ?? '');
+        $guardianRelationship = trim($_POST['guardian_relationship'] ?? '');
+        $guardianPhone     = trim($_POST['guardian_phone'] ?? '');
+        $guardianEmail     = trim($_POST['guardian_email'] ?? '');
+        $previousSchool    = trim($_POST['previous_school'] ?? '');
+        $kcseYear          = trim($_POST['kcse_year'] ?? '');
+        $kcseGrade         = trim($_POST['kcse_grade'] ?? '');
+        $kcseIndex         = trim($_POST['kcse_index'] ?? '');
+        $programmeId       = (int)($_POST['programme_id'] ?? 0);
+        $preferredIntake   = trim($_POST['preferred_intake'] ?? '');
+        $disabilityStatus  = trim($_POST['disability_status'] ?? 'None');
+        $referralSource    = trim($_POST['referral_source'] ?? '');
+        $additionalNotes   = trim($_POST['additional_notes'] ?? '');
+        $admissionNumber   = strtoupper(trim($_POST['admission_number'] ?? ''));
+        $isSuspended       = isset($_POST['is_suspended']) ? 1 : 0;
 
         if ($name === '' || $email === '') {
             flash('error', 'Name and email are required.');
             $this->redirect('admin/students');
         }
 
+        if ($guardianEmail !== '' && !filter_var($guardianEmail, FILTER_VALIDATE_EMAIL)) {
+            flash('error', 'Please provide a valid guardian email address.');
+            $this->redirect('admin/students');
+        }
+
         try {
             $pdo = Database::getInstance($this->config['db']);
+
+            // If admission number was changed/set, validate uniqueness
+            if ($admissionNumber !== '' && $admissionNumber !== strtoupper((string)($student['admission_number'] ?? ''))) {
+                if (!preg_match('/^[A-Z0-9\/\-_]+$/', $admissionNumber)) {
+                    flash('error', 'Admission number format is invalid. Use letters, numbers, /, -, _.');
+                    $this->redirect('admin/students');
+                }
+                $chk = $pdo->prepare('SELECT id FROM student_accounts WHERE admission_number = ? AND id != ?');
+                $chk->execute([$admissionNumber, $studentId]);
+                if ($chk->fetch()) {
+                    flash('error', 'Admission number already exists. Please choose another one.');
+                    $this->redirect('admin/students');
+                }
+            }
+
             $stmt = $pdo->prepare(<<<SQL
                 UPDATE student_accounts SET
-                    name = ?, email = ?, phone = ?, county = ?, sub_county = ?,
-                    guardian_name = ?, guardian_phone = ?, programme_id = ?, preferred_intake = ?
+                    name = ?, email = ?, gender = ?, date_of_birth = ?, national_id = ?,
+                    phone = ?, county = ?, sub_county = ?,
+                    guardian_name = ?, guardian_relationship = ?, guardian_phone = ?, guardian_email = ?,
+                    previous_school = ?, kcse_year = ?, kcse_grade = ?, kcse_index = ?,
+                    programme_id = ?, preferred_intake = ?,
+                    disability_status = ?, referral_source = ?, additional_notes = ?,
+                    admission_number = CASE WHEN ? = '' THEN admission_number ELSE ? END,
+                    is_suspended = ?
                 WHERE id = ?
             SQL);
             $stmt->execute([
-                $name, $email, $phone, $county, $subCounty,
-                $guardianName, $guardianPhone, $programmeId ?: null, $preferredIntake,
-                $studentId
+                $name, $email, $gender ?: null, $dateOfBirth ?: null, $nationalId ?: null,
+                $phone ?: null, $county ?: null, $subCounty ?: null,
+                $guardianName ?: null, $guardianRelationship ?: null, $guardianPhone ?: null, $guardianEmail ?: null,
+                $previousSchool ?: null, $kcseYear ?: null, $kcseGrade ?: null, $kcseIndex ?: null,
+                $programmeId ?: null, $preferredIntake ?: null,
+                $disabilityStatus, $referralSource ?: null, $additionalNotes ?: null,
+                $admissionNumber, $admissionNumber,
+                $isSuspended,
+                $studentId,
             ]);
 
-            flash('success', 'Student updated successfully.');
+            flash('success', 'Student record updated successfully.');
         } catch (PDOException $e) {
             flash('error', 'Failed to update student: ' . $e->getMessage());
         }

@@ -16,3 +16,6 @@ error_log
 # Editor/system files
 .vscode/
 .idea/
+
+# Embedded/nested repositories
+stm-website/
