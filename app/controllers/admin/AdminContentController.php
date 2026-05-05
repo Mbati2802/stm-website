@@ -715,7 +715,7 @@ class AdminContentController extends Controller
                 $programmeAbbr = $programme['abbreviation'] ?? null;
             }
             
-            $admissionNumber = $this->buildAdmissionNumber($format, (int)$student['id'], $programmeAbbr);
+            $admissionNumber = $this->buildAdmissionNumber($format, (int)$student['id'], $programmeAbbr, $student['preferred_intake'] ?? null);
         }
 
         if (!preg_match('/^[A-Z0-9\/\-_]+$/', $admissionNumber)) {
@@ -863,7 +863,7 @@ class AdminContentController extends Controller
         );
 
         // Assign admission number
-        $admissionNumber = $this->buildAdmissionNumber($format, $studentId, $programmeAbbr);
+        $admissionNumber = $this->buildAdmissionNumber($format, $studentId, $programmeAbbr, $preferredIntake);
         $portalModel->assignAdmissionNumber($studentId, $admissionNumber);
 
         // Create student enrollment record
@@ -1296,7 +1296,7 @@ class AdminContentController extends Controller
         $defaultFormat = $stmt->fetch(PDO::FETCH_ASSOC);
         $format = $defaultFormat['format_pattern'] ?? 'STM/{YEAR}/{SEQ4}';
         
-        $stmt = $pdo->query('SELECT id, programme_id FROM student_accounts');
+        $stmt = $pdo->query('SELECT id, programme_id, preferred_intake FROM student_accounts');
         $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         $assigned = 0;
@@ -1316,7 +1316,7 @@ class AdminContentController extends Controller
                 $programmeAbbr = $programme['abbreviation'] ?? null;
             }
             
-            $admissionNumber = $this->buildAdmissionNumber($format, $id, $programmeAbbr);
+            $admissionNumber = $this->buildAdmissionNumber($format, $id, $programmeAbbr, $student['preferred_intake'] ?? null);
             try {
                 $portalModel->assignAdmissionNumber($id, $admissionNumber);
                 $assigned++;
@@ -2417,13 +2417,21 @@ class AdminContentController extends Controller
         }
     }
 
-    private function buildAdmissionNumber(string $format, int $studentId, ?string $programmeAbbr = null): string
+    private function buildAdmissionNumber(string $format, int $studentId, ?string $programmeAbbr = null, ?string $intakeMonth = null): string
     {
         $year = date('Y');
         $shortYear = date('y');
-        $month = date('m');
-        $monthName = strtoupper(date('M'));
-        $monthInitial = strtoupper(substr(date('F'), 0, 1));
+
+        // Use the selected intake month if provided; fall back to current month
+        if ($intakeMonth && ($ts = strtotime('1 ' . $intakeMonth . ' 2000')) !== false) {
+            $month = date('m', $ts);
+            $monthName = strtoupper(date('M', $ts));
+            $monthInitial = strtoupper(substr(date('F', $ts), 0, 1));
+        } else {
+            $month = date('m');
+            $monthName = strtoupper(date('M'));
+            $monthInitial = strtoupper(substr(date('F'), 0, 1));
+        }
         $seq2 = str_pad((string)$studentId, 2, '0', STR_PAD_LEFT);
         $seq3 = str_pad((string)$studentId, 3, '0', STR_PAD_LEFT);
         $seq4 = str_pad((string)$studentId, 4, '0', STR_PAD_LEFT);
