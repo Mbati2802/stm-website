@@ -24,6 +24,8 @@
         $truncateColumns = ['summary', 'body', 'message', 'description', 'content', 'answer', 'question'];
         // Maximum characters to display before truncating
         $maxLength = 60;
+        // Columns to hide completely from the table (reduce row height, minimize scroll)
+        $hiddenColumns = ['body', 'image_path', 'image', 'file_path', 'featured_image', 'social_updates_embed'];
         $entityDisplayNames = [
             'portal_courses' => 'Portal Units',
             'course_grades' => 'Unit Grades',
@@ -71,7 +73,8 @@
                     <?php if(!empty($rows)): foreach(array_keys($rows[0]) as $h): ?>
                         <?php
                         $headerClass = $columnClassMap[(string)$h] ?? 'col-md';
-                        $skipColumn = ($entity === 'programmes') && in_array((string)$h, ['description', 'slug'], true);
+                        $skipColumn = (($entity === 'programmes') && in_array((string)$h, ['description', 'slug'], true))
+                            || in_array((string)$h, $hiddenColumns, true);
                         $headerText = $columnHeaderMap[$entity][(string)$h] ?? $h;
                         ?>
                         <?php if (!$skipColumn): ?>
@@ -90,7 +93,8 @@
                         $key = (string)$k;
                         $cellClass = $columnClassMap[$key] ?? 'col-md';
                         $fullValue = (string)$v;
-                        $skipColumn = ($entity === 'programmes') && in_array($key, ['description', 'slug'], true);
+                        $skipColumn = (($entity === 'programmes') && in_array($key, ['description', 'slug'], true))
+                            || in_array($key, $hiddenColumns, true);
                         if ($skipColumn) continue;
                         ?>
                         <td class="<?= e($cellClass) ?>" title="<?= e($key === 'password' ? '' : $fullValue) ?>">
