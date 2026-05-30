@@ -10,6 +10,37 @@
     overflow-x:hidden;
     max-width:100vw;
 }
+
+/* Text truncation for table cells */
+.text-truncate-ellipsis{
+    display:inline-block;
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    vertical-align:bottom;
+}
+
+/* Improved admin table styling */
+.admin-table td{
+    max-width:300px;
+    font-size:.85rem;
+}
+
+.admin-table td .text-truncate-ellipsis{
+    display:block;
+    max-width:280px;
+}
+
+/* Remove excessive scroll on larger screens */
+@media (min-width: 992px){
+    .admin-table-card{
+        overflow-x:visible;
+    }
+    .admin-table{
+        table-layout:fixed;
+    }
+}
 .admin-shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh;max-width:100vw;height:100vh;overflow:hidden}
 .admin-sidebar{
     background:linear-gradient(180deg,#1b3b5f 0%, #122a42 100%);

@@ -10,13 +10,20 @@
             'phone' => 'col-sm',
             'slug' => 'col-md',
             'category' => 'col-sm',
-            'summary' => 'col-xl',
-            'body' => 'col-xl',
-            'message' => 'col-xl',
-            'description' => 'col-xl',
+            'summary' => 'col-md',
+            'body' => 'col-md',
+            'message' => 'col-md',
+            'description' => 'col-md',
+            'content' => 'col-md',
+            'answer' => 'col-md',
+            'question' => 'col-lg',
             'created_at' => 'col-sm',
             'updated_at' => 'col-sm',
         ];
+        // Columns that should have text truncated
+        $truncateColumns = ['summary', 'body', 'message', 'description', 'content', 'answer', 'question'];
+        // Maximum characters to display before truncating
+        $maxLength = 60;
         $entityDisplayNames = [
             'portal_courses' => 'Portal Units',
             'course_grades' => 'Unit Grades',
@@ -102,6 +109,15 @@
                                 <?php endforeach; ?>
                                 <?php if (!isset($course)): ?>
                                     <?= e($fullValue) ?>
+                                <?php endif; ?>
+                            <?php elseif (in_array($key, $truncateColumns, true)):
+                                // Strip HTML tags and truncate
+                                $plainText = strip_tags($fullValue);
+                                $plainText = html_entity_decode($plainText, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                                if (strlen($plainText) > $maxLength): ?>
+                                    <span class="text-truncate-ellipsis" title="<?= e($plainText) ?>"><?= e(substr($plainText, 0, $maxLength)) ?>...</span>
+                                <?php else: ?>
+                                    <?= e($plainText) ?>
                                 <?php endif; ?>
                             <?php else: ?>
                                 <?= e($fullValue) ?>
