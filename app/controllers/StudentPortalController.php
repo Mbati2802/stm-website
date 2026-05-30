@@ -105,16 +105,19 @@ class StudentPortalController extends Controller
             $programmeName = $programme['name'] ?? '';
         }
         
-        // Fetch student's courses based on their programme
+        // Fetch student's courses based on their programme (many-to-many support)
         $courses = [];
         if (!empty($student['programme_id'])) {
             try {
+                // Use junction table to get all courses linked to student's programme
                 $stmt = $this->pdo->prepare('
                     SELECT pc.*, p.name AS programme_name, u.name AS teacher_name
                     FROM portal_courses pc
-                    LEFT JOIN programmes p ON p.id = pc.programme_id
+                    JOIN portal_course_programmes pcp ON pcp.portal_course_id = pc.id
+                    LEFT JOIN programmes p ON p.id = pcp.programme_id
                     LEFT JOIN users u ON u.id = pc.teacher_id
-                    WHERE pc.programme_id = ?
+                    WHERE pcp.programme_id = ?
+                    GROUP BY pc.id
                     ORDER BY pc.created_at DESC
                 ');
                 $stmt->execute([(int)$student['programme_id']]);

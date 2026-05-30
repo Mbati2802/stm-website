@@ -182,11 +182,15 @@ class AdminContentController extends Controller
         if (in_array($entity, ['testimonials', 'social_updates'], true)) {
             $viewData['settings'] = $model->getSettings();
         }
-        // For portal_courses, fetch programmes and teachers for display
+        // For portal_courses, fetch programmes, teachers, and programme-unit relationships for display
         if ($entity === 'portal_courses') {
             $viewData['programmes'] = $model->all('programmes');
             $users = $model->all('users');
             $viewData['teachers'] = array_values(array_filter($users, static fn($user) => (string)($user['role'] ?? '') === 'teacher'));
+            // Fetch all programme-unit relationships for many-to-many display
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->query('SELECT portal_course_id, programme_id FROM portal_course_programmes');
+            $viewData['courseProgrammes'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         $this->view('admin/list', $viewData);
     }
@@ -235,6 +239,13 @@ class AdminContentController extends Controller
         if (!$row) {
             flash('error', 'Record not found.');
             $this->redirect('admin/list/' . $entity);
+        }
+        // Fetch associated programme IDs for portal_courses (many-to-many)
+        if ($entity === 'portal_courses') {
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('SELECT programme_id FROM portal_course_programmes WHERE portal_course_id = ?');
+            $stmt->execute([$id]);
+            $row['programme_ids'] = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'programme_id');
         }
         $this->view('admin/form', [
             'metaTitle' => 'Edit ' . ucfirst(str_replace('_', ' ', $entity)),
@@ -1752,24 +1763,43 @@ class AdminContentController extends Controller
                 }
                 break;
             case 'portal_courses':
+                // Get selected programme IDs (many-to-many)
+                $programmeIds = $_POST['programme_ids'] ?? [];
+                if (empty($programmeIds)) {
+                    flash('error', 'Please select at least one programme.');
+                    $this->redirect('admin/list/portal_courses');
+                }
+                // Use first programme as legacy programme_id for backward compatibility
+                $primaryProgrammeId = (int)($programmeIds[0] ?? 0);
                 $stmtData = [
-                    'programme_id' => (int)($_POST['programme_id'] ?? 0),
+                    'programme_id' => $primaryProgrammeId,
                     'teacher_id' => (int)($_POST['teacher_id'] ?? 0),
                     'code' => trim($_POST['code'] ?? ''),
                     'title' => trim($_POST['title'] ?? ''),
                     'description' => trim($_POST['description'] ?? ''),
                 ];
-                if ($stmtData['programme_id'] <= 0) {
-                    flash('error', 'Please select a valid programme.');
-                    $this->redirect('admin/list/portal_courses');
-                }
                 if ($isUpdate) {
                     $stmt = $pdo->prepare('UPDATE portal_courses SET programme_id=:programme_id, teacher_id=:teacher_id, code=:code, title=:title, description=:description WHERE id=:id');
                     $stmtData['id'] = $id;
+                    $stmt->execute($stmtData);
+                    $portalCourseId = $id;
                 } else {
                     $stmt = $pdo->prepare('INSERT INTO portal_courses(programme_id, teacher_id, code, title, description, created_at) VALUES(:programme_id, :teacher_id, :code, :title, :description, NOW())');
+                    $stmt->execute($stmtData);
+                    $portalCourseId = (int)$pdo->lastInsertId();
                 }
-                $stmt->execute($stmtData);
+                // Save many-to-many relationships in junction table
+                // First, remove existing relationships
+                $stmt = $pdo->prepare('DELETE FROM portal_course_programmes WHERE portal_course_id = ?');
+                $stmt->execute([$portalCourseId]);
+                // Insert new relationships
+                foreach ($programmeIds as $progId) {
+                    $progId = (int)$progId;
+                    if ($progId > 0) {
+                        $stmt = $pdo->prepare('INSERT IGNORE INTO portal_course_programmes (portal_course_id, programme_id) VALUES (?, ?)');
+                        $stmt->execute([$portalCourseId, $progId]);
+                    }
+                }
                 break;
             case 'programme_timetables':
                 $file = $this->uploadFile('file_path', ['application/pdf'], 'timetables');

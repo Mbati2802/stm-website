@@ -97,7 +97,25 @@ $formReadonly = !$canManage ? 'readonly' : '';
 <div class="col-md-6"><label class="form-label">Password <?= $isEdit ? '(leave blank to keep current)' : '' ?></label><input name="password" type="password" class="form-control" <?= $isEdit ? '' : 'required' ?> minlength="6"></div>
 <div class="col-md-6"><label class="form-label">Confirm Password</label><input name="password_confirm" type="password" class="form-control" <?= $isEdit ? '' : 'required' ?> minlength="6"></div>
 <?php elseif($entity==='portal_courses'): ?>
-<div class="col-md-6"><label class="form-label">Programme</label><select name="programme_id" class="form-select" required><option value="">Select programme</option><?php foreach(($programmes ?? []) as $programme): ?><option value="<?= e((string)$programme['id']) ?>" <?= ((string)($row['programme_id'] ?? '') === (string)$programme['id']) ? 'selected' : '' ?>><?= e((string)$programme['name']) ?></option><?php endforeach; ?></select></div>
+<?php
+// Get selected programme IDs for this unit (many-to-many)
+$selectedProgrammeIds = $row['programme_ids'] ?? [];
+if ($isEdit && empty($selectedProgrammeIds)) {
+    // Fallback to legacy single programme_id if no junction table data
+    $selectedProgrammeIds = $row['programme_id'] ? [$row['programme_id']] : [];
+}
+?>
+<div class="col-md-6">
+    <label class="form-label">Programmes <span class="text-muted">(Hold Ctrl/Cmd to select multiple)</span></label>
+    <select name="programme_ids[]" class="form-select" multiple size="4" required>
+        <?php foreach(($programmes ?? []) as $programme): ?>
+            <option value="<?= e((string)$programme['id']) ?>" <?= in_array((string)$programme['id'], array_map('strval', $selectedProgrammeIds), true) ? 'selected' : '' ?>>
+                <?= e((string)$programme['name']) ?> (<?= e((string)$programme['abbreviation']) ?>)
+            </option>
+        <?php endforeach; ?>
+    </select>
+    <small class="text-muted">This unit will be available to students in all selected programmes</small>
+</div>
 <div class="col-md-6"><label class="form-label">Teacher</label><select name="teacher_id" class="form-select"><option value="">Select teacher (optional)</option><?php foreach(($teachers ?? []) as $teacher): ?><option value="<?= e((string)$teacher['id']) ?>" <?= ((string)($row['teacher_id'] ?? '') === (string)$teacher['id']) ? 'selected' : '' ?>><?= e((string)$teacher['name']) ?> (<?= e((string)$teacher['email']) ?>)</option><?php endforeach; ?></select></div>
 <div class="col-md-4"><label class="form-label">Unit Code</label><input name="code" class="form-control" value="<?= e($row['code'] ?? '') ?>" placeholder="MCH-101"></div>
 <div class="col-12"><label class="form-label">Unit Title</label><input name="title" class="form-control" value="<?= e($row['title'] ?? '') ?>" required></div>

@@ -143,15 +143,29 @@
                     <?php if ($entity === 'portal_courses'): ?>
                         <td class="col-sm">
                             <?php
-                            $programmeId = $row['programme_id'] ?? 0;
-                            $programmeAbbreviation = '-';
-                            foreach (($programmes ?? []) as $prog) {
-                                if ((string)$prog['id'] === (string)$programmeId) {
-                                    $programmeAbbreviation = $prog['abbreviation'] ?? $prog['name'] ?? '-';
-                                    break;
+                            // Get all programme IDs linked to this course (many-to-many)
+                            $linkedProgrammeIds = [];
+                            foreach (($courseProgrammes ?? []) as $cp) {
+                                if ((string)$cp['portal_course_id'] === (string)$row['id']) {
+                                    $linkedProgrammeIds[] = $cp['programme_id'];
                                 }
                             }
-                            echo e($programmeAbbreviation);
+                            // Fallback to legacy single programme_id
+                            if (empty($linkedProgrammeIds) && !empty($row['programme_id'])) {
+                                $linkedProgrammeIds[] = $row['programme_id'];
+                            }
+                            // Build abbreviations list
+                            $abbreviations = [];
+                            foreach ($linkedProgrammeIds as $progId) {
+                                foreach (($programmes ?? []) as $prog) {
+                                    if ((string)$prog['id'] === (string)$progId) {
+                                        $abbrev = $prog['abbreviation'] ?? substr($prog['name'], 0, 10) ?? '?';
+                                        $abbreviations[] = e($abbrev);
+                                        break;
+                                    }
+                                }
+                            }
+                            echo !empty($abbreviations) ? implode(', ', $abbreviations) : '-';
                             ?>
                         </td>
                         <td class="col-sm">
