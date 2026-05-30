@@ -715,7 +715,7 @@ class AdminContentController extends Controller
                 $programmeAbbr = $programme['abbreviation'] ?? null;
             }
             
-            $admissionNumber = $this->buildAdmissionNumber($format, (int)$student['id'], $programmeAbbr);
+            $admissionNumber = $this->buildAdmissionNumber($format, (int)$student['id'], $programmeAbbr, $student['preferred_intake'] ?? null);
         }
 
         if (!preg_match('/^[A-Z0-9\/\-_]+$/', $admissionNumber)) {
@@ -863,7 +863,7 @@ class AdminContentController extends Controller
         );
 
         // Assign admission number
-        $admissionNumber = $this->buildAdmissionNumber($format, $studentId, $programmeAbbr);
+        $admissionNumber = $this->buildAdmissionNumber($format, $studentId, $programmeAbbr, $preferredIntake);
         $portalModel->assignAdmissionNumber($studentId, $admissionNumber);
 
         // Create student enrollment record
@@ -995,36 +995,82 @@ class AdminContentController extends Controller
             $this->redirect('admin/students');
         }
 
-        $name = trim($_POST['name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
-        $county = trim($_POST['county'] ?? '');
-        $subCounty = trim($_POST['sub_county'] ?? '');
-        $guardianName = trim($_POST['guardian_name'] ?? '');
-        $guardianPhone = trim($_POST['guardian_phone'] ?? '');
-        $programmeId = (int)($_POST['programme_id'] ?? 0);
-        $preferredIntake = trim($_POST['preferred_intake'] ?? '');
+        $name              = trim($_POST['name'] ?? '');
+        $email             = trim($_POST['email'] ?? '');
+        $gender            = trim($_POST['gender'] ?? '');
+        $dateOfBirth       = trim($_POST['date_of_birth'] ?? '');
+        $nationalId        = trim($_POST['national_id'] ?? '');
+        $phone             = trim($_POST['phone'] ?? '');
+        $county            = trim($_POST['county'] ?? '');
+        $subCounty         = trim($_POST['sub_county'] ?? '');
+        $guardianName      = trim($_POST['guardian_name'] ?? '');
+        $guardianRelationship = trim($_POST['guardian_relationship'] ?? '');
+        $guardianPhone     = trim($_POST['guardian_phone'] ?? '');
+        $guardianEmail     = trim($_POST['guardian_email'] ?? '');
+        $previousSchool    = trim($_POST['previous_school'] ?? '');
+        $kcseYear          = trim($_POST['kcse_year'] ?? '');
+        $kcseGrade         = trim($_POST['kcse_grade'] ?? '');
+        $kcseIndex         = trim($_POST['kcse_index'] ?? '');
+        $programmeId       = (int)($_POST['programme_id'] ?? 0);
+        $preferredIntake   = trim($_POST['preferred_intake'] ?? '');
+        $disabilityStatus  = trim($_POST['disability_status'] ?? 'None');
+        $referralSource    = trim($_POST['referral_source'] ?? '');
+        $additionalNotes   = trim($_POST['additional_notes'] ?? '');
+        $admissionNumber   = strtoupper(trim($_POST['admission_number'] ?? ''));
+        $isSuspended       = isset($_POST['is_suspended']) ? 1 : 0;
 
         if ($name === '' || $email === '') {
             flash('error', 'Name and email are required.');
             $this->redirect('admin/students');
         }
 
+        if ($guardianEmail !== '' && !filter_var($guardianEmail, FILTER_VALIDATE_EMAIL)) {
+            flash('error', 'Please provide a valid guardian email address.');
+            $this->redirect('admin/students');
+        }
+
         try {
             $pdo = Database::getInstance($this->config['db']);
+
+            // If admission number was changed/set, validate uniqueness
+            if ($admissionNumber !== '' && $admissionNumber !== strtoupper((string)($student['admission_number'] ?? ''))) {
+                if (!preg_match('/^[A-Z0-9\/\-_]+$/', $admissionNumber)) {
+                    flash('error', 'Admission number format is invalid. Use letters, numbers, /, -, _.');
+                    $this->redirect('admin/students');
+                }
+                $chk = $pdo->prepare('SELECT id FROM student_accounts WHERE admission_number = ? AND id != ?');
+                $chk->execute([$admissionNumber, $studentId]);
+                if ($chk->fetch()) {
+                    flash('error', 'Admission number already exists. Please choose another one.');
+                    $this->redirect('admin/students');
+                }
+            }
+
             $stmt = $pdo->prepare(<<<SQL
                 UPDATE student_accounts SET
-                    name = ?, email = ?, phone = ?, county = ?, sub_county = ?,
-                    guardian_name = ?, guardian_phone = ?, programme_id = ?, preferred_intake = ?
+                    name = ?, email = ?, gender = ?, date_of_birth = ?, national_id = ?,
+                    phone = ?, county = ?, sub_county = ?,
+                    guardian_name = ?, guardian_relationship = ?, guardian_phone = ?, guardian_email = ?,
+                    previous_school = ?, kcse_year = ?, kcse_grade = ?, kcse_index = ?,
+                    programme_id = ?, preferred_intake = ?,
+                    disability_status = ?, referral_source = ?, additional_notes = ?,
+                    admission_number = CASE WHEN ? = '' THEN admission_number ELSE ? END,
+                    is_suspended = ?
                 WHERE id = ?
             SQL);
             $stmt->execute([
-                $name, $email, $phone, $county, $subCounty,
-                $guardianName, $guardianPhone, $programmeId ?: null, $preferredIntake,
-                $studentId
+                $name, $email, $gender ?: null, $dateOfBirth ?: null, $nationalId ?: null,
+                $phone ?: null, $county ?: null, $subCounty ?: null,
+                $guardianName ?: null, $guardianRelationship ?: null, $guardianPhone ?: null, $guardianEmail ?: null,
+                $previousSchool ?: null, $kcseYear ?: null, $kcseGrade ?: null, $kcseIndex ?: null,
+                $programmeId ?: null, $preferredIntake ?: null,
+                $disabilityStatus, $referralSource ?: null, $additionalNotes ?: null,
+                $admissionNumber, $admissionNumber,
+                $isSuspended,
+                $studentId,
             ]);
 
-            flash('success', 'Student updated successfully.');
+            flash('success', 'Student record updated successfully.');
         } catch (PDOException $e) {
             flash('error', 'Failed to update student: ' . $e->getMessage());
         }
@@ -1250,7 +1296,7 @@ class AdminContentController extends Controller
         $defaultFormat = $stmt->fetch(PDO::FETCH_ASSOC);
         $format = $defaultFormat['format_pattern'] ?? 'STM/{YEAR}/{SEQ4}';
         
-        $stmt = $pdo->query('SELECT id, programme_id FROM student_accounts');
+        $stmt = $pdo->query('SELECT id, programme_id, preferred_intake FROM student_accounts');
         $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         $assigned = 0;
@@ -1270,7 +1316,7 @@ class AdminContentController extends Controller
                 $programmeAbbr = $programme['abbreviation'] ?? null;
             }
             
-            $admissionNumber = $this->buildAdmissionNumber($format, $id, $programmeAbbr);
+            $admissionNumber = $this->buildAdmissionNumber($format, $id, $programmeAbbr, $student['preferred_intake'] ?? null);
             try {
                 $portalModel->assignAdmissionNumber($id, $admissionNumber);
                 $assigned++;
@@ -2371,13 +2417,21 @@ class AdminContentController extends Controller
         }
     }
 
-    private function buildAdmissionNumber(string $format, int $studentId, ?string $programmeAbbr = null): string
+    private function buildAdmissionNumber(string $format, int $studentId, ?string $programmeAbbr = null, ?string $intakeMonth = null): string
     {
         $year = date('Y');
         $shortYear = date('y');
-        $month = date('m');
-        $monthName = strtoupper(date('M'));
-        $monthInitial = strtoupper(substr(date('F'), 0, 1));
+
+        // Use the selected intake month if provided; fall back to current month
+        if ($intakeMonth && ($ts = strtotime('1 ' . $intakeMonth . ' 2000')) !== false) {
+            $month = date('m', $ts);
+            $monthName = strtoupper(date('M', $ts));
+            $monthInitial = strtoupper(substr(date('F', $ts), 0, 1));
+        } else {
+            $month = date('m');
+            $monthName = strtoupper(date('M'));
+            $monthInitial = strtoupper(substr(date('F'), 0, 1));
+        }
         $seq2 = str_pad((string)$studentId, 2, '0', STR_PAD_LEFT);
         $seq3 = str_pad((string)$studentId, 3, '0', STR_PAD_LEFT);
         $seq4 = str_pad((string)$studentId, 4, '0', STR_PAD_LEFT);
