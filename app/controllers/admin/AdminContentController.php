@@ -182,6 +182,12 @@ class AdminContentController extends Controller
         if (in_array($entity, ['testimonials', 'social_updates'], true)) {
             $viewData['settings'] = $model->getSettings();
         }
+        // For portal_courses, fetch programmes and teachers for display
+        if ($entity === 'portal_courses') {
+            $viewData['programmes'] = $model->all('programmes');
+            $users = $model->all('users');
+            $viewData['teachers'] = array_values(array_filter($users, static fn($user) => (string)($user['role'] ?? '') === 'teacher'));
+        }
         $this->view('admin/list', $viewData);
     }
 

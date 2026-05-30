@@ -26,6 +26,10 @@
         $maxLength = 60;
         // Columns to hide completely from the table (reduce row height, minimize scroll)
         $hiddenColumns = ['body', 'image_path', 'image', 'file_path', 'featured_image', 'social_updates_embed'];
+        // Entity-specific hidden columns
+        $entityHiddenColumns = [
+            'portal_courses' => ['programme_id', 'teacher_id', 'created_at', 'description'],
+        ];
         $entityDisplayNames = [
             'portal_courses' => 'Portal Units',
             'course_grades' => 'Unit Grades',
@@ -36,6 +40,8 @@
                 'code' => 'Unit Code',
                 'title' => 'Unit Title',
                 'course_id' => 'Unit',
+                'programme_abbreviation' => 'Programme',
+                'teacher_name' => 'Teacher',
             ],
             'course_grades' => [
                 'course_id' => 'Unit',
@@ -74,13 +80,18 @@
                         <?php
                         $headerClass = $columnClassMap[(string)$h] ?? 'col-md';
                         $skipColumn = (($entity === 'programmes') && in_array((string)$h, ['description', 'slug'], true))
-                            || in_array((string)$h, $hiddenColumns, true);
+                            || in_array((string)$h, $hiddenColumns, true)
+                            || in_array((string)$h, $entityHiddenColumns[$entity] ?? [], true);
                         $headerText = $columnHeaderMap[$entity][(string)$h] ?? $h;
                         ?>
                         <?php if (!$skipColumn): ?>
                         <th class="<?= e($headerClass) ?>"><?= e($headerText) ?></th>
                         <?php endif; ?>
                     <?php endforeach; endif; ?>
+                    <?php if ($entity === 'portal_courses'): ?>
+                        <th class="col-sm"><?= e($columnHeaderMap[$entity]['programme_abbreviation'] ?? 'Programme') ?></th>
+                        <th class="col-sm"><?= e($columnHeaderMap[$entity]['teacher_name'] ?? 'Teacher') ?></th>
+                    <?php endif; ?>
                     <th class="col-sm">Visibility</th>
                     <th class="col-actions">Actions</th>
                 </tr>
@@ -94,7 +105,8 @@
                         $cellClass = $columnClassMap[$key] ?? 'col-md';
                         $fullValue = (string)$v;
                         $skipColumn = (($entity === 'programmes') && in_array($key, ['description', 'slug'], true))
-                            || in_array($key, $hiddenColumns, true);
+                            || in_array($key, $hiddenColumns, true)
+                            || in_array($key, $entityHiddenColumns[$entity] ?? [], true);
                         if ($skipColumn) continue;
                         ?>
                         <td class="<?= e($cellClass) ?>" title="<?= e($key === 'password' ? '' : $fullValue) ?>">
@@ -128,6 +140,34 @@
                             <?php endif; ?>
                         </td>
                     <?php endforeach; ?>
+                    <?php if ($entity === 'portal_courses'): ?>
+                        <td class="col-sm">
+                            <?php
+                            $programmeId = $row['programme_id'] ?? 0;
+                            $programmeAbbreviation = '-';
+                            foreach (($programmes ?? []) as $prog) {
+                                if ((string)$prog['id'] === (string)$programmeId) {
+                                    $programmeAbbreviation = $prog['abbreviation'] ?? $prog['name'] ?? '-';
+                                    break;
+                                }
+                            }
+                            echo e($programmeAbbreviation);
+                            ?>
+                        </td>
+                        <td class="col-sm">
+                            <?php
+                            $teacherId = $row['teacher_id'] ?? 0;
+                            $teacherName = '-';
+                            foreach (($teachers ?? []) as $teacher) {
+                                if ((string)$teacher['id'] === (string)$teacherId) {
+                                    $teacherName = $teacher['name'] ?? '-';
+                                    break;
+                                }
+                            }
+                            echo e($teacherName);
+                            ?>
+                        </td>
+                    <?php endif; ?>
                         <td class="col-sm"><?php
                             $hiddenIds = $hiddenIds ?? [];
                             // For entities with is_visible column, use that as source of truth
