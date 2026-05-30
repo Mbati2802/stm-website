@@ -104,17 +104,21 @@ if ($isEdit && empty($selectedProgrammeIds)) {
     // Fallback to legacy single programme_id if no junction table data
     $selectedProgrammeIds = $row['programme_id'] ? [$row['programme_id']] : [];
 }
+$selectedIds = array_map('strval', $selectedProgrammeIds);
 ?>
 <div class="col-md-6">
-    <label class="form-label">Programmes <span class="text-muted">(Hold Ctrl/Cmd to select multiple)</span></label>
-    <select name="programme_ids[]" class="form-select" multiple size="4" required>
+    <label class="form-label">Programmes <span class="text-danger">*</span></label>
+    <div class="border rounded p-3" style="max-height:200px; overflow-y:auto;">
         <?php foreach(($programmes ?? []) as $programme): ?>
-            <option value="<?= e((string)$programme['id']) ?>" <?= in_array((string)$programme['id'], array_map('strval', $selectedProgrammeIds), true) ? 'selected' : '' ?>>
-                <?= e((string)$programme['name']) ?> (<?= e((string)$programme['abbreviation']) ?>)
-            </option>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="programme_ids[]" value="<?= e((string)$programme['id']) ?>" id="prog_<?= e((string)$programme['id']) ?>" <?= in_array((string)$programme['id'], $selectedIds, true) ? 'checked' : '' ?>>
+                <label class="form-check-label" for="prog_<?= e((string)$programme['id']) ?>">
+                    <?= e((string)$programme['name']) ?> <span class="text-muted">(<?= e((string)$programme['abbreviation']) ?>)</span>
+                </label>
+            </div>
         <?php endforeach; ?>
-    </select>
-    <small class="text-muted">This unit will be available to students in all selected programmes</small>
+    </div>
+    <small class="text-muted">Select all programmes that share this unit</small>
 </div>
 <div class="col-md-6"><label class="form-label">Teacher</label><select name="teacher_id" class="form-select"><option value="">Select teacher (optional)</option><?php foreach(($teachers ?? []) as $teacher): ?><option value="<?= e((string)$teacher['id']) ?>" <?= ((string)($row['teacher_id'] ?? '') === (string)$teacher['id']) ? 'selected' : '' ?>><?= e((string)$teacher['name']) ?> (<?= e((string)$teacher['email']) ?>)</option><?php endforeach; ?></select></div>
 <div class="col-md-4"><label class="form-label">Unit Code</label><input name="code" class="form-control" value="<?= e($row['code'] ?? '') ?>" placeholder="MCH-101"></div>
