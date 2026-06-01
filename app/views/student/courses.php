@@ -8,24 +8,22 @@
                 <div class="alert alert-info mb-0">No units are currently available. Please check with your administrator.</div>
             <?php else: ?>
                 <div class="table-responsive admin-table-card">
-                    <table class="table align-middle admin-table">
+                    <table class="table align-middle admin-table student-mobile-table">
                         <thead>
                             <tr>
                                 <th>Code</th>
                                 <th>Unit</th>
                                 <th>Programme</th>
                                 <th>Teacher</th>
-                                <th>Description</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($courses as $course): ?>
                                 <tr>
-                                    <td><?= e((string)($course['code'] ?? 'N/A')) ?></td>
-                                    <td><?= e((string)($course['title'] ?? '')) ?></td>
-                                    <td><?= e((string)($course['programme_name'] ?? 'General')) ?></td>
-                                    <td><?= e((string)($course['teacher_name'] ?? 'Unassigned')) ?></td>
-                                    <td><?= e((string)($course['description'] ?? '')) ?></td>
+                                    <td data-label="Code"><strong><?= e((string)($course['code'] ?? 'N/A')) ?></strong></td>
+                                    <td data-label="Unit"><?= e((string)($course['title'] ?? '')) ?></td>
+                                    <td data-label="Programme"><?= e((string)($course['programme_name'] ?? 'General')) ?></td>
+                                    <td data-label="Teacher"><i class="bi bi-person me-1 text-muted"></i><?= e((string)($course['teacher_name'] ?? 'Unassigned')) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>

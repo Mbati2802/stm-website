@@ -14,8 +14,8 @@ $studentPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '');
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="<?= e(base_url('assets/css/styles.css')) ?>" rel="stylesheet">
-    <link href="<?= e(base_url('assets/css/student-portal.css')) ?>" rel="stylesheet">
+    <link href="<?= e(base_url('assets/css/styles.css')) ?>?v=3" rel="stylesheet">
+    <link href="<?= e(base_url('assets/css/student-portal.css')) ?>?v=3" rel="stylesheet">
     <link rel="icon" href="<?= e(base_url('assets/images/logo.png')) ?>" type="image/png">
 </head>
 <body class="student-portal">
@@ -225,7 +225,7 @@ $studentPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '');
                 <i class="bi bi-megaphone"></i>
                 <span>News</span>
             </a>
-            <a href="<?= e(base_url('portal/events')) ?>" class="student-more-nav-item <?= str_contains($studentPath, 'portal/events') ? 'active' : '' ?>">
+            <a href="<?= e(base_url('portal/events')) ?>" class="student-more-menu-item <?= str_contains($studentPath, 'portal/events') ? 'active' : '' ?>">
                 <i class="bi bi-calendar-event"></i>
                 <span>Events</span>
             </a>
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Compact group toggles on sidebar
+    // Compact group toggles on sidebar - Accordion behavior
     document.querySelectorAll('.student-nav-group').forEach(function (group, index) {
         const toggleBtn = group.querySelector('.student-nav-group-toggle');
         const links = group.querySelector('.student-nav-group-links');
@@ -330,7 +330,17 @@ document.addEventListener('DOMContentLoaded', function () {
             group.classList.add('collapsed');
         }
         toggleBtn.addEventListener('click', function () {
-            group.classList.toggle('collapsed');
+            const isCollapsed = group.classList.contains('collapsed');
+            
+            // Close all other groups (accordion behavior)
+            document.querySelectorAll('.student-nav-group').forEach(function(otherGroup) {
+                if (otherGroup !== group) {
+                    otherGroup.classList.add('collapsed');
+                }
+            });
+            
+            // Toggle current group
+            group.classList.toggle('collapsed', !isCollapsed);
         });
     });
 

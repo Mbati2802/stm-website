@@ -38,7 +38,7 @@
                 <p class="text-muted mb-0">No invoices found.</p>
             <?php else: ?>
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover student-mobile-table">
                         <thead>
                             <tr>
                                 <th>Invoice #</th>
@@ -54,14 +54,14 @@
                         <tbody>
                             <?php foreach ($invoices as $invoice): ?>
                                 <tr>
-                                    <td><strong><?= e($invoice['invoice_number']) ?></strong></td>
-                                    <td><?= e($invoice['title']) ?></td>
-                                    <td>KES <?= number_format($invoice['amount'], 2) ?></td>
-                                    <td class="text-success">KES <?= number_format($invoice['paid_amount'], 2) ?></td>
-                                    <td class="<?= $invoice['balance'] > 0 ? 'text-danger' : 'text-success' ?>">
+                                    <td data-label="Invoice #"><strong><?= e($invoice['invoice_number']) ?></strong></td>
+                                    <td data-label="Title"><?= e($invoice['title']) ?></td>
+                                    <td data-label="Amount">KES <?= number_format($invoice['amount'], 2) ?></td>
+                                    <td data-label="Paid" class="text-success">KES <?= number_format($invoice['paid_amount'], 2) ?></td>
+                                    <td data-label="Balance" class="<?= $invoice['balance'] > 0 ? 'text-danger' : 'text-success' ?>">
                                         <strong>KES <?= number_format($invoice['balance'], 2) ?></strong>
                                     </td>
-                                    <td>
+                                    <td data-label="Status">
                                         <?php
                                         $statusClass = match($invoice['status']) {
                                             'paid' => 'bg-success',
@@ -73,8 +73,8 @@
                                         ?>
                                         <span class="badge <?= $statusClass ?>"><?= ucfirst($invoice['status']) ?></span>
                                     </td>
-                                    <td><?= e($invoice['due_date'] ?? '-') ?></td>
-                                    <td>
+                                    <td data-label="Due"><?= e($invoice['due_date'] ?? '-') ?></td>
+                                    <td data-label="Action">
                                         <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('student/invoice/' . $invoice['id'] . '?download=1')) ?>" target="_blank" title="Download Invoice"><i class="bi bi-download"></i></a>
                                     </td>
                                 </tr>
@@ -95,28 +95,28 @@
                 <p class="text-muted mb-0">No payment history found.</p>
             <?php else: ?>
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover student-mobile-table">
                         <thead>
                             <tr>
                                 <th>Payment #</th>
                                 <th>Invoice #</th>
                                 <th>Amount</th>
-                                <th>Payment Method</th>
-                                <th>Transaction/Cheque #</th>
-                                <th>Payment Date</th>
+                                <th>Method</th>
+                                <th>Reference</th>
+                                <th>Date</th>
                                 <th>Receipt</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($payments as $payment): ?>
                                 <tr>
-                                    <td><strong><?= e($payment['payment_number']) ?></strong></td>
-                                    <td><?= e($payment['invoice_number']) ?></td>
-                                    <td class="text-success fw-bold">KES <?= number_format($payment['amount'], 2) ?></td>
-                                    <td><?= e($payment['payment_method_name']) ?></td>
-                                    <td><?= e($payment['transaction_code'] ?? $payment['cheque_number'] ?? '-') ?></td>
-                                    <td><?= e($payment['payment_date']) ?></td>
-                                    <td>
+                                    <td data-label="Payment #"><strong><?= e($payment['payment_number']) ?></strong></td>
+                                    <td data-label="Invoice #"><?= e($payment['invoice_number']) ?></td>
+                                    <td data-label="Amount" class="text-success fw-bold">KES <?= number_format($payment['amount'], 2) ?></td>
+                                    <td data-label="Method"><?= e($payment['payment_method_name']) ?></td>
+                                    <td data-label="Ref"><?= e($payment['transaction_code'] ?? $payment['cheque_number'] ?? '-') ?></td>
+                                    <td data-label="Date"><?= e($payment['payment_date']) ?></td>
+                                    <td data-label="Receipt">
                                         <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('student/receipt/' . $payment['id'])) ?>" target="_blank" title="View Receipt"><i class="bi bi-eye"></i></a>
                                         <a class="btn btn-sm btn-outline-primary" href="<?= e(base_url('student/receipt/' . $payment['id'] . '?download=1')) ?>" target="_blank" title="Download Receipt"><i class="bi bi-download"></i></a>
                                     </td>
