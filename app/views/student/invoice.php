@@ -328,10 +328,10 @@
     <!-- html2pdf.js library for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
-    <!-- Debug info display -->
-    <div id="errorDisplay" style="position: fixed; top: 10px; left: 10px; right: 10px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 5px; padding: 15px; font-family: monospace; font-size: 12px; z-index: 9999; display: none; max-height: 200px; overflow-y: auto;">
+    <!-- Debug info display - ALWAYS VISIBLE FOR TESTING -->
+    <div id="errorDisplay" style="position: fixed; top: 10px; left: 10px; right: 10px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 5px; padding: 15px; font-family: monospace; font-size: 12px; z-index: 9999; display: block; max-height: 200px; overflow-y: auto;">
         <strong>Debug Info:</strong>
-        <div id="errorMessage"></div>
+        <div id="errorMessage">Initializing...</div>
         <button onclick="document.getElementById('errorDisplay').style.display='none'" style="margin-top: 10px; padding: 5px 10px;">Close</button>
     </div>
     
@@ -346,6 +346,9 @@
             console.log(msg);
             document.getElementById('errorMessage').innerHTML += '<br>' + msg;
         }
+        
+        // IMMEDIATE TEST - show box is working
+        document.getElementById('errorMessage').innerHTML = 'Page loaded. Testing debug box...';
         
         // Check if library loaded
         showDebug('Checking html2pdf library...');
