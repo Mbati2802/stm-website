@@ -161,6 +161,8 @@ $router->add('POST', 'admin/course-grades/bulk-save', [AdminContentController::c
 
 // Grading System - Bulk Apply Grade Ranges (must be before generic entity routes)
 $router->add('POST', 'admin/grading/grade-range/bulk-apply', [GradingController::class, 'bulkApplyGradeRanges']);
+$router->add('POST', 'admin/grading/grading-system/edit', [GradingController::class, 'editGradingSystem']);
+$router->add('POST', 'admin/grading/grade-range/edit', [GradingController::class, 'editGradeRange']);
 
 $router->add('GET', 'admin/list/{entity}', [AdminContentController::class, 'list']);
 $router->add('GET', 'admin/create/{entity}', [AdminContentController::class, 'create']);

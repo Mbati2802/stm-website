@@ -490,6 +490,7 @@
             examModal.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
                 const id = button.getAttribute('data-id');
+                const form = examModal.querySelector('form');
 
                 if (id) {
                     document.getElementById('examModalTitle').textContent = 'Edit Exam';
@@ -498,6 +499,8 @@
                     document.getElementById('examExamTypeId').value = button.getAttribute('data-exam-type-id');
                     document.getElementById('examDescription').value = button.getAttribute('data-description') || '';
                     document.getElementById('examIsDefault').checked = button.getAttribute('data-is-default') === '1';
+                    // Change form action to edit endpoint
+                    form.action = '<?= e(base_url('admin/grading/grading-system/edit')) ?>';
                 } else {
                     document.getElementById('examModalTitle').textContent = 'Add Exam';
                     document.getElementById('examId').value = '';
@@ -505,6 +508,8 @@
                     document.getElementById('examExamTypeId').value = '';
                     document.getElementById('examDescription').value = '';
                     document.getElementById('examIsDefault').checked = false;
+                    // Change form action to create endpoint
+                    form.action = '<?= e(base_url('admin/grading/grading-system/create')) ?>';
                 }
             });
         }
@@ -514,6 +519,7 @@
             gradeRangeModal.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
                 const id = button.getAttribute('data-id');
+                const form = gradeRangeModal.querySelector('form');
 
                 document.getElementById('gradeRangeGradingSystemId').value = currentGradingSystemId;
 
@@ -525,6 +531,8 @@
                     document.getElementById('gradeRangeMaxMarks').value = button.getAttribute('data-max-marks');
                     document.getElementById('gradeRangeRemarks').value = button.getAttribute('data-remarks') || '';
                     document.getElementById('gradeRangeGpaValue').value = button.getAttribute('data-gpa-value') || '';
+                    // Change form action to edit endpoint
+                    form.action = '<?= e(base_url('admin/grading/grade-range/edit')) ?>';
                 } else {
                     document.getElementById('gradeRangeModalTitle').textContent = 'Add Grade Range';
                     document.getElementById('gradeRangeId').value = '';
@@ -533,6 +541,8 @@
                     document.getElementById('gradeRangeMaxMarks').value = '';
                     document.getElementById('gradeRangeRemarks').value = '';
                     document.getElementById('gradeRangeGpaValue').value = '';
+                    // Change form action to create endpoint
+                    form.action = '<?= e(base_url('admin/grading/grade-range/add')) ?>';
                 }
             });
         }
