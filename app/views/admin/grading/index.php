@@ -20,10 +20,11 @@
                     <table class="table align-middle">
                         <thead>
                             <tr>
+                                <th>ID</th>
                                 <th>Name</th>
                                 <th>Code</th>
                                 <th>Type</th>
-                                <th>Description</th>
+                                <th>Parent Exams</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -31,6 +32,7 @@
                         <tbody>
                             <?php foreach ($examTypes as $type): ?>
                             <tr>
+                                <td><span class="badge bg-light text-dark"><?= (int)$type['id'] ?></span></td>
                                 <td><?= e((string)$type['name']) ?></td>
                                 <td><code><?= e((string)$type['code']) ?></code></td>
                                 <td>
@@ -38,7 +40,13 @@
                                         <?= e((string)$type['type']) ?>
                                     </span>
                                 </td>
-                                <td><?= e((string)($type['description'] ?? '-')) ?></td>
+                                <td>
+                                    <?php if ($type['type'] === 'consolidated' && !empty($type['parent_exam_ids'])): ?>
+                                        <small class="text-muted"><?= e($type['parent_exam_ids']) ?></small>
+                                    <?php else: ?>
+                                        <span class="text-muted">-</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <span class="badge <?= $type['is_active'] ? 'bg-success' : 'bg-danger' ?>">
                                         <?= $type['is_active'] ? 'Active' : 'Inactive' ?>
@@ -209,7 +217,15 @@
                         <div class="mb-3" id="parentExamIdsDiv" style="display: none;">
                             <label class="form-label">Parent Exam IDs (JSON array)</label>
                             <input type="text" class="form-control" name="parent_exam_ids" id="parentExamIds" placeholder='[1, 2, 3]'>
-                            <small class="text-muted">For consolidated exams, enter IDs of exams to sum (e.g., [1, 2, 3])</small>
+                            <small class="text-muted">
+                                For consolidated exams, enter IDs from the table above (e.g., [1, 2, 3]). 
+                                <br>Available exam IDs: 
+                                <?php 
+                                $singleExams = array_filter($examTypes, fn($t) => $t['type'] === 'single');
+                                echo implode(', ', array_map(fn($t) => $t['id'] . '=' . $t['code'], array_slice($singleExams, 0, 5)));
+                                if (count($singleExams) > 5) echo '...';
+                                ?>
+                            </small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Description</label>
