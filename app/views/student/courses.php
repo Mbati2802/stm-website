@@ -13,7 +13,6 @@
                             <tr>
                                 <th>Code</th>
                                 <th>Unit</th>
-                                <th>Programme</th>
                                 <th>Teacher</th>
                             </tr>
                         </thead>
@@ -22,7 +21,6 @@
                                 <tr>
                                     <td data-label="Code"><strong><?= e((string)($course['code'] ?? 'N/A')) ?></strong></td>
                                     <td data-label="Unit"><?= e((string)($course['title'] ?? '')) ?></td>
-                                    <td data-label="Programme"><?= e((string)($course['programme_name'] ?? 'General')) ?></td>
                                     <td data-label="Teacher"><i class="bi bi-person me-1 text-muted"></i><?= e((string)($course['teacher_name'] ?? 'Unassigned')) ?></td>
                                 </tr>
                             <?php endforeach; ?>
