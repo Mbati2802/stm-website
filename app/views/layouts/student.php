@@ -187,51 +187,11 @@ $studentPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '');
             <i class="bi bi-calendar-week"></i>
             <span>Schedule</span>
         </a>
-        <button class="student-bottom-nav-item" type="button" id="studentMoreMenuBtn" aria-label="More options">
-            <i class="bi bi-grid-3x3-gap"></i>
-            <span>Menu</span>
-        </button>
+        <a href="<?= e(base_url('portal/fees')) ?>" class="student-bottom-nav-item <?= str_contains($studentPath, 'portal/fees') ? 'active' : '' ?>">
+            <i class="bi bi-credit-card"></i>
+            <span>Fees</span>
+        </a>
     </nav>
-
-    <!-- Mobile More Menu Overlay -->
-    <div class="student-more-menu d-lg-none" id="studentMoreMenu">
-        <div class="student-more-menu-header">
-            <h5>Menu</h5>
-            <button class="btn btn-sm btn-link" id="closeMoreMenu" aria-label="Close menu">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </div>
-        <div class="student-more-menu-grid">
-            <a href="<?= e(base_url('portal/attendance')) ?>" class="student-more-menu-item <?= str_contains($studentPath, 'portal/attendance') ? 'active' : '' ?>">
-                <i class="bi bi-calendar-check"></i>
-                <span>Attendance</span>
-            </a>
-            <a href="<?= e(base_url('portal/assignments')) ?>" class="student-more-menu-item <?= str_contains($studentPath, 'portal/assignments') ? 'active' : '' ?>">
-                <i class="bi bi-file-earmark-text"></i>
-                <span>Assignments</span>
-            </a>
-            <a href="<?= e(base_url('portal/fees')) ?>" class="student-more-menu-item <?= str_contains($studentPath, 'portal/fees') ? 'active' : '' ?>">
-                <i class="bi bi-credit-card"></i>
-                <span>Fees</span>
-            </a>
-            <a href="<?= e(base_url('portal/library')) ?>" class="student-more-menu-item <?= str_contains($studentPath, 'portal/library') ? 'active' : '' ?>">
-                <i class="bi bi-journal-text"></i>
-                <span>Library</span>
-            </a>
-            <a href="<?= e(base_url('portal/announcements')) ?>" class="student-more-menu-item <?= str_contains($studentPath, 'portal/announcements') ? 'active' : '' ?>">
-                <i class="bi bi-megaphone"></i>
-                <span>News</span>
-            </a>
-            <a href="<?= e(base_url('portal/events')) ?>" class="student-more-menu-item <?= str_contains($studentPath, 'portal/events') ? 'active' : '' ?>">
-                <i class="bi bi-calendar-event"></i>
-                <span>Events</span>
-            </a>
-            <a href="<?= e(base_url('portal/profile')) ?>" class="student-more-menu-item <?= str_contains($studentPath, 'portal/profile') ? 'active' : '' ?>">
-                <i class="bi bi-person"></i>
-                <span>Profile</span>
-            </a>
-        </div>
-    </div>
 </div>
 <div class="student-sidebar-overlay" id="studentSidebarOverlay"></div>
 <?php endif; ?>
@@ -243,17 +203,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const toggle = document.getElementById('studentSidebarToggle');
     const mobileToggle = document.getElementById('studentMobileMenuToggle');
     const overlay = document.getElementById('studentSidebarOverlay');
-    const moreMenuBtn = document.getElementById('studentMoreMenuBtn');
-    const moreMenu = document.getElementById('studentMoreMenu');
-    const closeMoreMenu = document.getElementById('closeMoreMenu');
-    
+
     // Desktop sidebar toggle
     if (sidebar && toggle) {
         toggle.addEventListener('click', function () {
             document.body.classList.toggle('student-sidebar-collapsed');
         });
     }
-    
+
     // Mobile sidebar toggle (from mobile header)
     if (sidebar && mobileToggle) {
         mobileToggle.addEventListener('click', function () {
@@ -262,56 +219,24 @@ document.addEventListener('DOMContentLoaded', function () {
             document.body.classList.toggle('mobile-menu-open');
         });
     }
-    
+
     // Close sidebar when clicking overlay
     if (overlay) {
         overlay.addEventListener('click', function () {
             sidebar.classList.remove('show');
             overlay.classList.remove('show');
             document.body.classList.remove('mobile-menu-open');
-            if (moreMenu) {
-                moreMenu.classList.remove('show');
-            }
         });
     }
-    
+
     // Close sidebar on window resize to desktop
     window.addEventListener('resize', function () {
         if (window.innerWidth >= 992) {
             sidebar.classList.remove('show');
             overlay.classList.remove('show');
             document.body.classList.remove('mobile-menu-open');
-            if (moreMenu) {
-                moreMenu.classList.remove('show');
-            }
         }
     });
-
-    // More menu toggle
-    if (moreMenuBtn && moreMenu) {
-        moreMenuBtn.addEventListener('click', function () {
-            moreMenu.classList.toggle('show');
-            overlay.classList.toggle('show');
-        });
-    }
-
-    // Close more menu
-    if (closeMoreMenu && moreMenu) {
-        closeMoreMenu.addEventListener('click', function () {
-            moreMenu.classList.remove('show');
-            overlay.classList.remove('show');
-        });
-    }
-
-    // Close more menu when clicking a menu item
-    if (moreMenu) {
-        moreMenu.querySelectorAll('.student-more-menu-item').forEach(function(item) {
-            item.addEventListener('click', function() {
-                moreMenu.classList.remove('show');
-                overlay.classList.remove('show');
-            });
-        });
-    }
 
     // Compact group toggles on sidebar - Accordion behavior
     document.querySelectorAll('.student-nav-group').forEach(function (group, index) {
