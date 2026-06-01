@@ -157,6 +157,9 @@ $router->add('GET', 'admin/accounts/generate-receipt/{id}', [AccountsController:
 // Marks Entry - Students by enrollment endpoint
 $router->add('GET', 'admin/students/by-enrollment', [AdminContentController::class, 'getStudentsByEnrollment']);
 
+// Grading System - Bulk Apply Grade Ranges (must be before generic entity routes)
+$router->add('POST', 'admin/grading/grade-range/bulk-apply', [GradingController::class, 'bulkApplyGradeRanges']);
+
 $router->add('GET', 'admin/list/{entity}', [AdminContentController::class, 'list']);
 $router->add('GET', 'admin/create/{entity}', [AdminContentController::class, 'create']);
 $router->add('POST', 'admin/create/{entity}', [AdminContentController::class, 'store']);
@@ -186,9 +189,6 @@ $router->add('GET', 'cron/social-fetch', [AdminContentController::class, 'cronSo
 $router->add('GET', 'admin/internal-messages', [AdminContentController::class, 'internalMessages']);
 $router->add('POST', 'admin/internal-messages/send', [AdminContentController::class, 'sendInternalMessage']);
 $router->add('GET', 'admin/applications', [AdminContentController::class, 'applications']);
-
-// Grading System - Bulk Apply Grade Ranges
-$router->add('POST', 'admin/grading/grade-range/bulk-apply', [GradingController::class, 'bulkApplyGradeRanges']);
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
 $basePath = dirname($_SERVER['SCRIPT_NAME']);
