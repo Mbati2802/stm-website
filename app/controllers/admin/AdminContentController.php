@@ -2354,15 +2354,18 @@ class AdminContentController extends Controller
                 $gradeResult = $gradeLookup->fetch(PDO::FETCH_ASSOC);
                 $grade = $gradeResult['grade_letter'] ?? null;
 
+                $marksPercentage = $mark['marks_percentage'] ?? null;
+
                 if ($existing) {
                     // Update existing grade
                     $updateStmt = $pdo->prepare('
                         UPDATE course_grades 
-                        SET marks = ?, grade = ?, grading_system_id = ? 
+                        SET marks = ?, marks_percentage = ?, grade = ?, grading_system_id = ? 
                         WHERE id = ?
                     ');
                     $updateStmt->execute([
                         $mark['marks'],
+                        $marksPercentage,
                         $grade,
                         $mark['grading_system_id'],
                         $existing['id']
@@ -2371,8 +2374,8 @@ class AdminContentController extends Controller
                     // Insert new grade
                     $insertStmt = $pdo->prepare('
                         INSERT INTO course_grades 
-                        (student_id, course_id, exam_type_id, academic_session_id, term_id, marks, grade, grading_system_id, created_at) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                        (student_id, course_id, exam_type_id, academic_session_id, term_id, marks, marks_percentage, grade, grading_system_id, created_at) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
                     ');
                     $insertStmt->execute([
                         $mark['student_id'],
@@ -2381,6 +2384,7 @@ class AdminContentController extends Controller
                         $mark['academic_session_id'],
                         $mark['term_id'],
                         $mark['marks'],
+                        $marksPercentage,
                         $grade,
                         $mark['grading_system_id']
                     ]);

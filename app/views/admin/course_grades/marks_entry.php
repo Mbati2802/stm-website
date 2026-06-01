@@ -285,10 +285,11 @@ document.addEventListener('DOMContentLoaded', function() {
         window.exams.forEach(exam => {
             // Only show columns for non-consolidated exam types
             if (exam.type !== 'consolidated') {
-                headerHTML += `<th>${exam.name}</th>`;
+                const maxMarks = exam.max_marks || 100;
+                headerHTML += `<th>${exam.name}<br><small class="text-muted">(max: ${maxMarks})</small></th>`;
             }
         });
-        headerHTML += '<th>Total</th><th>Grade</th>';
+        headerHTML += '<th>Total %</th><th>Converted</th><th>Grade</th>';
         header.innerHTML = headerHTML;
         
         // Build rows
@@ -303,23 +304,29 @@ document.addEventListener('DOMContentLoaded', function() {
             window.exams.forEach(exam => {
                 // Only show input fields for non-consolidated exam types
                 if (exam.type !== 'consolidated') {
+                    const maxMarks = exam.max_marks || 100;
                     rowHTML += `
                         <td>
-                            <input type="number" 
-                                   class="form-control marks-input" 
-                                   data-exam-id="${exam.id}" 
-                                   data-student-id="${student.id}"
-                                   min="0" 
-                                   max="100" 
-                                   step="0.01" 
-                                   placeholder="0">
+                            <div class="input-group input-group-sm">
+                                <input type="number" 
+                                       class="form-control marks-input" 
+                                       data-exam-id="${exam.id}" 
+                                       data-student-id="${student.id}"
+                                       data-max-marks="${maxMarks}"
+                                       min="0" 
+                                       max="100" 
+                                       step="0.01" 
+                                       placeholder="%">
+                                <span class="input-group-text converted-marks" data-exam-id="${exam.id}">0/${maxMarks}</span>
+                            </div>
                         </td>
                     `;
                 }
             });
             
             rowHTML += `
-                    <td class="total-marks">0</td>
+                    <td class="total-percentage">0%</td>
+                    <td class="total-converted">0/100</td>
                     <td class="grade-display">-</td>
                 </tr>
             `;
@@ -337,27 +344,43 @@ document.addEventListener('DOMContentLoaded', function() {
     function calculateTotalAndGrade(e) {
         const row = e.target.closest('tr');
         const inputs = row.querySelectorAll('.marks-input');
-        let total = 0;
+        let totalPercentage = 0;
+        let totalConverted = 0;
+        let maxTotal = 0;
         
         inputs.forEach(input => {
-            total += parseFloat(input.value) || 0;
+            const percentage = parseFloat(input.value) || 0;
+            const maxMarks = parseFloat(input.dataset.maxMarks) || 100;
+            const converted = (percentage / 100) * maxMarks;
+            
+            // Update converted marks display
+            const convertedSpan = row.querySelector(`.converted-marks[data-exam-id="${input.dataset.examId}"]`);
+            if (convertedSpan) {
+                convertedSpan.textContent = converted.toFixed(1) + '/' + maxMarks;
+            }
+            
+            totalPercentage += percentage;
+            totalConverted += converted;
+            maxTotal += maxMarks;
         });
         
-        // Ensure total does not exceed 100
-        if (total > 100) {
-            total = 100;
+        // Ensure total percentage does not exceed 100
+        if (totalPercentage > 100) {
+            totalPercentage = 100;
         }
         
-        row.querySelector('.total-marks').textContent = total.toFixed(2);
+        // Display totals
+        row.querySelector('.total-percentage').textContent = totalPercentage.toFixed(1) + '%';
+        row.querySelector('.total-converted').textContent = totalConverted.toFixed(1) + '/' + maxTotal;
         
-        // Calculate grade using grade ranges from grading system
+        // Calculate grade using grade ranges from grading system (based on percentage)
         let grade = '-';
-        console.log('Calculating grade for total:', total, 'with grade ranges:', window.gradeRanges);
+        console.log('Calculating grade for total:', totalPercentage, 'with grade ranges:', window.gradeRanges);
         
         if (window.gradeRanges && window.gradeRanges.length > 0) {
             for (const range of window.gradeRanges) {
                 console.log(`Checking range: ${range.grade_letter}, min: ${range.min_marks}, max: ${range.max_marks}`);
-                if (total >= range.min_marks && total <= range.max_marks) {
+                if (totalPercentage >= range.min_marks && totalPercentage <= range.max_marks) {
                     grade = range.grade_letter;
                     console.log(`Grade assigned: ${grade}`);
                     break;
@@ -366,11 +389,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             console.log('No grade ranges loaded, using fallback calculation');
             // Fallback to simple grade calculation if no grade ranges loaded
-            if (total >= 70) grade = 'A';
-            else if (total >= 60) grade = 'B';
-            else if (total >= 50) grade = 'C';
-            else if (total >= 40) grade = 'D';
-            else if (total > 0) grade = 'F';
+            if (totalPercentage >= 70) grade = 'A';
+            else if (totalPercentage >= 60) grade = 'B';
+            else if (totalPercentage >= 50) grade = 'C';
+            else if (totalPercentage >= 40) grade = 'D';
+            else if (totalPercentage > 0) grade = 'F';
         }
         
         row.querySelector('.grade-display').textContent = grade;
@@ -398,13 +421,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const studentId = row.dataset.studentId;
             row.querySelectorAll('.marks-input').forEach(input => {
                 const examId = input.dataset.examId;
-                const marks = input.value;
-                if (marks) {
+                const percentage = parseFloat(input.value) || 0;
+                const maxMarks = parseFloat(input.dataset.maxMarks) || 100;
+                const converted = (percentage / 100) * maxMarks;
+                
+                if (percentage > 0) {
                     marksData.push({
                         student_id: studentId,
                         course_id: unitId,
                         exam_type_id: examId,
-                        marks: marks,
+                        marks: converted.toFixed(2),         // Converted marks (e.g., 5/10)
+                        marks_percentage: percentage.toFixed(2), // Original percentage (e.g., 50%)
                         academic_session_id: sessionId,
                         term_id: termId,
                         grading_system_id: window.defaultGradingSystemId

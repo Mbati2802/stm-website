@@ -48,6 +48,8 @@ class GradingController extends Controller
         $name = trim($_POST['name'] ?? '');
         $code = strtoupper(trim($_POST['code'] ?? ''));
         $type = $_POST['type'] ?? 'single';
+        $maxMarks = (float)($_POST['max_marks'] ?? 100);
+        $displayMode = $_POST['display_mode'] ?? 'converted';
         $parentExamIds = $_POST['parent_exam_ids'] ?? '';
         $description = trim($_POST['description'] ?? '');
 
@@ -56,10 +58,16 @@ class GradingController extends Controller
             $this->redirect('admin/grading');
         }
 
+        // Validate max_marks
+        if ($maxMarks <= 0 || $maxMarks > 100) {
+            flash('error', 'Maximum marks must be between 0.01 and 100.');
+            $this->redirect('admin/grading');
+        }
+
         try {
             $pdo = Database::getInstance($this->config['db']);
-            $stmt = $pdo->prepare('INSERT INTO exam_types (name, code, type, parent_exam_ids, description) VALUES (?, ?, ?, ?, ?)');
-            $stmt->execute([$name, $code, $type, $parentExamIds ?: null, $description ?: null]);
+            $stmt = $pdo->prepare('INSERT INTO exam_types (name, code, type, max_marks, display_mode, parent_exam_ids, description) VALUES (?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$name, $code, $type, $maxMarks, $displayMode, $parentExamIds ?: null, $description ?: null]);
             flash('success', 'Exam type created successfully.');
         } catch (PDOException $e) {
             flash('error', 'Failed to create exam type: ' . $e->getMessage());
@@ -79,6 +87,8 @@ class GradingController extends Controller
         $name = trim($_POST['name'] ?? '');
         $code = strtoupper(trim($_POST['code'] ?? ''));
         $type = $_POST['type'] ?? 'single';
+        $maxMarks = (float)($_POST['max_marks'] ?? 100);
+        $displayMode = $_POST['display_mode'] ?? 'converted';
         $parentExamIds = $_POST['parent_exam_ids'] ?? '';
         $description = trim($_POST['description'] ?? '');
 
@@ -87,10 +97,16 @@ class GradingController extends Controller
             $this->redirect('admin/grading');
         }
 
+        // Validate max_marks
+        if ($maxMarks <= 0 || $maxMarks > 100) {
+            flash('error', 'Maximum marks must be between 0.01 and 100.');
+            $this->redirect('admin/grading');
+        }
+
         try {
             $pdo = Database::getInstance($this->config['db']);
-            $stmt = $pdo->prepare('UPDATE exam_types SET name = ?, code = ?, type = ?, parent_exam_ids = ?, description = ? WHERE id = ?');
-            $stmt->execute([$name, $code, $type, $parentExamIds ?: null, $description ?: null, $id]);
+            $stmt = $pdo->prepare('UPDATE exam_types SET name = ?, code = ?, type = ?, max_marks = ?, display_mode = ?, parent_exam_ids = ?, description = ? WHERE id = ?');
+            $stmt->execute([$name, $code, $type, $maxMarks, $displayMode, $parentExamIds ?: null, $description ?: null, $id]);
             flash('success', 'Exam type updated successfully.');
         } catch (PDOException $e) {
             flash('error', 'Failed to update exam type: ' . $e->getMessage());
@@ -427,7 +443,7 @@ class GradingController extends Controller
         try {
             $pdo = Database::getInstance($this->config['db']);
             $stmt = $pdo->query('
-                SELECT gs.*, et.type, et.name as exam_type_name
+                SELECT gs.*, et.type, et.name as exam_type_name, et.max_marks, et.display_mode
                 FROM grading_systems gs
                 LEFT JOIN exam_types et ON gs.exam_type_id = et.id
                 WHERE gs.is_active = 1
