@@ -378,15 +378,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 converted = (percentage / 100) * maxMarks;
             }
             
-            totalPercentage += percentage;
             totalConverted += converted;
             maxTotal += maxMarks;
         });
         
-        // Ensure total percentage does not exceed 100
-        if (totalPercentage > 100) {
-            totalPercentage = 100;
-        }
+        // Calculate actual percentage based on total marks / total max marks
+        const actualPercentage = maxTotal > 0 ? (totalConverted / maxTotal) * 100 : 0;
         
         // Round total converted marks to nearest whole number
         const totalRounded = Math.round(totalConverted);
@@ -394,15 +391,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // Display total marks (as whole number)
         row.querySelector('.total-marks').textContent = totalRounded;
         
-        // Calculate grade using grade ranges from default grading system (based on percentage)
+        // Calculate grade using grade ranges from default grading system (based on actual percentage)
         // The grade ranges define the scale (e.g., A = 80-100%, B = 70-79%, etc.)
         let grade = '-';
-        console.log('Calculating grade for total %:', totalPercentage, 'with grade ranges:', window.gradeRanges);
+        console.log('Calculating grade for actual %:', actualPercentage.toFixed(2), 'with grade ranges:', window.gradeRanges);
         
         if (window.gradeRanges && window.gradeRanges.length > 0) {
             for (const range of window.gradeRanges) {
                 console.log(`Checking range: ${range.grade_letter}, min: ${range.min_marks}%, max: ${range.max_marks}%`);
-                if (totalPercentage >= range.min_marks && totalPercentage <= range.max_marks) {
+                if (actualPercentage >= range.min_marks && actualPercentage <= range.max_marks) {
                     grade = range.grade_letter;
                     console.log(`Grade assigned: ${grade}`);
                     break;
@@ -411,11 +408,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             console.log('No grade ranges loaded, using fallback calculation');
             // Fallback to simple grade calculation if no grade ranges loaded
-            if (totalPercentage >= 70) grade = 'A';
-            else if (totalPercentage >= 60) grade = 'B';
-            else if (totalPercentage >= 50) grade = 'C';
-            else if (totalPercentage >= 40) grade = 'D';
-            else if (totalPercentage > 0) grade = 'F';
+            if (actualPercentage >= 70) grade = 'A';
+            else if (actualPercentage >= 60) grade = 'B';
+            else if (actualPercentage >= 50) grade = 'C';
+            else if (actualPercentage >= 40) grade = 'D';
+            else if (actualPercentage > 0) grade = 'F';
         }
         
         row.querySelector('.grade-display').textContent = grade;
