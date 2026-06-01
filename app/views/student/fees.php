@@ -75,7 +75,7 @@
                                     </td>
                                     <td data-label="Due"><?= e($invoice['due_date'] ?? '-') ?></td>
                                     <td data-label="Download Invoice">
-                                        <a class="btn btn-sm btn-primary w-100" href="<?= e(base_url('student/invoice/' . $invoice['id'] . '?download=1')) ?>" target="_blank" onclick="event.stopPropagation();">
+                                        <a class="btn btn-sm btn-primary w-100" href="<?= e(base_url('student/invoice/' . $invoice['id'] . '?download=1')) ?>" onclick="event.stopPropagation();">
                                             <i class="bi bi-download me-1"></i> Download
                                         </a>
                                     </td>

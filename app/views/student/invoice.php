@@ -20,12 +20,34 @@
             margin-bottom: 20px;
         }
         .btn {
-            padding: 10px 20px;
+            padding: 12px 24px;
             margin: 0 5px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            background: #f0f0f0;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            background: #e0e0e0;
+        }
+        .btn-primary {
+            background: #185490;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #124070;
+        }
+        .btn-back {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-back:hover {
+            background: #5a6268;
         }
         .invoice-container {
             max-width: 800px;
@@ -190,8 +212,9 @@
 </head>
 <body>
     <div class="btn-group">
+        <a href="<?= e(base_url('portal/fees')) ?>" class="btn btn-back">← Back to Fees</a>
         <button class="btn" onclick="window.print()">Print Invoice</button>
-        <button class="btn" onclick="downloadPDF()">Download PDF</button>
+        <button class="btn btn-primary" onclick="downloadPDF()">Download PDF</button>
     </div>
     
     <div class="invoice-container">
