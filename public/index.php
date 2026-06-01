@@ -126,6 +126,8 @@ $router->add('POST', 'portal/support', [StudentPortalController::class, 'submitS
 
 // Student Portal - Account Section
 $router->add('GET', 'portal/profile', [StudentPortalController::class, 'profile']);
+$router->add('GET', 'portal/profile/edit', [StudentPortalController::class, 'editProfile']);
+$router->add('POST', 'portal/profile/update', [StudentPortalController::class, 'updateProfile']);
 $router->add('GET', 'portal/settings', [StudentPortalController::class, 'settings']);
 
 $router->add('GET', $adminLoginSlug, [AdminAuthController::class, 'login']);

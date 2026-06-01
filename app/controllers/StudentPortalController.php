@@ -580,7 +580,7 @@ class StudentPortalController extends Controller
     {
         $student = $this->requireStudent();
         $model = new StudentPortalModel($this->config);
-        
+
         // Fetch programme information
         $programmeName = '';
         if (!empty($student['programme_id'])) {
@@ -589,12 +589,120 @@ class StudentPortalController extends Controller
             $programme = $stmt->fetch(PDO::FETCH_ASSOC);
             $programmeName = $programme['name'] ?? '';
         }
-        
+
         $this->view('student/profile', [
             'metaTitle' => 'Student Portal - Profile',
             'student' => $student,
             'programmeName' => $programmeName,
+            'editMode' => false,
         ], 'student');
+    }
+
+    public function editProfile(): void
+    {
+        $student = $this->requireStudent();
+        $model = new StudentPortalModel($this->config);
+
+        // Fetch programme information
+        $programmeName = '';
+        if (!empty($student['programme_id'])) {
+            $stmt = $this->pdo->prepare('SELECT name FROM programmes WHERE id = ? LIMIT 1');
+            $stmt->execute([(int)$student['programme_id']]);
+            $programme = $stmt->fetch(PDO::FETCH_ASSOC);
+            $programmeName = $programme['name'] ?? '';
+        }
+
+        $this->view('student/profile', [
+            'metaTitle' => 'Student Portal - Edit Profile',
+            'student' => $student,
+            'programmeName' => $programmeName,
+            'editMode' => true,
+        ], 'student');
+    }
+
+    public function updateProfile(): void
+    {
+        $student = $this->requireStudent();
+        $model = new StudentPortalModel($this->config);
+
+        // Get and validate input
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+        $nationalId = trim($_POST['national_id'] ?? '');
+        $county = trim($_POST['county'] ?? '');
+        $subCounty = trim($_POST['sub_county'] ?? '');
+
+        // Validation
+        $errors = [];
+
+        if ($name === '') {
+            $errors[] = 'Name is required.';
+        }
+
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Valid email address is required.';
+        }
+
+        if ($phone === '') {
+            $errors[] = 'Phone number is required.';
+        }
+
+        if ($nationalId === '') {
+            $errors[] = 'National ID is required.';
+        }
+
+        if ($county === '') {
+            $errors[] = 'County is required.';
+        }
+
+        if ($subCounty === '') {
+            $errors[] = 'Sub County is required.';
+        }
+
+        // Check if email is already used by another student
+        if ($email !== $student['email']) {
+            $existing = $model->findStudentByEmail($email);
+            if ($existing && $existing['id'] != $student['id']) {
+                $errors[] = 'This email address is already registered.';
+            }
+        }
+
+        // Check if national ID is already used by another student
+        if ($nationalId !== $student['national_id']) {
+            $existing = $model->findStudentByNationalId($nationalId);
+            if ($existing && $existing['id'] != $student['id']) {
+                $errors[] = 'This National ID is already registered.';
+            }
+        }
+
+        if (!empty($errors)) {
+            flash('error', implode(' ', $errors));
+            $this->redirect('portal/profile/edit');
+            return;
+        }
+
+        // Update profile
+        $data = [
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'national_id' => $nationalId,
+            'county' => $county,
+            'sub_county' => $subCounty,
+        ];
+
+        if ($model->updateStudentProfile((int)$student['id'], $data)) {
+            // Update session data
+            $_SESSION['student_name'] = $name;
+            $_SESSION['student_email'] = $email;
+
+            flash('success', 'Profile updated successfully.');
+            $this->redirect('portal/profile');
+        } else {
+            flash('error', 'Failed to update profile. Please try again.');
+            $this->redirect('portal/profile/edit');
+        }
     }
 
     public function settings(): void

@@ -151,6 +151,31 @@ class StudentPortalModel
         $stmt->execute(['password' => $passwordHash, 'id' => $studentId]);
     }
 
+    public function updateStudentProfile(int $studentId, array $data): bool
+    {
+        $stmt = $this->pdo->prepare(<<<SQL
+            UPDATE student_accounts SET
+                name = :name,
+                email = :email,
+                phone = :phone,
+                national_id = :national_id,
+                county = :county,
+                sub_county = :sub_county,
+                updated_at = NOW()
+            WHERE id = :id
+        SQL);
+
+        return $stmt->execute([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'],
+            'national_id' => $data['national_id'],
+            'county' => $data['county'],
+            'sub_county' => $data['sub_county'],
+            'id' => $studentId,
+        ]);
+    }
+
     public function allStudents(): array
     {
         try {
