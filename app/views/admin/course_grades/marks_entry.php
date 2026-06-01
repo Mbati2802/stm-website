@@ -63,7 +63,14 @@
                 <h5 class="mb-0">Marks Entry</h5>
                 <small class="text-muted" id="unitNameDisplay"></small>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 align-items-center">
+                <div class="input-group input-group-sm" style="width: auto;">
+                    <span class="input-group-text">Enter as:</span>
+                    <select class="form-select" id="entryModeSelector" style="width: 140px;">
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="converted">Converted Marks</option>
+                    </select>
+                </div>
                 <button class="btn btn-sm btn-primary" id="refreshStudents">
                     <i class="bi bi-arrow-clockwise"></i> Refresh
                 </button>
@@ -280,13 +287,20 @@ document.addEventListener('DOMContentLoaded', function() {
         noStudentsMessage.style.display = 'none';
         table.style.display = 'table';
         
+        // Get current entry mode
+        const entryMode = document.getElementById('entryModeSelector')?.value || 'percentage';
+        
         // Build header with exams (exclude consolidated types as they are computed)
         let headerHTML = '<th>Admission No.</th><th>Student Name</th>';
         window.exams.forEach(exam => {
             // Only show columns for non-consolidated exam types
             if (exam.type !== 'consolidated') {
                 const maxMarks = exam.max_marks || 100;
-                headerHTML += `<th>${exam.name}<br><small class="text-muted">(max: ${maxMarks})</small></th>`;
+                if (entryMode === 'converted') {
+                    headerHTML += `<th>${exam.name}<br><small class="text-muted">(out of ${maxMarks})</small></th>`;
+                } else {
+                    headerHTML += `<th>${exam.name}<br><small class="text-muted">(max: ${maxMarks})</small></th>`;
+                }
             }
         });
         headerHTML += '<th>Total %</th><th>Converted</th><th>Grade</th>';
@@ -305,20 +319,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Only show input fields for non-consolidated exam types
                 if (exam.type !== 'consolidated') {
                     const maxMarks = exam.max_marks || 100;
+                    const placeholder = entryMode === 'converted' ? `0-${maxMarks}` : '0-100%';
+                    const maxValue = entryMode === 'converted' ? maxMarks : 100;
                     rowHTML += `
                         <td>
-                            <div class="input-group input-group-sm">
-                                <input type="number" 
-                                       class="form-control marks-input" 
-                                       data-exam-id="${exam.id}" 
-                                       data-student-id="${student.id}"
-                                       data-max-marks="${maxMarks}"
-                                       min="0" 
-                                       max="100" 
-                                       step="0.01" 
-                                       placeholder="%">
-                                <span class="input-group-text converted-marks" data-exam-id="${exam.id}">0/${maxMarks}</span>
-                            </div>
+                            <input type="number" 
+                                   class="form-control form-control-sm marks-input" 
+                                   data-exam-id="${exam.id}" 
+                                   data-student-id="${student.id}"
+                                   data-max-marks="${maxMarks}"
+                                   data-entry-mode="${entryMode}"
+                                   min="0" 
+                                   max="${maxValue}" 
+                                   step="0.01" 
+                                   placeholder="${placeholder}">
                         </td>
                     `;
                 }
@@ -347,16 +361,22 @@ document.addEventListener('DOMContentLoaded', function() {
         let totalPercentage = 0;
         let totalConverted = 0;
         let maxTotal = 0;
+        const entryMode = document.getElementById('entryModeSelector')?.value || 'percentage';
         
         inputs.forEach(input => {
-            const percentage = parseFloat(input.value) || 0;
+            const enteredValue = parseFloat(input.value) || 0;
             const maxMarks = parseFloat(input.dataset.maxMarks) || 100;
-            const converted = (percentage / 100) * maxMarks;
+            let percentage, converted;
             
-            // Update converted marks display
-            const convertedSpan = row.querySelector(`.converted-marks[data-exam-id="${input.dataset.examId}"]`);
-            if (convertedSpan) {
-                convertedSpan.textContent = converted.toFixed(1) + '/' + maxMarks;
+            // Convert based on entry mode
+            if (entryMode === 'converted') {
+                // User entered converted marks (e.g., 5 out of 10)
+                converted = enteredValue;
+                percentage = (converted / maxMarks) * 100;
+            } else {
+                // User entered percentage (e.g., 50%)
+                percentage = enteredValue;
+                converted = (percentage / 100) * maxMarks;
             }
             
             totalPercentage += percentage;
@@ -416,14 +436,26 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        const entryMode = document.getElementById('entryModeSelector')?.value || 'percentage';
         const marksData = [];
         document.querySelectorAll('#marksTableBody tr').forEach(row => {
             const studentId = row.dataset.studentId;
             row.querySelectorAll('.marks-input').forEach(input => {
                 const examId = input.dataset.examId;
-                const percentage = parseFloat(input.value) || 0;
+                const enteredValue = parseFloat(input.value) || 0;
                 const maxMarks = parseFloat(input.dataset.maxMarks) || 100;
-                const converted = (percentage / 100) * maxMarks;
+                let percentage, converted;
+                
+                // Convert based on entry mode
+                if (entryMode === 'converted') {
+                    // User entered converted marks directly
+                    converted = enteredValue;
+                    percentage = (converted / maxMarks) * 100;
+                } else {
+                    // User entered percentage
+                    percentage = enteredValue;
+                    converted = (percentage / 100) * maxMarks;
+                }
                 
                 if (percentage > 0) {
                     marksData.push({
@@ -484,5 +516,17 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Error saving marks: ' + error.message);
         });
     });
+
+    // Entry mode change listener - reload table when mode changes
+    const entryModeSelector = document.getElementById('entryModeSelector');
+    if (entryModeSelector) {
+        entryModeSelector.addEventListener('change', function() {
+            console.log('Entry mode changed to:', this.value);
+            // Reload students table with new mode
+            if (document.getElementById('marksEntryCard').style.display !== 'none') {
+                checkAndLoadStudents();
+            }
+        });
+    }
 });
 </script>
