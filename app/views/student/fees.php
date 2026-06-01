@@ -38,7 +38,7 @@
                 <p class="text-muted mb-0">No invoices found.</p>
             <?php else: ?>
                 <div class="table-responsive">
-                    <table class="table table-hover student-mobile-table">
+                    <table class="table student-mobile-table">
                         <thead>
                             <tr>
                                 <th>Invoice #</th>
@@ -74,10 +74,10 @@
                                         <span class="badge <?= $statusClass ?>"><?= ucfirst($invoice['status']) ?></span>
                                     </td>
                                     <td data-label="Due"><?= e($invoice['due_date'] ?? '-') ?></td>
-                                    <td data-label="Download Invoice">
-                                        <a class="btn btn-sm btn-primary w-100" href="<?= e(base_url('student/invoice/' . $invoice['id'] . '?download=1')) ?>" onclick="event.stopPropagation();">
+                                    <td data-label="Download Invoice" class="text-center">
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="window.open('<?= e(base_url('student/invoice/' . $invoice['id'] . '?download=1')) ?>', '_self');">
                                             <i class="bi bi-download me-1"></i> Download
-                                        </a>
+                                        </button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

@@ -989,6 +989,37 @@ body.student-portal{font-family:'Roboto',sans-serif;background:var(--student-lig
         margin-right: 0.5rem;
     }
     
+    /* Ensure buttons in mobile card tables are clickable */
+    .table-responsive table.table td .btn,
+    .admin-table-card .admin-table td .btn,
+    table.student-mobile-table td .btn {
+        position: relative !important;
+        z-index: 100 !important;
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        touch-action: manipulation !important;
+    }
+    
+    .table-responsive table.table td a,
+    .table-responsive table.table td button,
+    .admin-table-card .admin-table td a,
+    .admin-table-card .admin-table td button,
+    table.student-mobile-table td a,
+    table.student-mobile-table td button {
+        position: relative !important;
+        z-index: 100 !important;
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
+    }
+    
+    /* Ensure the data-label pseudo-element doesn't block clicks */
+    .table-responsive table.table td::before,
+    .admin-table-card .admin-table td::before,
+    table.student-mobile-table td::before {
+        pointer-events: none !important;
+        z-index: 1 !important;
+    }
+    
     /* Mobile table text sizes */
     .table {
         font-size: 0.85rem;
