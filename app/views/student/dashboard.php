@@ -1,29 +1,29 @@
-<section class="py-4">
-    <div class="student-content-wrap">
-        <!-- Welcome Header -->
-        <div class="student-card">
+<section class="py-3 py-lg-4">
+    <div class="student-content-wrap px-2 px-lg-0">
+        <!-- Welcome Header - Mobile Optimized -->
+        <div class="student-card mb-3 mb-lg-4">
             <div class="student-profile-header">
-                <div class="student-profile-info">
-                    <div class="student-avatar">
+                <div class="student-profile-info flex-wrap text-center text-lg-start">
+                    <div class="student-avatar mx-auto mx-lg-0 mb-2 mb-lg-0">
                         <i class="bi bi-person-fill"></i>
                     </div>
-                    <div class="student-details">
-                        <h3>Welcome back, <?= e($student['name'] ?? 'Student') ?>!</h3>
-                        <p><i class="bi bi-book me-2"></i><?= e($programmeName ?? 'Not assigned') ?></p>
-                        <p><i class="bi bi-geo-alt me-2"></i>Admission Number: <?= e($student['admission_number'] ?? 'Not assigned') ?></p>
+                    <div class="student-details w-100 w-lg-auto">
+                        <h3 class="h5 mb-1">Welcome back, <?= e($student['name'] ?? 'Student') ?>!</h3>
+                        <p class="mb-1 small"><i class="bi bi-book me-2"></i><?= e($programmeName ?? 'Not assigned') ?></p>
+                        <p class="mb-0 small"><i class="bi bi-geo-alt me-2"></i>Adm: <?= e($student['admission_number'] ?? 'Not assigned') ?></p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Stats -->
-        <div class="student-stats-grid">
+        <!-- Quick Stats - Responsive Grid -->
+        <div class="stats-grid mb-3 mb-lg-4">
             <div class="student-stat-card">
                 <div class="student-card-icon primary">
                     <i class="bi bi-book"></i>
                 </div>
                 <div class="student-stat-value"><?= count($courses ?? []) ?></div>
-                <div class="student-stat-label">Available Courses</div>
+                <div class="student-stat-label">Courses</div>
             </div>
             <div class="student-stat-card">
                 <div class="student-card-icon warning">
@@ -37,14 +37,14 @@
                     <i class="bi bi-megaphone"></i>
                 </div>
                 <div class="student-stat-value"><?= count($announcements ?? []) ?></div>
-                <div class="student-stat-label">Announcements</div>
+                <div class="student-stat-label">News</div>
             </div>
             <div class="student-stat-card">
                 <div class="student-card-icon danger">
                     <i class="bi bi-calendar-check"></i>
                 </div>
                 <div class="student-stat-value"><?= count($timetables ?? []) ?></div>
-                <div class="student-stat-label">Timetables</div>
+                <div class="student-stat-label">Schedule</div>
             </div>
         </div>
 
