@@ -154,6 +154,9 @@ $router->add('GET', 'admin/accounts/student-payments', [AccountsController::clas
 $router->add('GET', 'admin/accounts/student-payment-history/{id}', [AccountsController::class, 'studentPaymentHistory']);
 $router->add('GET', 'admin/accounts/generate-receipt/{id}', [AccountsController::class, 'generateReceipt']);
 
+// Marks Entry - Students by enrollment endpoint
+$router->add('GET', 'admin/students/by-enrollment', [AdminContentController::class, 'getStudentsByEnrollment']);
+
 $router->add('GET', 'admin/list/{entity}', [AdminContentController::class, 'list']);
 $router->add('GET', 'admin/create/{entity}', [AdminContentController::class, 'create']);
 $router->add('POST', 'admin/create/{entity}', [AdminContentController::class, 'store']);
