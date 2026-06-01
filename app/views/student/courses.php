@@ -8,7 +8,7 @@
                 <div class="alert alert-info mb-0">No units are currently available. Please check with your administrator.</div>
             <?php else: ?>
                 <div class="table-responsive admin-table-card">
-                    <table class="table align-middle admin-table student-mobile-table">
+                    <table class="table align-middle admin-table courses-keep-table">
                         <thead>
                             <tr>
                                 <th>Code</th>

@@ -239,35 +239,78 @@
     </div>
 
     <!-- html2pdf.js library for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3FKErD1K5w5U8WzjBXC3wJr8l/p7d4Gz0Nx2e16HtU0T5x8l1Tpr4HMKq+1nL5dX5d5Y5E5v5a5r5t5=" crossorigin="anonymous"></script>
     <script>
+        // Check if library loaded
+        if (typeof html2pdf === 'undefined') {
+            console.error('html2pdf.js library failed to load');
+        }
+        
         function downloadPDF() {
+            // Check if library is available
+            if (typeof html2pdf === 'undefined') {
+                alert('PDF library not loaded. Please refresh the page and try again.');
+                return;
+            }
+            
             // Get the receipt container element
             const element = document.querySelector('.receipt-container');
+            if (!element) {
+                console.error('Receipt container not found');
+                alert('Could not find receipt content.');
+                return;
+            }
+            
+            // Show loading feedback
+            const btn = document.querySelector('.btn-primary');
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating...';
+                btn.disabled = true;
+            }
             
             // Configure PDF options
             const opt = {
                 margin:       10,
                 filename:     'Receipt_<?= e($payment['payment_number']) ?>.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
             // Generate and download PDF
-            html2pdf().set(opt).from(element).save();
+            html2pdf().set(opt).from(element).save().then(function() {
+                // Success - restore button
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }).catch(function(error) {
+                // Error - restore button and show message
+                console.error('PDF generation error:', error);
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+                alert('Failed to generate PDF. Please try using Print instead.');
+            });
         }
         
         // Auto-trigger download on load if URL has download parameter
-        window.onload = function() {
+        window.addEventListener('load', function() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('download') === '1') {
-                // Wait for page to fully render, then download
+                // Wait for library to load and page to render
                 setTimeout(() => {
-                    downloadPDF();
-                }, 1000);
+                    if (typeof html2pdf !== 'undefined') {
+                        downloadPDF();
+                    } else {
+                        // Fallback to print if library not loaded
+                        window.print();
+                    }
+                }, 1500);
             }
-        };
+        });
     </script>
 </body>
 </html>

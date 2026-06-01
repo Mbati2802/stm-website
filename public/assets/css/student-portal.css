@@ -1113,6 +1113,56 @@ body.student-portal{font-family:'Roboto',sans-serif;background:var(--student-lig
         z-index: 20;
     }
     
+    /* Courses table - keep as table on mobile (not cards) */
+    table.courses-keep-table,
+    .courses-keep-table {
+        display: table !important;
+        width: 100% !important;
+    }
+    
+    table.courses-keep-table thead,
+    .courses-keep-table thead {
+        display: table-header-group !important;
+    }
+    
+    table.courses-keep-table tbody,
+    .courses-keep-table tbody {
+        display: table-row-group !important;
+    }
+    
+    table.courses-keep-table tr,
+    .courses-keep-table tr {
+        display: table-row !important;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        margin-bottom: 0;
+        padding: 0;
+        box-shadow: none;
+    }
+    
+    table.courses-keep-table td,
+    .courses-keep-table td {
+        display: table-cell !important;
+        padding: 0.75rem 0.5rem !important;
+        border-bottom: 1px solid var(--student-border);
+        text-align: left;
+    }
+    
+    table.courses-keep-table td::before,
+    .courses-keep-table td::before {
+        content: none !important;
+        display: none !important;
+    }
+    
+    table.courses-keep-table th,
+    .courses-keep-table th {
+        display: table-cell !important;
+        padding: 0.75rem 0.5rem !important;
+        font-weight: 600;
+        border-bottom: 2px solid var(--student-border);
+    }
+    
     /* Touch-friendly buttons */
     .btn {
         min-height: 44px;
