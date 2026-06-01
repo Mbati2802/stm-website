@@ -2306,6 +2306,9 @@ class AdminContentController extends Controller
     public function bulkSaveCourseGrades(): void
     {
         header('Content-Type: application/json');
+        error_log('DEBUG: bulkSaveCourseGrades called');
+        error_log('DEBUG: Request method: ' . $_SERVER['REQUEST_METHOD']);
+        error_log('DEBUG: Request URI: ' . ($_SERVER['REQUEST_URI'] ?? 'none'));
         
         try {
             Auth::requireAdmin();
