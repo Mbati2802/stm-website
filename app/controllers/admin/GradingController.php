@@ -338,6 +338,80 @@ class GradingController extends Controller
         $this->redirect('admin/grading');
     }
 
+    public function bulkApplyGradeRanges(): void
+    {
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('settings')) {
+            $this->redirect('admin/grading');
+        }
+
+        $sourceGradingSystemId = (int)($_POST['source_grading_system_id'] ?? 0);
+        $targetGradingSystemIds = $_POST['target_grading_system_ids'] ?? [];
+        $replaceExisting = isset($_POST['replace_existing']);
+
+        if ($sourceGradingSystemId === 0) {
+            flash('error', 'Source grading system is required.');
+            $this->redirect('admin/grading');
+        }
+
+        if (empty($targetGradingSystemIds)) {
+            flash('error', 'Please select at least one target exam to apply grade ranges to.');
+            $this->redirect('admin/grading');
+        }
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $pdo->beginTransaction();
+
+            // Get grade ranges from source grading system
+            $sourceStmt = $pdo->prepare('SELECT grade_letter, min_marks, max_marks, remarks, gpa_value FROM grade_ranges WHERE grading_system_id = ?');
+            $sourceStmt->execute([$sourceGradingSystemId]);
+            $sourceRanges = $sourceStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($sourceRanges)) {
+                flash('error', 'Source grading system has no grade ranges to copy.');
+                $this->redirect('admin/grading');
+            }
+
+            $appliedCount = 0;
+            $insertStmt = $pdo->prepare('INSERT INTO grade_ranges (grading_system_id, grade_letter, min_marks, max_marks, remarks, gpa_value) VALUES (?, ?, ?, ?, ?, ?)');
+
+            foreach ($targetGradingSystemIds as $targetId) {
+                $targetId = (int)$targetId;
+                if ($targetId === $sourceGradingSystemId) {
+                    continue; // Skip self
+                }
+
+                // Replace existing if requested
+                if ($replaceExisting) {
+                    $deleteStmt = $pdo->prepare('DELETE FROM grade_ranges WHERE grading_system_id = ?');
+                    $deleteStmt->execute([$targetId]);
+                }
+
+                // Copy grade ranges to target
+                foreach ($sourceRanges as $range) {
+                    $insertStmt->execute([
+                        $targetId,
+                        $range['grade_letter'],
+                        $range['min_marks'],
+                        $range['max_marks'],
+                        $range['remarks'],
+                        $range['gpa_value']
+                    ]);
+                }
+                $appliedCount++;
+            }
+
+            $pdo->commit();
+            flash('success', "Grade ranges applied successfully to {$appliedCount} exam(s).");
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            flash('error', 'Failed to apply grade ranges: ' . $e->getMessage());
+        }
+
+        $this->redirect('admin/grading');
+    }
+
     public function getGradeRanges(): void
     {
         Auth::requireAdmin();

@@ -163,7 +163,10 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bulkApplyModal" id="bulkApplyBtn" style="display: none;">
+                        <i class="bi bi-files"></i> Apply to Others
+                    </button>
                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#gradeRangeModal">
                         <i class="bi bi-plus"></i> Add Grade Range
                     </button>
@@ -347,6 +350,50 @@
         </div>
     </div>
 
+    <!-- Bulk Apply Grade Ranges Modal -->
+    <div class="modal fade" id="bulkApplyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Apply Grade Ranges to Other Exams</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="<?= e(base_url('admin/grading/grade-range/bulk-apply')) ?>">
+                    <?= csrf_field() ?>
+                    <div class="modal-body">
+                        <input type="hidden" name="source_grading_system_id" id="bulkApplySourceId">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> This will copy all grade ranges from <strong id="bulkApplySourceName">current exam</strong> to the selected exams below.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Select Exams to Apply To:</label>
+                            <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                                <?php foreach ($gradingSystems as $exam): ?>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="target_grading_system_ids[]" value="<?= (int)$exam['id'] ?>" id="target_exam_<?= (int)$exam['id'] ?>">
+                                    <label class="form-check-label" for="target_exam_<?= (int)$exam['id'] ?>">
+                                        <?= e((string)$exam['name']) ?> (<?= e((string)($exam['exam_type_name'] ?? 'All')) ?>)
+                                    </label>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="replace_existing" value="1" id="replaceExisting">
+                            <label class="form-check-label" for="replaceExisting">
+                                Replace existing grade ranges (will delete current ranges before applying new ones)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Apply Grade Ranges</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
     let currentGradingSystemId = 0;
 
@@ -368,8 +415,29 @@
                 const systemId = this.value;
                 if (systemId) {
                     loadGradeRanges(systemId);
+                    // Show bulk apply button when a grading system is selected
+                    document.getElementById('bulkApplyBtn').style.display = 'inline-block';
                 } else {
                     document.getElementById('gradeRangesTable').innerHTML = '<tr><td colspan="6" class="text-center">Select an exam to view grade ranges</td></tr>';
+                    document.getElementById('bulkApplyBtn').style.display = 'none';
+                }
+            });
+        }
+
+        // Bulk Apply Modal
+        const bulkApplyModal = document.getElementById('bulkApplyModal');
+        if (bulkApplyModal) {
+            bulkApplyModal.addEventListener('show.bs.modal', function() {
+                const sourceId = currentGradingSystemId;
+                const sourceName = gradingSystemSelector.options[gradingSystemSelector.selectedIndex]?.text || 'current exam';
+                document.getElementById('bulkApplySourceId').value = sourceId;
+                document.getElementById('bulkApplySourceName').textContent = sourceName;
+                
+                // Uncheck the current exam in the target list (can't apply to self)
+                const currentCheckbox = document.getElementById('target_exam_' + sourceId);
+                if (currentCheckbox) {
+                    currentCheckbox.checked = false;
+                    currentCheckbox.disabled = true;
                 }
             });
         }
@@ -382,6 +450,7 @@
                 const examTypeType = document.getElementById('examTypeType');
                 const parentExamIdsDiv = document.getElementById('parentExamIdsDiv');
 
+                const form = examTypeModal.querySelector('form');
                 if (id) {
                     document.getElementById('examTypeModalTitle').textContent = 'Edit Exam Type';
                     document.getElementById('examTypeId').value = id;
@@ -392,6 +461,8 @@
                     document.getElementById('examTypeDisplayMode').value = button.getAttribute('data-display-mode') || 'converted';
                     document.getElementById('parentExamIds').value = button.getAttribute('data-parent-exam-ids') || '';
                     document.getElementById('examTypeDescription').value = button.getAttribute('data-description') || '';
+                    // Change form action to edit endpoint
+                    form.action = '<?= e(base_url('admin/grading/exam-type/edit')) ?>';
                 } else {
                     document.getElementById('examTypeModalTitle').textContent = 'Add Exam Type';
                     document.getElementById('examTypeId').value = '';
@@ -402,6 +473,8 @@
                     document.getElementById('examTypeDisplayMode').value = 'converted';
                     document.getElementById('parentExamIds').value = '';
                     document.getElementById('examTypeDescription').value = '';
+                    // Change form action to create endpoint
+                    form.action = '<?= e(base_url('admin/grading/exam-type/create')) ?>';
                 }
 
                 // Show/hide parent exam IDs based on type

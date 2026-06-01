@@ -187,6 +187,9 @@ $router->add('GET', 'admin/internal-messages', [AdminContentController::class, '
 $router->add('POST', 'admin/internal-messages/send', [AdminContentController::class, 'sendInternalMessage']);
 $router->add('GET', 'admin/applications', [AdminContentController::class, 'applications']);
 
+// Grading System - Bulk Apply Grade Ranges
+$router->add('POST', 'admin/grading/grade-range/bulk-apply', [GradingController::class, 'bulkApplyGradeRanges']);
+
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
 $basePath = dirname($_SERVER['SCRIPT_NAME']);
 if ($basePath !== '/' && str_starts_with($uri, $basePath)) {
