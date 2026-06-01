@@ -3,7 +3,7 @@ require_once __DIR__ . '/../bootstrap.php';
 
 require_once __DIR__ . '/../app/controllers/admin/AdmissionNumberFormatsController.php';
 require_once __DIR__ . '/../app/controllers/admin/AccountsController.php';
-require_once __DIR__ . '/../app/controllers/admin/GradingController.php';
+require_once __DIR__ . '/../app/controllers/admin/GradingController.php'; // Required for bulk apply
 require_once __DIR__ . '/../app/controllers/CRMController.php';
 
 $config = require __DIR__ . '/../config/config.php';
