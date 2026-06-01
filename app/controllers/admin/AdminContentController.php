@@ -2257,18 +2257,21 @@ class AdminContentController extends Controller
         try {
             $pdo = Database::getInstance($this->config['db']);
             
-            // Get programme_id for the selected unit/course
-            $courseStmt = $pdo->prepare('SELECT programme_id FROM portal_courses WHERE id = ?');
-            $courseStmt->execute([$unitId]);
+            // Check if the course is linked to the selected programme via junction table
+            $courseStmt = $pdo->prepare('
+                SELECT pc.id, pc.title 
+                FROM portal_courses pc
+                INNER JOIN portal_course_programmes pcp ON pcp.portal_course_id = pc.id
+                WHERE pc.id = ? AND pcp.programme_id = ?
+            ');
+            $courseStmt->execute([$unitId, $programmeId]);
             $course = $courseStmt->fetch(PDO::FETCH_ASSOC);
             
             if (!$course) {
                 header('Content-Type: application/json');
-                echo json_encode(['error' => 'Course not found']);
+                echo json_encode(['error' => 'Course not found for this programme']);
                 return;
             }
-            
-            $courseProgrammeId = $course['programme_id'];
             
             // Build query with optional session filter
             $sql = '
@@ -2280,7 +2283,7 @@ class AdminContentController extends Controller
                 AND se.term_id = ? 
                 AND se.status = "active"
             ';
-            $params = [$courseProgrammeId, $sessionId, $termId];
+            $params = [$programmeId, $sessionId, $termId];
             
             if ($studentSessionId > 0) {
                 $sql .= ' AND se.session_id = ?';
