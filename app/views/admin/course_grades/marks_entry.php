@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        headerHTML += '<th>Total %</th><th>Converted</th><th>Grade</th>';
+        headerHTML += '<th>Total Marks</th><th>Grade</th>';
         header.innerHTML = headerHTML;
         
         // Build rows
@@ -339,8 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             rowHTML += `
-                    <td class="total-percentage">0%</td>
-                    <td class="total-converted">0/100</td>
+                    <td class="total-marks">0</td>
                     <td class="grade-display">-</td>
                 </tr>
             `;
@@ -389,17 +388,20 @@ document.addEventListener('DOMContentLoaded', function() {
             totalPercentage = 100;
         }
         
-        // Display totals
-        row.querySelector('.total-percentage').textContent = totalPercentage.toFixed(1) + '%';
-        row.querySelector('.total-converted').textContent = totalConverted.toFixed(1) + '/' + maxTotal;
+        // Round total converted marks to nearest whole number
+        const totalRounded = Math.round(totalConverted);
         
-        // Calculate grade using grade ranges from grading system (based on percentage)
+        // Display total marks (as whole number)
+        row.querySelector('.total-marks').textContent = totalRounded;
+        
+        // Calculate grade using grade ranges from default grading system (based on percentage)
+        // The grade ranges define the scale (e.g., A = 80-100%, B = 70-79%, etc.)
         let grade = '-';
-        console.log('Calculating grade for total:', totalPercentage, 'with grade ranges:', window.gradeRanges);
+        console.log('Calculating grade for total %:', totalPercentage, 'with grade ranges:', window.gradeRanges);
         
         if (window.gradeRanges && window.gradeRanges.length > 0) {
             for (const range of window.gradeRanges) {
-                console.log(`Checking range: ${range.grade_letter}, min: ${range.min_marks}, max: ${range.max_marks}`);
+                console.log(`Checking range: ${range.grade_letter}, min: ${range.min_marks}%, max: ${range.max_marks}%`);
                 if (totalPercentage >= range.min_marks && totalPercentage <= range.max_marks) {
                     grade = range.grade_letter;
                     console.log(`Grade assigned: ${grade}`);
