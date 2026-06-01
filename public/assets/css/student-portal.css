@@ -600,7 +600,7 @@ body.student-portal{font-family:'Roboto',sans-serif;background:var(--student-lig
    MOBILE RESPONSIVE STYLES
    ======================================== */
 
-/* Mobile Header Bar */
+/* Mobile Header Bar - Sticky on all pages */
 .student-mobile-header {
     background: #fff;
     border-bottom: 1px solid var(--student-border);
@@ -609,10 +609,19 @@ body.student-portal{font-family:'Roboto',sans-serif;background:var(--student-lig
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 1030;
     height: 56px;
+}
+
+/* Add padding to main content to account for fixed header on mobile */
+@media (max-width: 991px) {
+    .student-main {
+        padding-top: 56px;
+    }
 }
 
 .student-mobile-menu-btn {
@@ -1026,6 +1035,7 @@ body.student-portal{font-family:'Roboto',sans-serif;background:var(--student-lig
         margin-bottom: 0.75rem;
         padding: 0.75rem;
         box-shadow: var(--student-shadow);
+        position: relative;
     }
     
     table.student-mobile-table td,
@@ -1037,6 +1047,7 @@ body.student-portal{font-family:'Roboto',sans-serif;background:var(--student-lig
         border-bottom: 1px solid #eee;
         font-size: 0.9rem;
         text-align: right;
+        pointer-events: auto;
     }
     
     table.student-mobile-table td:last-child,
@@ -1053,6 +1064,22 @@ body.student-portal{font-family:'Roboto',sans-serif;background:var(--student-lig
         text-transform: uppercase;
         letter-spacing: 0.02em;
         margin-right: auto;
+        pointer-events: none;
+    }
+    
+    /* Ensure buttons in mobile cards are clickable */
+    .student-mobile-table td .btn {
+        position: relative;
+        z-index: 10;
+        pointer-events: auto;
+        cursor: pointer;
+    }
+    
+    /* Prevent row click from triggering when clicking button */
+    .student-mobile-table td a,
+    .student-mobile-table td button {
+        position: relative;
+        z-index: 20;
     }
     
     /* Touch-friendly buttons */
