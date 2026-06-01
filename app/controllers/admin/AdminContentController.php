@@ -2305,26 +2305,28 @@ class AdminContentController extends Controller
 
     public function bulkSaveCourseGrades(): void
     {
-        Auth::requireAdmin();
-        if (!Auth::canManageEntity('course_grades')) {
-            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-            return;
-        }
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-            return;
-        }
-
-        $data = json_decode(file_get_contents('php://input'), true);
-        $marks = $data['marks'] ?? [];
-
-        if (empty($marks)) {
-            echo json_encode(['success' => false, 'message' => 'No marks provided']);
-            return;
-        }
-
+        header('Content-Type: application/json');
+        
         try {
+            Auth::requireAdmin();
+            if (!Auth::canManageEntity('course_grades')) {
+                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+                return;
+            }
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+                return;
+            }
+
+            $data = json_decode(file_get_contents('php://input'), true);
+            $marks = $data['marks'] ?? [];
+
+            if (empty($marks)) {
+                echo json_encode(['success' => false, 'message' => 'No marks provided']);
+                return;
+            }
+
             $pdo = Database::getInstance($this->config['db']);
             $pdo->beginTransaction();
 
@@ -2394,8 +2396,12 @@ class AdminContentController extends Controller
             $pdo->commit();
             echo json_encode(['success' => true, 'message' => 'Marks saved successfully']);
         } catch (PDOException $e) {
-            $pdo->rollBack();
-            echo json_encode(['success' => false, 'message' => 'Failed to save marks: ' . $e->getMessage()]);
+            if (isset($pdo)) {
+                $pdo->rollBack();
+            }
+            echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        } catch (Throwable $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
         }
     }
 
