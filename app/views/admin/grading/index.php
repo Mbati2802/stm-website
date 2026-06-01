@@ -24,6 +24,7 @@
                                 <th>Name</th>
                                 <th>Code</th>
                                 <th>Type</th>
+                                <th>Max Marks</th>
                                 <th>Parent Exams</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -40,6 +41,7 @@
                                         <?= e((string)$type['type']) ?>
                                     </span>
                                 </td>
+                                <td><span class="badge bg-light text-dark"><?= (float)($type['max_marks'] ?? 100) ?></span></td>
                                 <td>
                                     <?php if ($type['type'] === 'consolidated' && !empty($type['parent_exam_ids'])): ?>
                                         <small class="text-muted"><?= e($type['parent_exam_ids']) ?></small>
@@ -58,6 +60,8 @@
                                             data-name="<?= e((string)$type['name']) ?>" 
                                             data-code="<?= e((string)$type['code']) ?>" 
                                             data-type="<?= e((string)$type['type']) ?>" 
+                                            data-max-marks="<?= (float)($type['max_marks'] ?? 100) ?>"
+                                            data-display-mode="<?= e((string)($type['display_mode'] ?? 'converted')) ?>"
                                             data-parent-exam-ids="<?= e((string)($type['parent_exam_ids'] ?? '')) ?>" 
                                             data-description="<?= e((string)($type['description'] ?? '')) ?>">
                                         <i class="bi bi-pencil"></i>
@@ -213,6 +217,20 @@
                                 <option value="single">Single</option>
                                 <option value="consolidated">Consolidated</option>
                             </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Maximum Marks</label>
+                            <input type="number" class="form-control" name="max_marks" id="examTypeMaxMarks" value="100" min="1" max="100" step="0.01" required>
+                            <small class="text-muted">Maximum marks for this exam type (e.g., CW=10, EX=40, TOTAL=100)</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Display Mode</label>
+                            <select class="form-select" name="display_mode" id="examTypeDisplayMode">
+                                <option value="converted">Show Converted Marks (e.g., 5/10)</option>
+                                <option value="percentage">Show Percentage Only (e.g., 50%)</option>
+                                <option value="both">Show Both</option>
+                            </select>
+                            <small class="text-muted">How marks appear on transcripts and result slips</small>
                         </div>
                         <div class="mb-3" id="parentExamIdsDiv" style="display: none;">
                             <label class="form-label">Parent Exam IDs (JSON array)</label>
@@ -370,6 +388,8 @@
                     document.getElementById('examTypeName').value = button.getAttribute('data-name');
                     document.getElementById('examTypeCode').value = button.getAttribute('data-code');
                     examTypeType.value = button.getAttribute('data-type');
+                    document.getElementById('examTypeMaxMarks').value = button.getAttribute('data-max-marks') || '100';
+                    document.getElementById('examTypeDisplayMode').value = button.getAttribute('data-display-mode') || 'converted';
                     document.getElementById('parentExamIds').value = button.getAttribute('data-parent-exam-ids') || '';
                     document.getElementById('examTypeDescription').value = button.getAttribute('data-description') || '';
                 } else {
@@ -378,6 +398,8 @@
                     document.getElementById('examTypeName').value = '';
                     document.getElementById('examTypeCode').value = '';
                     examTypeType.value = 'single';
+                    document.getElementById('examTypeMaxMarks').value = '100';
+                    document.getElementById('examTypeDisplayMode').value = 'converted';
                     document.getElementById('parentExamIds').value = '';
                     document.getElementById('examTypeDescription').value = '';
                 }
