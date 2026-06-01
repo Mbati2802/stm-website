@@ -2306,30 +2306,31 @@ class AdminContentController extends Controller
     public function bulkSaveCourseGrades(): void
     {
         header('Content-Type: application/json');
-        error_log('DEBUG: bulkSaveCourseGrades called');
-        error_log('DEBUG: Request method: ' . $_SERVER['REQUEST_METHOD']);
-        error_log('DEBUG: Request URI: ' . ($_SERVER['REQUEST_URI'] ?? 'none'));
         
+        // Check auth without redirect for AJAX
+        if (!Auth::check()) {
+            echo json_encode(['success' => false, 'message' => 'Not authenticated']);
+            return;
+        }
+        if (!Auth::canManageEntity('course_grades')) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized - no permission to manage course grades']);
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $marks = $data['marks'] ?? [];
+
+        if (empty($marks)) {
+            echo json_encode(['success' => false, 'message' => 'No marks provided']);
+            return;
+        }
+
         try {
-            Auth::requireAdmin();
-            if (!Auth::canManageEntity('course_grades')) {
-                echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-                return;
-            }
-
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-                return;
-            }
-
-            $data = json_decode(file_get_contents('php://input'), true);
-            $marks = $data['marks'] ?? [];
-
-            if (empty($marks)) {
-                echo json_encode(['success' => false, 'message' => 'No marks provided']);
-                return;
-            }
-
             $pdo = Database::getInstance($this->config['db']);
             $pdo->beginTransaction();
 
