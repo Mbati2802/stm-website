@@ -279,11 +279,18 @@ class StudentPortalController extends Controller
     // Academic Section
     public function courses(): void
     {
-        $this->requireStudent();
+        $student = $this->requireStudent();
         $model = new StudentPortalModel($this->config);
+
+        // Get courses specific to the student's programme
+        $courses = [];
+        if (!empty($student['programme_id'])) {
+            $courses = $model->getStudentCourses((int)$student['programme_id']);
+        }
+
         $this->view('student/courses', [
-            'metaTitle' => 'Student Portal - My Courses',
-            'courses' => $model->allPortalCourses(),
+            'metaTitle' => 'Student Portal - My Units',
+            'courses' => $courses,
         ], 'student');
     }
 

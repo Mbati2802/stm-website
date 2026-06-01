@@ -121,9 +121,6 @@ $studentPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '');
                     <a class="nav-link <?= str_contains($studentPath, 'portal/profile') ? 'active' : '' ?>" href="<?= e(base_url('portal/profile')) ?>">
                         <i class="bi bi-person"></i><span>My Profile</span>
                     </a>
-                    <a class="nav-link <?= str_contains($studentPath, 'portal/settings') ? 'active' : '' ?>" href="<?= e(base_url('portal/settings')) ?>">
-                        <i class="bi bi-gear"></i><span>Settings</span>
-                    </a>
                     <a class="nav-link text-danger" href="<?= e(base_url('portal/logout')) ?>">
                         <i class="bi bi-box-arrow-right"></i><span>Logout</span>
                     </a>
@@ -232,10 +229,6 @@ $studentPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '');
             <a href="<?= e(base_url('portal/profile')) ?>" class="student-more-menu-item <?= str_contains($studentPath, 'portal/profile') ? 'active' : '' ?>">
                 <i class="bi bi-person"></i>
                 <span>Profile</span>
-            </a>
-            <a href="<?= e(base_url('portal/settings')) ?>" class="student-more-menu-item <?= str_contains($studentPath, 'portal/settings') ? 'active' : '' ?>">
-                <i class="bi bi-gear"></i>
-                <span>Settings</span>
             </a>
         </div>
     </div>

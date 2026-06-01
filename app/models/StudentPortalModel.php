@@ -248,6 +248,28 @@ class StudentPortalModel
         }
     }
 
+    public function getStudentCourses(int $programmeId): array
+    {
+        try {
+            // Get distinct courses for the student's programme using junction table
+            // This prevents duplicate units when a course is shared across multiple programmes
+            $stmt = $this->pdo->prepare('
+                SELECT DISTINCT pc.id, pc.code, pc.title, pc.description, pc.teacher_id,
+                       p.name AS programme_name, u.name AS teacher_name
+                FROM portal_courses pc
+                INNER JOIN portal_course_programmes pcp ON pcp.portal_course_id = pc.id
+                LEFT JOIN programmes p ON p.id = pcp.programme_id
+                LEFT JOIN users u ON u.id = pc.teacher_id
+                WHERE pcp.programme_id = :programme_id
+                ORDER BY pc.code ASC
+            ');
+            $stmt->execute(['programme_id' => $programmeId]);
+            return $stmt->fetchAll();
+        } catch (PDOException) {
+            return [];
+        }
+    }
+
     public function allProgrammeTimetables(): array
     {
         try {
