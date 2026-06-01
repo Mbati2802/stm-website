@@ -238,22 +238,34 @@
         </div>
     </div>
 
+    <!-- html2pdf.js library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
         function downloadPDF() {
-            // Use browser's print to PDF functionality
-            // The user can then save as PDF
-            window.print();
+            // Get the receipt container element
+            const element = document.querySelector('.receipt-container');
+            
+            // Configure PDF options
+            const opt = {
+                margin:       10,
+                filename:     'Receipt_<?= e($payment['payment_number']) ?>.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            // Generate and download PDF
+            html2pdf().set(opt).from(element).save();
         }
         
         // Auto-trigger download on load if URL has download parameter
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('download') === '1') {
-                // Set document title for better filename
-                document.title = 'Receipt_' + '<?= e($payment['payment_number']) ?>';
+                // Wait for page to fully render, then download
                 setTimeout(() => {
-                    window.print();
-                }, 500);
+                    downloadPDF();
+                }, 1000);
             }
         };
     </script>
