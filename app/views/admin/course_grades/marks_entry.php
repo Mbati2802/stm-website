@@ -483,10 +483,10 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-Token': '<?= e(csrf_token()) ?>'
             },
-            body: JSON.stringify({ 
-                marks: marksData,
-                _token: '<?= e(csrf_token()) ?>'
+            body: JSON.stringify({
+                marks: marksData
             })
         })
         .then(response => {
