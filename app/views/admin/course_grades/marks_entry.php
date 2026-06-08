@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>
                             <input type="number" 
                                    class="form-control form-control-sm marks-input" 
-                                   data-exam-id="${exam.id}" 
+                                   data-exam-id="${exam.exam_type_id}" 
                                    data-student-id="${student.id}"
                                    data-max-marks="${maxMarks}"
                                    data-entry-mode="${entryMode}"

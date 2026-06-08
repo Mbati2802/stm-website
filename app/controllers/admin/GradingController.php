@@ -517,7 +517,7 @@ class GradingController extends Controller
         try {
             $pdo = Database::getInstance($this->config['db']);
             $stmt = $pdo->query('
-                SELECT gs.*, et.type, et.name as exam_type_name, et.max_marks, et.display_mode
+                SELECT gs.*, et.id as exam_type_id, et.type, et.name as exam_type_name, et.max_marks, et.display_mode
                 FROM grading_systems gs
                 LEFT JOIN exam_types et ON gs.exam_type_id = et.id
                 WHERE gs.is_active = 1
