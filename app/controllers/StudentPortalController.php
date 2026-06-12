@@ -647,8 +647,26 @@ class StudentPortalController extends Controller
             $setFill($color);
             $content .= sprintf("BT /%s %d Tf %.2f %.2f Td (%s) Tj ET\n", $font, $size, $x, $textY, $this->pdfEscape($value));
         };
-        $centerText = function (float $centerX, float $textY, int $size, string $value, array $color, string $font = 'F1') use ($text): void {
-            $textWidth = strlen($value) * $size * 0.26;
+        $estimateTextWidth = static function (string $value, int $size): float {
+            $width = 0.0;
+            $chars = preg_split('//u', $value, -1, PREG_SPLIT_NO_EMPTY) ?: str_split($value);
+            foreach ($chars as $char) {
+                if ($char === ' ') {
+                    $width += 0.28;
+                } elseif (preg_match('/[ilI1\|]/u', $char)) {
+                    $width += 0.24;
+                } elseif (preg_match('/[MW@#%&]/u', $char)) {
+                    $width += 0.78;
+                } elseif (preg_match('/[A-Z0-9]/u', $char)) {
+                    $width += 0.56;
+                } else {
+                    $width += 0.48;
+                }
+            }
+            return $width * $size;
+        };
+        $centerText = function (float $centerX, float $textY, int $size, string $value, array $color, string $font = 'F1') use ($text, $estimateTextWidth): void {
+            $textWidth = $estimateTextWidth($value, $size);
             $text($centerX - ($textWidth / 2), $textY, $size, $value, $color, $font);
         };
         $wrappedText = function (float $x, float $textY, int $size, string $value, float $width, int $maxLines, array $color, string $font = 'F1') use ($text): int {
@@ -714,10 +732,10 @@ class StudentPortalController extends Controller
             $centerText($centerX, $pageHeight - 33, 12, $collegeLineOne, $primary, 'F5');
             $centerText($centerX, $pageHeight - 47, 12, $collegeLineTwo, $primary, 'F5');
             if ($collegeAddress !== '') {
-                $centerText($centerX, $pageHeight - 60, 7, $this->truncatePdfText($collegeAddress, 68), $dark, 'F1');
+                $centerText($centerX, $pageHeight - 60, 7, $this->truncatePdfText($collegeAddress, 58), $dark, 'F1');
             }
             if ($collegeContacts !== '') {
-                $centerText($centerX, $pageHeight - 71, 7, $this->truncatePdfText($collegeContacts, 76), $dark, 'F1');
+                $centerText($centerX, $pageHeight - 71, 7, $this->truncatePdfText($collegeContacts, 64), $dark, 'F1');
             }
             $line($margin, $pageHeight - 86, $pageWidth - $margin, $pageHeight - 86, $primary, 1.0);
             $line($margin, $pageHeight - 89, $pageWidth - $margin, $pageHeight - 89, $secondary, 0.6);
