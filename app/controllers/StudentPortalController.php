@@ -667,25 +667,53 @@ class StudentPortalController extends Controller
         $settings = $transcript['settings'] ?? [];
         $examColumns = array_values($transcript['examColumns'] ?? []);
         $rows = array_values($transcript['rows'] ?? []);
+        $gradeRanges = $transcript['gradeRanges'] ?? [];
+        $issuedAt = date('F j, Y');
+        $serialNumber = 'SR-' . date('Ymd') . '-' . str_pad((string)((int)($student['id'] ?? 0)), 5, '0', STR_PAD_LEFT);
+        $transcriptNumber = 'TR-' . date('Ymd-His') . '-' . strtoupper(substr(sha1((string)($student['admission_number'] ?? '') . microtime(true)), 0, 6));
+        $appName = (string)($this->config['app_name'] ?? 'St. Mary\'s Mother and Child Hospital Medical Training College');
+        $collegeName = $appName !== '' ? $appName : 'St. Mary\'s Mother and Child Hospital Medical Training College';
+        $collegeAddress = trim((string)($settings['address'] ?? $settings['location'] ?? ''));
+        $collegeContacts = trim(implode(' | ', array_filter([
+            (string)($settings['phone'] ?? ''),
+            (string)($settings['email'] ?? ''),
+        ])));
+        $logoImage = $this->prepareTranscriptPdfLogo($settings);
+        $pdfImages = $logoImage !== null ? ['Logo' => $logoImage] : [];
 
-        $drawPageHeader = function (bool $firstPage) use (&$y, &$pageNumber, $pageWidth, $pageHeight, $margin, $primary, $secondary, $white, $dark, $muted, $fillRect, $line, $text, $wrappedText, $student, $settings): void {
+        $drawLogo = function (float $x, float $logoY, float $size) use (&$content, $logoImage, $primary, $white, $fillRect, $strokeRect, $text): void {
+            if ($logoImage !== null) {
+                $content .= sprintf("q %.2f 0 0 %.2f %.2f %.2f cm /Logo Do Q\n", $size, $size, $x, $logoY);
+                return;
+            }
+            $fillRect($x, $logoY, $size, $size, $white);
+            $strokeRect($x, $logoY, $size, $size, $primary, 1.0);
+            $text($x + 8, $logoY + ($size / 2) - 4, 12, 'STM', $primary, 'F2');
+        };
+
+        $drawPageHeader = function (bool $firstPage) use (&$y, &$pageNumber, $pageWidth, $pageHeight, $margin, $primary, $secondary, $dark, $muted, $line, $text, $wrappedText, $drawLogo, $collegeName, $collegeAddress, $collegeContacts, $issuedAt, $serialNumber, $transcriptNumber): void {
             $pageNumber++;
             $y = $pageHeight - $margin;
-            $fillRect(0, $pageHeight - 82, $pageWidth, 82, $primary);
-            $fillRect(0, $pageHeight - 86, $pageWidth, 4, $secondary);
-            $fillRect($margin, $pageHeight - 66, 42, 42, $white);
-            $text($margin + 9, $pageHeight - 49, 14, 'STM', $primary, 'F2');
-            $text($margin + 55, $pageHeight - 36, 15, 'St. Mary\'s Mother and Child Hospital', $white, 'F2');
-            $text($margin + 55, $pageHeight - 52, 11, 'Medical Training College', $white, 'F2');
-            $text($margin + 55, $pageHeight - 68, 8, trim((string)($settings['email'] ?? '') . '  ' . (string)($settings['phone'] ?? '')), $white);
-            $text($pageWidth - 176, $pageHeight - 40, 10, 'OFFICIAL ACADEMIC TRANSCRIPT', $white, 'F2');
-            $text($pageWidth - 176, $pageHeight - 56, 8, 'Generated: ' . date('F j, Y'), $white);
-            $y = $pageHeight - 104;
+            $drawLogo($margin, $pageHeight - 78, 46);
+            $drawLogo($pageWidth - $margin - 46, $pageHeight - 78, 46);
+            $wrappedText($margin + 66, $pageHeight - 38, 14, strtoupper($collegeName), $pageWidth - (($margin + 66) * 2), 2, $primary, 'F5');
+            if ($collegeAddress !== '') {
+                $wrappedText($margin + 74, $pageHeight - 62, 8, $collegeAddress, $pageWidth - (($margin + 74) * 2), 1, $dark, 'F4');
+            }
+            if ($collegeContacts !== '') {
+                $wrappedText($margin + 74, $pageHeight - 74, 8, $collegeContacts, $pageWidth - (($margin + 74) * 2), 1, $dark, 'F4');
+            }
+            $line($margin, $pageHeight - 92, $pageWidth - $margin, $pageHeight - 92, $primary, 1.4);
+            $line($margin, $pageHeight - 96, $pageWidth - $margin, $pageHeight - 96, $secondary, 0.8);
+            $y = $pageHeight - 116;
 
             if ($firstPage) {
-                $text($margin, $y, 13, 'Academic Record Statement', $primary, 'F2');
-                $line($margin, $y - 7, $pageWidth - $margin, $y - 7, $secondary, 1.2);
-                $y -= 24;
+                $wrappedText($margin, $y, 16, 'OFFICIAL ACADEMIC TRANSCRIPT', $pageWidth - ($margin * 2), 1, $primary, 'F5');
+                $text($margin, $y - 20, 8, 'Serial No: ' . $serialNumber, $dark, 'F4');
+                $text($pageWidth - $margin - 190, $y - 20, 8, 'Transcript No: ' . $transcriptNumber, $dark, 'F4');
+                $text($margin, $y - 34, 8, 'Generated: ' . $issuedAt, $muted, 'F4');
+                $line($margin, $y - 42, $pageWidth - $margin, $y - 42, $secondary, 1.2);
+                $y -= 58;
             } else {
                 $text($margin, $y, 9, 'Continuation for ' . (string)($student['name'] ?? 'Student'), $muted, 'F2');
                 $line($margin, $y - 7, $pageWidth - $margin, $y - 7, $secondary, 0.8);
@@ -693,10 +721,10 @@ class StudentPortalController extends Controller
             }
         };
 
-        $drawFooter = function () use (&$content, $pageWidth, $margin, $primary, $muted, $line, $text, &$pageNumber): void {
+        $drawFooter = function () use ($pageWidth, $margin, $primary, $muted, $line, $text, $issuedAt): void {
             $line($margin, 42, $pageWidth - $margin, 42, $primary, 0.8);
-            $text($margin, 28, 7, 'This transcript is generated from official student portal records.', $muted);
-            $text($pageWidth - 82, 28, 7, 'Page ' . $pageNumber, $muted);
+            $text($margin, 28, 7, 'Generated from official student portal records.', $muted, 'F4');
+            $text($pageWidth - 145, 28, 7, 'Generated: ' . $issuedAt, $muted, 'F4');
         };
 
         $drawMeta = function () use (&$y, $pageWidth, $margin, $primary, $dark, $muted, $border, $light, $fillRect, $strokeRect, $text, $wrappedText, $student, $transcript): void {
@@ -818,17 +846,52 @@ class StudentPortalController extends Controller
             }
         }
 
-        if ($y - 88 < $bottomMargin) {
+        $gradingKey = [];
+        foreach ($examColumns as $examColumn) {
+            if ((string)($examColumn['type'] ?? '') !== 'consolidated') {
+                continue;
+            }
+            $gradingSystemId = (int)($examColumn['id'] ?? 0);
+            foreach (($gradeRanges[$gradingSystemId] ?? []) as $range) {
+                $grade = trim((string)($range['grade_letter'] ?? ''));
+                if ($grade === '') {
+                    continue;
+                }
+                $min = (int)round((float)($range['min_marks'] ?? 0));
+                $max = (int)round((float)($range['max_marks'] ?? 0));
+                $gradingKey[] = $grade . ': ' . $min . '-' . $max;
+            }
+            if ($gradingKey !== []) {
+                break;
+            }
+        }
+
+        if ($gradingKey !== []) {
+            if ($y - 54 < $bottomMargin) {
+                $drawFooter();
+                $finishPage();
+                $drawPageHeader(false);
+            }
+            $y -= 20;
+            $text($margin, $y, 9, 'Grading System', $primary, 'F5');
+            $y -= 14;
+            $wrappedText($margin, $y, 8, implode('    ', $gradingKey), $contentWidth, 3, $dark, 'F4');
+            $y -= 32;
+        }
+
+        if ($y - 112 < $bottomMargin) {
             $drawFooter();
             $finishPage();
             $drawPageHeader(false);
         }
 
         $y -= 22;
-        $text($margin, $y, 9, 'Certification', $primary, 'F2');
+        $text($margin, $y, 9, 'Certification', $primary, 'F5');
         $y -= 18;
-        $wrappedText($margin, $y, 8, 'This document reflects the academic records available in the student portal at the time of generation. Any alteration renders this transcript invalid.', $contentWidth, 3, $muted);
-        $y -= 40;
+        $wrappedText($margin, $y, 8, 'This is to certify that the results appearing on this Result Slip are a true and accurate record of the student\'s academic performance as maintained in the official records of the institution.', $contentWidth, 4, $dark, 'F3');
+        $y -= 42;
+        $wrappedText($margin, $y, 8, 'Issued without alteration and for official purposes only.', $contentWidth, 2, $dark, 'F3');
+        $y -= 34;
         $line($margin, $y, $margin + 150, $y, $dark, 0.6);
         $line($pageWidth - $margin - 150, $y, $pageWidth - $margin, $y, $dark, 0.6);
         $text($margin, $y - 14, 8, 'Registrar / Authorized Officer', $muted);
@@ -837,7 +900,7 @@ class StudentPortalController extends Controller
         $drawFooter();
         $finishPage();
 
-        return $this->assemblePdf($pages, $pageWidth, $pageHeight);
+        return $this->assemblePdf($pages, $pageWidth, $pageHeight, $pdfImages);
     }
 
     private function pdfWrapText(string $value, int $maxChars, int $maxLines): array
@@ -886,6 +949,62 @@ class StudentPortalController extends Controller
         return substr($value, 0, max(1, $maxLength - 1)) . '…';
     }
 
+    private function prepareTranscriptPdfLogo(array $settings): ?array
+    {
+        $logoPath = trim((string)($settings['site_logo'] ?? $settings['logo_path'] ?? $settings['admin_reply_email_logo_url'] ?? ''));
+        if ($logoPath === '') {
+            $logoPath = 'assets/images/logo.png';
+        }
+
+        if (preg_match('#^https?://#i', $logoPath)) {
+            $path = parse_url($logoPath, PHP_URL_PATH) ?: '';
+            $logoPath = ltrim($path, '/');
+        }
+
+        $candidates = [];
+        if ($logoPath !== '') {
+            $candidates[] = __DIR__ . '/../../public/' . ltrim($logoPath, '/');
+            $candidates[] = __DIR__ . '/../../' . ltrim($logoPath, '/');
+        }
+        $candidates[] = __DIR__ . '/../../public/assets/images/logo.png';
+
+        foreach ($candidates as $candidate) {
+            $realPath = realpath($candidate);
+            if ($realPath === false || !is_readable($realPath)) {
+                continue;
+            }
+
+            $info = @getimagesize($realPath);
+            if (!is_array($info)) {
+                continue;
+            }
+
+            $mime = (string)($info['mime'] ?? '');
+            $data = null;
+            if ($mime === 'image/jpeg') {
+                $data = file_get_contents($realPath);
+            } elseif ($mime === 'image/png' && function_exists('imagecreatefrompng') && function_exists('imagejpeg')) {
+                $image = @imagecreatefrompng($realPath);
+                if ($image !== false) {
+                    ob_start();
+                    imagejpeg($image, null, 90);
+                    $data = ob_get_clean();
+                    imagedestroy($image);
+                }
+            }
+
+            if (is_string($data) && $data !== '') {
+                return [
+                    'data' => $data,
+                    'width' => max(1, (int)($info[0] ?? 1)),
+                    'height' => max(1, (int)($info[1] ?? 1)),
+                ];
+            }
+        }
+
+        return null;
+    }
+
     private function pdfEscape(string $value): string
     {
         $value = str_replace(["\r", "\n"], ' ', $value);
@@ -898,7 +1017,7 @@ class StudentPortalController extends Controller
         return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $value);
     }
 
-    private function assemblePdf(array $pageContents, int $pageWidth, int $pageHeight): string
+    private function assemblePdf(array $pageContents, int $pageWidth, int $pageHeight, array $images = []): string
     {
         if ($pageContents === []) {
             $pageContents = [''];
@@ -909,9 +1028,22 @@ class StudentPortalController extends Controller
             2 => '',
             3 => "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
             4 => "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
+            5 => "<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman >>",
+            6 => "<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>",
+            7 => "<< /Type /Font /Subtype /Type1 /BaseFont /Times-Bold >>",
         ];
         $pageObjectIds = [];
-        $nextObjectId = 5;
+        $imageObjectIds = [];
+        $nextObjectId = 8;
+
+        foreach ($images as $name => $image) {
+            $imageObjectId = $nextObjectId++;
+            $imageObjectIds[(string)$name] = $imageObjectId;
+            $imageData = (string)($image['data'] ?? '');
+            $imageWidth = max(1, (int)($image['width'] ?? 1));
+            $imageHeight = max(1, (int)($image['height'] ?? 1));
+            $objects[$imageObjectId] = "<< /Type /XObject /Subtype /Image /Width {$imageWidth} /Height {$imageHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " . strlen($imageData) . " >>\nstream\n" . $imageData . "\nendstream";
+        }
 
         foreach ($pageContents as $pageContent) {
             $contentObjectId = $nextObjectId++;
@@ -919,7 +1051,15 @@ class StudentPortalController extends Controller
 
             $pageObjectId = $nextObjectId++;
             $pageObjectIds[] = $pageObjectId;
-            $objects[$pageObjectId] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {$pageWidth} {$pageHeight}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents {$contentObjectId} 0 R >>";
+            $xObjectResources = '';
+            if ($imageObjectIds !== []) {
+                $entries = [];
+                foreach ($imageObjectIds as $name => $objectId) {
+                    $entries[] = '/' . preg_replace('/[^A-Za-z0-9_]/', '', $name) . ' ' . $objectId . ' 0 R';
+                }
+                $xObjectResources = ' /XObject << ' . implode(' ', $entries) . ' >>';
+            }
+            $objects[$pageObjectId] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {$pageWidth} {$pageHeight}] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R /F5 7 0 R >>{$xObjectResources} >> /Contents {$contentObjectId} 0 R >>";
         }
 
         $kids = implode(' ', array_map(static fn(int $id): string => $id . ' 0 R', $pageObjectIds));

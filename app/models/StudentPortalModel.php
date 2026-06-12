@@ -396,6 +396,7 @@ class StudentPortalModel
             return [
                 'examColumns' => [],
                 'rows' => [],
+                'gradeRanges' => [],
             ];
         }
 
@@ -543,6 +544,7 @@ class StudentPortalModel
         return [
             'examColumns' => array_values($examColumns),
             'rows' => $rows,
+            'gradeRanges' => $gradeRanges,
         ];
     }
 
@@ -594,8 +596,8 @@ class StudentPortalModel
                 $academicPeriod['session_name'] = $sessionStmt->fetchColumn() ?: '';
             }
 
-            $settingsStmt = $this->pdo->prepare('SELECT setting_key, setting_value FROM settings WHERE setting_key IN (?, ?, ?)');
-            $settingsStmt->execute(['phone', 'email', 'location']);
+            $settingsStmt = $this->pdo->prepare('SELECT setting_key, setting_value FROM settings WHERE setting_key IN (?, ?, ?, ?, ?, ?, ?)');
+            $settingsStmt->execute(['phone', 'email', 'location', 'address', 'admin_reply_email_logo_url', 'site_logo', 'logo_path']);
             $settings = [];
             foreach ($settingsStmt->fetchAll(PDO::FETCH_ASSOC) as $settingRow) {
                 $settings[(string)$settingRow['setting_key']] = (string)($settingRow['setting_value'] ?? '');
@@ -608,6 +610,7 @@ class StudentPortalModel
                 'session_name' => '',
                 'examColumns' => $gradesTable['examColumns'] ?? [],
                 'rows' => $gradesTable['rows'] ?? [],
+                'gradeRanges' => $gradesTable['gradeRanges'] ?? [],
             ];
         }
 
@@ -618,6 +621,7 @@ class StudentPortalModel
             'session_name' => (string)($academicPeriod['session_name'] ?? ''),
             'examColumns' => $gradesTable['examColumns'] ?? [],
             'rows' => $gradesTable['rows'] ?? [],
+            'gradeRanges' => $gradesTable['gradeRanges'] ?? [],
         ];
     }
 
