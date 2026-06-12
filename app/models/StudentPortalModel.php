@@ -373,6 +373,25 @@ class StudentPortalModel
             ');
             $stmt->execute(['student_id' => $studentId]);
             $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $gradeRangesStmt = $this->pdo->query('
+                SELECT grading_system_id, grade_letter, min_marks, max_marks, remarks
+                FROM grade_ranges
+                ORDER BY grading_system_id ASC, min_marks DESC
+            ');
+            $gradeRanges = [];
+            foreach ($gradeRangesStmt->fetchAll(PDO::FETCH_ASSOC) as $gradeRange) {
+                $rangeGradingSystemId = (int)($gradeRange['grading_system_id'] ?? 0);
+                if ($rangeGradingSystemId <= 0) {
+                    continue;
+                }
+                $gradeRanges[$rangeGradingSystemId][] = [
+                    'grade_letter' => (string)($gradeRange['grade_letter'] ?? ''),
+                    'min_marks' => (float)($gradeRange['min_marks'] ?? 0),
+                    'max_marks' => (float)($gradeRange['max_marks'] ?? 0),
+                    'remarks' => (string)($gradeRange['remarks'] ?? ''),
+                ];
+            }
         } catch (PDOException) {
             return [
                 'examColumns' => [],
@@ -442,7 +461,7 @@ class StudentPortalModel
 
         ksort($examColumns);
 
-        $rows = array_values(array_map(function (array $row) use ($examColumns): array {
+        $rows = array_values(array_map(function (array $row) use ($examColumns, $gradeRanges): array {
             foreach ($examColumns as $examColumn) {
                 $gradingSystemId = (int)$examColumn['id'];
                 if (!array_key_exists($gradingSystemId, $row['exam_marks'])) {
@@ -494,6 +513,27 @@ class StudentPortalModel
                 $value = $row['exam_marks'][$gradingSystemId] ?? null;
                 if ($value !== null && $value !== '' && is_numeric($value)) {
                     $row['exam_marks'][$gradingSystemId] = (string)((int)round((float)$value));
+                }
+            }
+
+            foreach ($examColumns as $examColumn) {
+                if ((string)($examColumn['type'] ?? '') !== 'consolidated') {
+                    continue;
+                }
+
+                $gradingSystemId = (int)$examColumn['id'];
+                $consolidatedMark = $row['exam_marks'][$gradingSystemId] ?? null;
+                if ($consolidatedMark === null || $consolidatedMark === '' || !is_numeric($consolidatedMark)) {
+                    continue;
+                }
+
+                $mark = (float)$consolidatedMark;
+                foreach (($gradeRanges[$gradingSystemId] ?? []) as $range) {
+                    if ($mark >= (float)$range['min_marks'] && $mark <= (float)$range['max_marks']) {
+                        $row['grade'] = (string)$range['grade_letter'];
+                        $row['comment'] = (string)$range['remarks'];
+                        break 2;
+                    }
                 }
             }
 
