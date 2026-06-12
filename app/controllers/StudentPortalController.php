@@ -609,8 +609,8 @@ class StudentPortalController extends Controller
         // A4 portrait in PDF points.
         $pageWidth = 595;
         $pageHeight = 842;
-        $margin = 32;
-        $bottomMargin = 58;
+        $margin = 34;
+        $bottomMargin = 56;
         $pages = [];
         $content = '';
         $pageNumber = 0;
@@ -699,38 +699,40 @@ class StudentPortalController extends Controller
                 return;
             }
             $fillRect($x, $logoY, $size, $size, $white);
-            $strokeRect($x, $logoY, $size, $size, $primary, 1.0);
-            $text($x + 8, $logoY + ($size / 2) - 4, 12, 'STM', $primary, 'F2');
+            $strokeRect($x, $logoY, $size, $size, $primary, 0.8);
+            $text($x + 7, $logoY + ($size / 2) - 4, 10, 'STM', $primary, 'F2');
         };
 
         $drawPageHeader = function (bool $firstPage) use (&$y, &$pageNumber, $pageWidth, $pageHeight, $margin, $primary, $secondary, $dark, $muted, $line, $text, $centerText, $drawLogo, $collegeLineOne, $collegeLineTwo, $collegeAddress, $collegeContacts, $serialNumber, $transcriptNumber, $issuedAt, $verificationCode): void {
             $pageNumber++;
             $y = $pageHeight - $margin;
-            $drawLogo($margin, $pageHeight - 78, 46);
-            $drawLogo($pageWidth - $margin - 46, $pageHeight - 78, 46);
+            $logoSize = 40;
+            $logoY = $pageHeight - 70;
+            $drawLogo($margin + 6, $logoY, $logoSize);
+            $drawLogo($pageWidth - $margin - $logoSize - 6, $logoY, $logoSize);
             $centerX = $pageWidth / 2;
-            $centerText($centerX, $pageHeight - 34, 14, $collegeLineOne, $primary, 'F5');
-            $centerText($centerX, $pageHeight - 50, 13, $collegeLineTwo, $primary, 'F5');
+            $centerText($centerX, $pageHeight - 33, 12, $collegeLineOne, $primary, 'F5');
+            $centerText($centerX, $pageHeight - 47, 12, $collegeLineTwo, $primary, 'F5');
             if ($collegeAddress !== '') {
-                $centerText($centerX, $pageHeight - 64, 8, $this->truncatePdfText($collegeAddress, 82), $dark, 'F1');
+                $centerText($centerX, $pageHeight - 60, 7, $this->truncatePdfText($collegeAddress, 68), $dark, 'F1');
             }
             if ($collegeContacts !== '') {
-                $centerText($centerX, $pageHeight - 76, 8, $this->truncatePdfText($collegeContacts, 82), $dark, 'F1');
+                $centerText($centerX, $pageHeight - 71, 7, $this->truncatePdfText($collegeContacts, 76), $dark, 'F1');
             }
-            $line($margin, $pageHeight - 92, $pageWidth - $margin, $pageHeight - 92, $primary, 1.4);
-            $line($margin, $pageHeight - 96, $pageWidth - $margin, $pageHeight - 96, $secondary, 0.8);
-            $y = $pageHeight - 116;
+            $line($margin, $pageHeight - 86, $pageWidth - $margin, $pageHeight - 86, $primary, 1.0);
+            $line($margin, $pageHeight - 89, $pageWidth - $margin, $pageHeight - 89, $secondary, 0.6);
+            $y = $pageHeight - 107;
 
             if ($firstPage) {
-                $centerText($pageWidth / 2, $y, 20, 'OFFICIAL ACADEMIC TRANSCRIPT', $primary, 'F5');
-                $centerText($pageWidth / 2, $y - 22, 8, 'Serial No: ' . $serialNumber . '  I  Transcript No: ' . $transcriptNumber, $dark, 'F1');
-                $centerText($pageWidth / 2, $y - 36, 8, 'Issue Date: ' . $issuedAt . '  I  Verification Code: ' . $verificationCode, $dark, 'F1');
-                $line($margin, $y - 48, $pageWidth - $margin, $y - 48, $secondary, 1.2);
-                $y -= 62;
+                $centerText($pageWidth / 2, $y, 17, 'OFFICIAL ACADEMIC TRANSCRIPT', $primary, 'F5');
+                $centerText($pageWidth / 2, $y - 18, 7, 'Serial No: ' . $serialNumber . '  I  Transcript No: ' . $transcriptNumber, $dark, 'F1');
+                $centerText($pageWidth / 2, $y - 30, 7, 'Issue Date: ' . $issuedAt . '  I  Verification Code: ' . $verificationCode, $dark, 'F1');
+                $line($margin, $y - 41, $pageWidth - $margin, $y - 41, $secondary, 0.9);
+                $y -= 52;
             } else {
-                $text($margin, $y, 9, 'Continuation for ' . (string)($student['name'] ?? 'Student'), $muted, 'F2');
-                $line($margin, $y - 7, $pageWidth - $margin, $y - 7, $secondary, 0.8);
-                $y -= 20;
+                $text($margin, $y, 8, 'Continuation for ' . (string)($student['name'] ?? 'Student'), $muted, 'F2');
+                $line($margin, $y - 6, $pageWidth - $margin, $y - 6, $secondary, 0.6);
+                $y -= 17;
             }
         };
 
@@ -740,45 +742,48 @@ class StudentPortalController extends Controller
             $text($pageWidth - 145, 28, 7, 'Generated: ' . $issuedAt, $muted, 'F4');
         };
 
-        $drawMeta = function () use (&$y, $pageWidth, $margin, $primary, $dark, $muted, $border, $light, $fillRect, $strokeRect, $text, $wrappedText, $student, $transcript): void {
+        $drawMeta = function () use (&$y, $pageWidth, $margin, $primary, $dark, $muted, $border, $white, $fillRect, $strokeRect, $line, $text, $wrappedText, $student, $transcript): void {
             $boxWidth = ($pageWidth - ($margin * 2) - 12) / 2;
-            $boxHeight = 106;
+            $boxHeight = 88;
             $leftX = $margin;
             $rightX = $margin + $boxWidth + 12;
             $boxY = $y - $boxHeight;
-            $fillRect($leftX, $boxY, $boxWidth, $boxHeight, $light);
-            $fillRect($rightX, $boxY, $boxWidth, $boxHeight, $light);
-            $strokeRect($leftX, $boxY, $boxWidth, $boxHeight, $border);
-            $strokeRect($rightX, $boxY, $boxWidth, $boxHeight, $border);
-            $text($leftX + 10, $y - 17, 10, 'Student Details', $primary, 'F2');
-            $text($rightX + 10, $y - 17, 10, 'Academic Details', $primary, 'F2');
+            $fillRect($leftX, $boxY, $boxWidth, $boxHeight, $white);
+            $fillRect($rightX, $boxY, $boxWidth, $boxHeight, $white);
+            $strokeRect($leftX, $boxY, $boxWidth, $boxHeight, $border, 0.5);
+            $strokeRect($rightX, $boxY, $boxWidth, $boxHeight, $border, 0.5);
+            $text($leftX + 8, $y - 14, 9, 'Student Details', $primary, 'F2');
+            $text($rightX + 8, $y - 14, 9, 'Academic Details', $primary, 'F2');
+            $line($leftX + 8, $y - 20, $leftX + $boxWidth - 8, $y - 20, $border, 0.4);
+            $line($rightX + 8, $y - 20, $rightX + $boxWidth - 8, $y - 20, $border, 0.4);
 
-            $metaY = $y - 34;
-            $text($leftX + 10, $metaY, 8, 'Name:', $muted, 'F2');
-            $wrappedText($leftX + 78, $metaY, 8, (string)($student['name'] ?? '-'), $boxWidth - 88, 2, $dark);
-            $metaY -= 18;
-            $text($leftX + 10, $metaY, 8, 'Admission No:', $muted, 'F2');
-            $text($leftX + 78, $metaY, 8, (string)($student['admission_number'] ?? '-'), $dark);
-            $metaY -= 18;
-            $text($leftX + 10, $metaY, 8, 'National ID:', $muted, 'F2');
-            $text($leftX + 78, $metaY, 8, (string)($student['national_id'] ?? '-'), $dark);
-            $metaY -= 18;
-            $text($leftX + 10, $metaY, 8, 'Email:', $muted, 'F2');
-            $wrappedText($leftX + 78, $metaY, 8, (string)($student['email'] ?? '-'), $boxWidth - 88, 1, $dark);
+            $metaY = $y - 32;
+            $labelWidth = 70;
+            $text($leftX + 8, $metaY, 7, 'Name', $muted, 'F2');
+            $wrappedText($leftX + $labelWidth, $metaY, 7, (string)($student['name'] ?? '-'), $boxWidth - $labelWidth - 8, 1, $dark);
+            $metaY -= 15;
+            $text($leftX + 8, $metaY, 7, 'Admission No.', $muted, 'F2');
+            $wrappedText($leftX + $labelWidth, $metaY, 7, (string)($student['admission_number'] ?? '-'), $boxWidth - $labelWidth - 8, 1, $dark);
+            $metaY -= 15;
+            $text($leftX + 8, $metaY, 7, 'National ID', $muted, 'F2');
+            $text($leftX + $labelWidth, $metaY, 7, (string)($student['national_id'] ?? '-'), $dark);
+            $metaY -= 15;
+            $text($leftX + 8, $metaY, 7, 'Email', $muted, 'F2');
+            $wrappedText($leftX + $labelWidth, $metaY, 7, (string)($student['email'] ?? '-'), $boxWidth - $labelWidth - 8, 1, $dark);
 
-            $metaY = $y - 34;
-            $text($rightX + 10, $metaY, 8, 'Programme:', $muted, 'F2');
-            $wrappedText($rightX + 78, $metaY, 8, (string)($student['programme_name'] ?? '-'), $boxWidth - 88, 2, $dark);
-            $metaY -= 18;
-            $text($rightX + 10, $metaY, 8, 'Term:', $muted, 'F2');
-            $text($rightX + 78, $metaY, 8, (string)($transcript['term_name'] ?? '-'), $dark);
-            $metaY -= 18;
-            $text($rightX + 10, $metaY, 8, 'Session:', $muted, 'F2');
-            $text($rightX + 78, $metaY, 8, (string)($transcript['session_name'] ?? '-'), $dark);
-            $metaY -= 18;
-            $text($rightX + 10, $metaY, 8, 'Issued:', $muted, 'F2');
-            $text($rightX + 78, $metaY, 8, date('F j, Y'), $dark);
-            $y = $boxY - 24;
+            $metaY = $y - 32;
+            $text($rightX + 8, $metaY, 7, 'Programme', $muted, 'F2');
+            $wrappedText($rightX + $labelWidth, $metaY, 7, (string)($student['programme_name'] ?? '-'), $boxWidth - $labelWidth - 8, 1, $dark);
+            $metaY -= 15;
+            $text($rightX + 8, $metaY, 7, 'Session', $muted, 'F2');
+            $text($rightX + $labelWidth, $metaY, 7, (string)($transcript['session_name'] ?? '-'), $dark);
+            $metaY -= 15;
+            $text($rightX + 8, $metaY, 7, 'Term/Semester', $muted, 'F2');
+            $text($rightX + $labelWidth, $metaY, 7, (string)($transcript['term_name'] ?? '-'), $dark);
+            $metaY -= 15;
+            $text($rightX + 8, $metaY, 7, 'Date Issued', $muted, 'F2');
+            $text($rightX + $labelWidth, $metaY, 7, date('F j, Y'), $dark);
+            $y = $boxY - 18;
         };
 
         $contentWidth = $pageWidth - ($margin * 2);
