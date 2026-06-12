@@ -309,7 +309,8 @@ class StudentPortalModel
                     gs.exam_type_id,
                     et.name AS exam_type_name,
                     et.code AS exam_type_code,
-                    et.type AS exam_type
+                    et.type AS exam_type,
+                    et.parent_exam_ids
                 FROM grading_systems gs
                 LEFT JOIN exam_types et ON et.id = gs.exam_type_id
                 WHERE gs.is_active = 1
@@ -333,11 +334,18 @@ class StudentPortalModel
                 }
 
                 $examTypeId = (int)($gradingSystemRow['exam_type_id'] ?? 0);
+                $parentExamIds = json_decode((string)($gradingSystemRow['parent_exam_ids'] ?? '[]'), true);
+                if (!is_array($parentExamIds)) {
+                    $parentExamIds = [];
+                }
+                $parentExamIds = array_values(array_filter(array_map('intval', $parentExamIds), static fn(int $id): bool => $id > 0));
+
                 $examColumns[$gradingSystemId] = [
                     'id' => $gradingSystemId,
                     'label' => $label,
                     'exam_type_id' => $examTypeId,
                     'type' => (string)($gradingSystemRow['exam_type'] ?? ''),
+                    'parent_exam_ids' => $parentExamIds,
                 ];
 
                 if ($examTypeId > 0 && !isset($gradingSystemByExamType[$examTypeId])) {
@@ -354,7 +362,8 @@ class StudentPortalModel
                     gs.exam_type_id AS grading_system_exam_type_id,
                     et.name AS exam_name,
                     et.code AS exam_code,
-                    et.type AS exam_type
+                    et.type AS exam_type,
+                    et.parent_exam_ids
                 FROM course_grades cg
                 LEFT JOIN portal_courses pc ON pc.id = cg.course_id
                 LEFT JOIN grading_systems gs ON gs.id = cg.grading_system_id
@@ -388,11 +397,18 @@ class StudentPortalModel
                 if ($examLabel === '') {
                     $examLabel = 'Grading System ' . $gradingSystemId;
                 }
+                $parentExamIds = json_decode((string)($record['parent_exam_ids'] ?? '[]'), true);
+                if (!is_array($parentExamIds)) {
+                    $parentExamIds = [];
+                }
+                $parentExamIds = array_values(array_filter(array_map('intval', $parentExamIds), static fn(int $id): bool => $id > 0));
+
                 $examColumns[$gradingSystemId] = [
                     'id' => $gradingSystemId,
                     'label' => $examLabel,
                     'exam_type_id' => $examTypeId,
                     'type' => (string)($record['exam_type'] ?? ''),
+                    'parent_exam_ids' => $parentExamIds,
                 ];
             }
 
@@ -431,6 +447,53 @@ class StudentPortalModel
                 $gradingSystemId = (int)$examColumn['id'];
                 if (!array_key_exists($gradingSystemId, $row['exam_marks'])) {
                     $row['exam_marks'][$gradingSystemId] = null;
+                }
+            }
+
+            foreach ($examColumns as $examColumn) {
+                if ((string)($examColumn['type'] ?? '') !== 'consolidated') {
+                    continue;
+                }
+
+                $gradingSystemId = (int)$examColumn['id'];
+                if ($row['exam_marks'][$gradingSystemId] !== null && $row['exam_marks'][$gradingSystemId] !== '') {
+                    continue;
+                }
+
+                $parentExamIds = $examColumn['parent_exam_ids'] ?? [];
+                $total = 0.0;
+                $hasMarks = false;
+
+                foreach ($examColumns as $candidateColumn) {
+                    if ((int)$candidateColumn['id'] === $gradingSystemId) {
+                        continue;
+                    }
+                    if ((string)($candidateColumn['type'] ?? '') === 'consolidated') {
+                        continue;
+                    }
+                    if ($parentExamIds !== [] && !in_array((int)($candidateColumn['exam_type_id'] ?? 0), $parentExamIds, true)) {
+                        continue;
+                    }
+
+                    $candidateValue = $row['exam_marks'][(int)$candidateColumn['id']] ?? null;
+                    if ($candidateValue === null || $candidateValue === '' || !is_numeric($candidateValue)) {
+                        continue;
+                    }
+
+                    $total += (float)$candidateValue;
+                    $hasMarks = true;
+                }
+
+                if ($hasMarks) {
+                    $row['exam_marks'][$gradingSystemId] = $total;
+                }
+            }
+
+            foreach ($examColumns as $examColumn) {
+                $gradingSystemId = (int)$examColumn['id'];
+                $value = $row['exam_marks'][$gradingSystemId] ?? null;
+                if ($value !== null && $value !== '' && is_numeric($value)) {
+                    $row['exam_marks'][$gradingSystemId] = (string)((int)round((float)$value));
                 }
             }
 
