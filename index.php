@@ -117,6 +117,7 @@ $router->add('POST', 'crm/communication/send', [CRMController::class, 'sendCommu
 // Student Portal Routes (must be defined before admin routes to avoid conflicts)
 $router->add('GET', 'student/receipt/{id}', [StudentPortalController::class, 'receipt']);
 $router->add('GET', 'student/invoice/{id}', [StudentPortalController::class, 'invoice']);
+$router->add('GET', 'student/transcript', [StudentPortalController::class, 'transcript']);
 $router->add('GET', 'student/fees', [StudentPortalController::class, 'fees']);
 
 // Student Portal - Services Section

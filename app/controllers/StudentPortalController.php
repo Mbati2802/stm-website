@@ -554,6 +554,29 @@ class StudentPortalController extends Controller
         }
     }
 
+    public function transcript(): void
+    {
+        $student = $this->requireStudent();
+        $model = new StudentPortalModel($this->config);
+        $transcript = $model->getStudentTranscriptData((int)$student['id']);
+
+        if (empty($transcript['student'])) {
+            flash('error', 'Transcript details could not be loaded right now.');
+            $this->redirect('portal/grades');
+            return;
+        }
+
+        $transcriptPath = __DIR__ . '/../../views/student/transcript.php';
+        if (!file_exists($transcriptPath)) {
+            flash('error', 'Transcript view not found.');
+            $this->redirect('portal/grades');
+            return;
+        }
+
+        require_once $transcriptPath;
+        exit;
+    }
+
     public function submitSupportTicket(): void
     {
         $student = $this->requireStudent();

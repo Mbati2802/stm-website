@@ -2,7 +2,19 @@
     <div class="student-content-wrap">
         <div class="student-card">
             <div class="student-card-header">
-                <h4 class="student-card-title"><i class="bi bi-award me-2"></i>Grades & Results</h4>
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between gap-3 w-100">
+                    <h4 class="student-card-title mb-0"><i class="bi bi-award me-2"></i>Grades & Results</h4>
+                    <?php if (!empty($gradeRows ?? [])): ?>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="<?= e(base_url('student/transcript')) ?>" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye me-1"></i>Preview Transcript
+                            </a>
+                            <a href="<?= e(base_url('student/transcript?download=1')) ?>" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+                                <i class="bi bi-download me-1"></i>Download PDF
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
             <?php if (empty($gradeRows ?? [])): ?>
                 <div class="alert alert-info mb-0">No grades have been published yet.</div>

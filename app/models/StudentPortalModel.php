@@ -303,14 +303,19 @@ class StudentPortalModel
     {
         try {
             $examTypeStmt = $this->pdo->query("
-                SELECT name
-                FROM exam_types
-                WHERE is_active = 1 AND type <> 'consolidated'
-                ORDER BY id ASC
+                SELECT
+                    gs.name AS grading_system_name,
+                    et.name AS exam_type_name
+                FROM grading_systems gs
+                INNER JOIN exam_types et ON et.id = gs.exam_type_id
+                WHERE gs.is_active = 1
+                  AND et.is_active = 1
+                  AND et.type <> 'consolidated'
+                ORDER BY gs.id ASC
             ");
             $examColumns = [];
             foreach ($examTypeStmt->fetchAll() as $examTypeRow) {
-                $examLabel = trim((string)($examTypeRow['name'] ?? ''));
+                $examLabel = trim((string)($examTypeRow['grading_system_name'] ?? $examTypeRow['exam_type_name'] ?? ''));
                 if ($examLabel !== '') {
                     $examColumns[$examLabel] = $examLabel;
                 }
@@ -321,11 +326,13 @@ class StudentPortalModel
                     cg.*,
                     pc.title AS course_title,
                     pc.code AS course_code,
+                    gs.name AS grading_system_name,
                     et.name AS exam_name,
                     et.code AS exam_code,
                     et.type AS exam_type
                 FROM course_grades cg
                 LEFT JOIN portal_courses pc ON pc.id = cg.course_id
+                LEFT JOIN grading_systems gs ON gs.id = cg.grading_system_id
                 LEFT JOIN exam_types et ON et.id = cg.exam_type_id
                 WHERE cg.student_id = :student_id
                 ORDER BY pc.code ASC, cg.created_at ASC, cg.id ASC
@@ -343,7 +350,7 @@ class StudentPortalModel
 
         foreach ($records as $record) {
             $examType = (string)($record['exam_type'] ?? '');
-            $examLabel = trim((string)($record['exam_name'] ?? $record['exam_code'] ?? ''));
+            $examLabel = trim((string)($record['grading_system_name'] ?? $record['exam_name'] ?? $record['exam_code'] ?? ''));
             if ($examType !== 'consolidated' && $examLabel !== '') {
                 $examColumns[$examLabel] = $examLabel;
             }
@@ -389,6 +396,81 @@ class StudentPortalModel
         return [
             'examColumns' => array_values($examColumns),
             'rows' => $rows,
+        ];
+    }
+
+    public function getStudentTranscriptData(int $studentId): array
+    {
+        $gradesTable = $this->getStudentGradesTable($studentId);
+
+        try {
+            $studentStmt = $this->pdo->prepare('
+                SELECT
+                    sa.id,
+                    sa.name,
+                    sa.admission_number,
+                    sa.email,
+                    p.name AS programme_name
+                FROM student_accounts sa
+                LEFT JOIN programmes p ON p.id = sa.programme_id
+                WHERE sa.id = :student_id
+                LIMIT 1
+            ');
+            $studentStmt->execute(['student_id' => $studentId]);
+            $student = $studentStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+            $periodStmt = $this->pdo->prepare('
+                SELECT
+                    t.name AS term_name,
+                    ay.name AS session_name
+                FROM course_grades cg
+                LEFT JOIN terms t ON t.id = cg.term_id
+                LEFT JOIN academic_years ay ON ay.id = cg.academic_session_id
+                WHERE cg.student_id = :student_id
+                ORDER BY
+                    cg.academic_session_id DESC,
+                    cg.term_id DESC,
+                    cg.created_at DESC,
+                    cg.id DESC
+                LIMIT 1
+            ');
+            $periodStmt->execute(['student_id' => $studentId]);
+            $academicPeriod = $periodStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+            if (empty($academicPeriod['term_name'])) {
+                $termStmt = $this->pdo->query('SELECT name FROM terms WHERE is_current = 1 ORDER BY id DESC LIMIT 1');
+                $academicPeriod['term_name'] = $termStmt->fetchColumn() ?: '';
+            }
+
+            if (empty($academicPeriod['session_name'])) {
+                $sessionStmt = $this->pdo->query('SELECT name FROM academic_years WHERE is_current = 1 ORDER BY id DESC LIMIT 1');
+                $academicPeriod['session_name'] = $sessionStmt->fetchColumn() ?: '';
+            }
+
+            $settingsStmt = $this->pdo->prepare('SELECT setting_key, setting_value FROM settings WHERE setting_key IN (?, ?, ?)');
+            $settingsStmt->execute(['phone', 'email', 'location']);
+            $settings = [];
+            foreach ($settingsStmt->fetchAll(PDO::FETCH_ASSOC) as $settingRow) {
+                $settings[(string)$settingRow['setting_key']] = (string)($settingRow['setting_value'] ?? '');
+            }
+        } catch (PDOException) {
+            return [
+                'student' => [],
+                'settings' => [],
+                'term_name' => '',
+                'session_name' => '',
+                'examColumns' => $gradesTable['examColumns'] ?? [],
+                'rows' => $gradesTable['rows'] ?? [],
+            ];
+        }
+
+        return [
+            'student' => $student,
+            'settings' => $settings,
+            'term_name' => (string)($academicPeriod['term_name'] ?? ''),
+            'session_name' => (string)($academicPeriod['session_name'] ?? ''),
+            'examColumns' => $gradesTable['examColumns'] ?? [],
+            'rows' => $gradesTable['rows'] ?? [],
         ];
     }
 
