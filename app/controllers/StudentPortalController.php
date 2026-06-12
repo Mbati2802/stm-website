@@ -590,7 +590,12 @@ class StudentPortalController extends Controller
             $admissionNumber = 'student';
         }
 
-        $pdf = $this->buildTranscriptPdf($transcript);
+        try {
+            $pdf = $this->buildTranscriptPdf($transcript);
+        } catch (Throwable $e) {
+            error_log('Transcript PDF generation failed: ' . $e->getMessage());
+            $pdf = $this->buildTranscriptFallbackPdf($transcript);
+        }
 
         while (ob_get_level() > 0) {
             ob_end_clean();
@@ -706,7 +711,12 @@ class StudentPortalController extends Controller
             (string)($settings['email'] ?? ''),
         ])));
         $summary = $this->buildTranscriptAcademicSummary($rows);
-        $logoImage = $this->prepareTranscriptPdfLogo($settings);
+        try {
+            $logoImage = $this->prepareTranscriptPdfLogo($settings);
+        } catch (Throwable $e) {
+            error_log('Transcript logo loading failed: ' . $e->getMessage());
+            $logoImage = null;
+        }
         $pdfImages = $logoImage !== null ? ['Logo' => $logoImage] : [];
 
         $drawLogo = function (float $x, float $logoY, float $size) use (&$content, $logoImage, $primary, $white, $fillRect, $strokeRect, $text): void {
@@ -984,6 +994,40 @@ class StudentPortalController extends Controller
         return $this->assemblePdf($pages, $pageWidth, $pageHeight, $pdfImages);
     }
 
+    private function buildTranscriptFallbackPdf(array $transcript): string
+    {
+        $pageWidth = 595;
+        $pageHeight = 842;
+        $content = '';
+        $student = $transcript['student'] ?? [];
+        $y = 790;
+
+        $write = function (float $x, int $size, string $value) use (&$content, &$y): void {
+            $safe = $this->pdfEscape($value);
+            $content .= sprintf("BT /F1 %d Tf %.2f %.2f Td (%s) Tj ET\n", $size, $x, $y, $safe);
+            $y -= ($size + 8);
+        };
+
+        $write(60, 16, 'OFFICIAL ACADEMIC TRANSCRIPT');
+        $write(60, 10, 'Student: ' . (string)($student['name'] ?? '-'));
+        $write(60, 10, 'Admission No: ' . (string)($student['admission_number'] ?? '-'));
+        $write(60, 10, 'Programme: ' . (string)($student['programme_name'] ?? '-'));
+        $write(60, 10, 'Generated: ' . date('F j, Y'));
+        $y -= 12;
+        $write(60, 11, 'Results');
+
+        foreach (array_slice(array_values($transcript['rows'] ?? []), 0, 30) as $row) {
+            $marks = array_values(array_filter($row['exam_marks'] ?? [], static fn($mark): bool => $mark !== null && $mark !== ''));
+            $total = $marks !== [] ? (string)end($marks) : '-';
+            $write(60, 8, trim((string)($row['course_code'] ?? '-') . '  ' . (string)($row['course_title'] ?? '-') . '  Total: ' . $total . '  Grade: ' . (string)($row['grade'] ?? '-')));
+            if ($y < 80) {
+                break;
+            }
+        }
+
+        return $this->assemblePdf([$content], $pageWidth, $pageHeight);
+    }
+
     private function buildTranscriptAcademicSummary(array $rows): array
     {
         $registered = count($rows);
@@ -1103,6 +1147,9 @@ class StudentPortalController extends Controller
             if ($realPath === false || !is_readable($realPath)) {
                 continue;
             }
+            if (filesize($realPath) !== false && filesize($realPath) > 1024 * 1024) {
+                continue;
+            }
 
             $info = @getimagesize($realPath);
             if (!is_array($info)) {
@@ -1156,11 +1203,11 @@ class StudentPortalController extends Controller
         $objects = [
             1 => '',
             2 => '',
-            3 => "<< /Type /Font /Subtype /Type1 /BaseFont /Cambria >>",
-            4 => "<< /Type /Font /Subtype /Type1 /BaseFont /Cambria-Bold >>",
-            5 => "<< /Type /Font /Subtype /Type1 /BaseFont /Cambria-Italic >>",
-            6 => "<< /Type /Font /Subtype /Type1 /BaseFont /Cambria >>",
-            7 => "<< /Type /Font /Subtype /Type1 /BaseFont /Cambria-Bold >>",
+            3 => "<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman >>",
+            4 => "<< /Type /Font /Subtype /Type1 /BaseFont /Times-Bold >>",
+            5 => "<< /Type /Font /Subtype /Type1 /BaseFont /Times-Italic >>",
+            6 => "<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman >>",
+            7 => "<< /Type /Font /Subtype /Type1 /BaseFont /Times-Bold >>",
         ];
         $pageObjectIds = [];
         $imageObjectIds = [];
