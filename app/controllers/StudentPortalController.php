@@ -673,17 +673,23 @@ class StudentPortalController extends Controller
         $rows = array_values($transcript['rows'] ?? []);
         $gradeRanges = $transcript['gradeRanges'] ?? [];
         $issuedAt = date('F j, Y');
+        $verificationCode = 'TR-' . strtoupper(substr(sha1((string)($student['id'] ?? '') . '|' . (string)($student['admission_number'] ?? '') . '|' . date('YmdHis')), 0, 12));
         $serialNumber = 'SR-' . date('Ymd') . '-' . str_pad((string)((int)($student['id'] ?? 0)), 5, '0', STR_PAD_LEFT);
-        $transcriptNumber = 'TR-' . date('Ymd-His') . '-' . strtoupper(substr(sha1((string)($student['admission_number'] ?? '') . microtime(true)), 0, 6));
+        $transcriptNumber = 'TR-' . date('Ymd-His') . '-' . strtoupper(substr($verificationCode, -6));
         $appName = (string)($this->config['app_name'] ?? 'St. Mary\'s Mother and Child Hospital Medical Training College');
         $collegeName = $appName !== '' ? $appName : 'St. Mary\'s Mother and Child Hospital Medical Training College';
         $collegeLineOne = 'ST. MARY\'S MOTHER AND CHILD HOSPITAL';
         $collegeLineTwo = 'MEDICAL TRAINING COLLEGE';
         $collegeAddress = trim((string)($settings['address'] ?? $settings['location'] ?? ''));
+        $collegeWebsite = trim((string)($settings['website'] ?? $settings['site_url'] ?? $this->config['base_url'] ?? ''));
         $collegeContacts = trim(implode(' | ', array_filter([
             (string)($settings['phone'] ?? ''),
+            $collegeWebsite,
             (string)($settings['email'] ?? ''),
         ])));
+        $verificationPortal = 'verify.college.ac.ke';
+        $verificationUrl = 'https://' . $verificationPortal . '/?code=' . rawurlencode($verificationCode);
+        $summary = $this->buildTranscriptAcademicSummary($rows);
         $logoImage = $this->prepareTranscriptPdfLogo($settings);
         $pdfImages = $logoImage !== null ? ['Logo' => $logoImage] : [];
 
@@ -697,7 +703,7 @@ class StudentPortalController extends Controller
             $text($x + 8, $logoY + ($size / 2) - 4, 12, 'STM', $primary, 'F2');
         };
 
-        $drawPageHeader = function (bool $firstPage) use (&$y, &$pageNumber, $pageWidth, $pageHeight, $margin, $primary, $secondary, $dark, $muted, $line, $text, $centerText, $wrappedText, $drawLogo, $collegeLineOne, $collegeLineTwo, $collegeAddress, $collegeContacts, $serialNumber, $transcriptNumber): void {
+        $drawPageHeader = function (bool $firstPage) use (&$y, &$pageNumber, $pageWidth, $pageHeight, $margin, $primary, $secondary, $dark, $muted, $line, $text, $centerText, $drawLogo, $collegeLineOne, $collegeLineTwo, $collegeAddress, $collegeContacts, $serialNumber, $transcriptNumber, $issuedAt, $verificationCode): void {
             $pageNumber++;
             $y = $pageHeight - $margin;
             $drawLogo($margin, $pageHeight - 78, 46);
@@ -716,10 +722,11 @@ class StudentPortalController extends Controller
             $y = $pageHeight - 116;
 
             if ($firstPage) {
-                $centerText($pageWidth / 2, $y, 16, 'OFFICIAL ACADEMIC TRANSCRIPT', $primary, 'F5');
-                $centerText($pageWidth / 2, $y - 20, 8, 'Serial No: ' . $serialNumber . '  I  Transcript No: ' . $transcriptNumber, $dark, 'F1');
-                $line($margin, $y - 32, $pageWidth - $margin, $y - 32, $secondary, 1.2);
-                $y -= 46;
+                $centerText($pageWidth / 2, $y, 20, 'OFFICIAL ACADEMIC TRANSCRIPT', $primary, 'F5');
+                $centerText($pageWidth / 2, $y - 22, 8, 'Serial No: ' . $serialNumber . '  I  Transcript No: ' . $transcriptNumber, $dark, 'F1');
+                $centerText($pageWidth / 2, $y - 36, 8, 'Issue Date: ' . $issuedAt . '  I  Verification Code: ' . $verificationCode, $dark, 'F1');
+                $line($margin, $y - 48, $pageWidth - $margin, $y - 48, $secondary, 1.2);
+                $y -= 62;
             } else {
                 $text($margin, $y, 9, 'Continuation for ' . (string)($student['name'] ?? 'Student'), $muted, 'F2');
                 $line($margin, $y - 7, $pageWidth - $margin, $y - 7, $secondary, 0.8);
@@ -735,7 +742,7 @@ class StudentPortalController extends Controller
 
         $drawMeta = function () use (&$y, $pageWidth, $margin, $primary, $dark, $muted, $border, $light, $fillRect, $strokeRect, $text, $wrappedText, $student, $transcript): void {
             $boxWidth = ($pageWidth - ($margin * 2) - 12) / 2;
-            $boxHeight = 96;
+            $boxHeight = 106;
             $leftX = $margin;
             $rightX = $margin + $boxWidth + 12;
             $boxY = $y - $boxHeight;
@@ -752,6 +759,9 @@ class StudentPortalController extends Controller
             $metaY -= 18;
             $text($leftX + 10, $metaY, 8, 'Admission No:', $muted, 'F2');
             $text($leftX + 78, $metaY, 8, (string)($student['admission_number'] ?? '-'), $dark);
+            $metaY -= 18;
+            $text($leftX + 10, $metaY, 8, 'National ID:', $muted, 'F2');
+            $text($leftX + 78, $metaY, 8, (string)($student['national_id'] ?? '-'), $dark);
             $metaY -= 18;
             $text($leftX + 10, $metaY, 8, 'Email:', $muted, 'F2');
             $wrappedText($leftX + 78, $metaY, 8, (string)($student['email'] ?? '-'), $boxWidth - 88, 1, $dark);
@@ -792,7 +802,7 @@ class StudentPortalController extends Controller
                 'label' => (string)($examColumn['label'] ?? 'Exam'),
                 'exam_id' => (int)($examColumn['id'] ?? 0),
                 'width' => $examWidth,
-                'align' => 'center',
+                'align' => 'right',
             ];
         }
         $columns[] = ['label' => 'Grade', 'key' => 'grade', 'width' => $gradeWidth, 'align' => 'center'];
@@ -842,13 +852,54 @@ class StudentPortalController extends Controller
                     $strokeRect($x, $y - $rowHeight, $width, $rowHeight, $border, 0.35);
                     $font = ($column['key'] ?? '') === 'grade' ? 'F2' : 'F1';
                     $size = isset($column['exam_id']) || ($column['key'] ?? '') === 'grade' ? 7 : 6;
-                    $textX = ($column['align'] ?? 'left') === 'center' ? $x + ($width / 2) - (strlen($value) * $size * 0.14) : $x + 3;
+                    $align = (string)($column['align'] ?? 'left');
+                    if ($align === 'center') {
+                        $textX = $x + ($width / 2) - (strlen($value) * $size * 0.14);
+                    } elseif ($align === 'right') {
+                        $textX = $x + $width - 5 - (strlen($value) * $size * 0.28);
+                    } else {
+                        $textX = $x + 3;
+                    }
                     $wrappedText(max($x + 3, $textX), $y - 11, $size, $value, $width - 6, 2, $dark, $font);
                     $x += $width;
                 }
                 $y -= $rowHeight;
             }
         }
+
+        if ($y - 70 < $bottomMargin) {
+            $drawFooter();
+            $finishPage();
+            $drawPageHeader(false);
+        }
+        $y -= 20;
+        $text($margin, $y, 9, 'Academic Summary', $primary, 'F5');
+        $y -= 12;
+        $summaryColumns = [
+            'Units Registered' => (string)$summary['registered'],
+            'Units Completed' => (string)$summary['completed'],
+            'Units Passed' => (string)$summary['passed'],
+            'Average Score (%)' => (string)$summary['average'],
+            'Mean Grade' => (string)$summary['mean_grade'],
+            'GPA' => (string)$summary['gpa'],
+        ];
+        $summaryCellWidth = floor($contentWidth / count($summaryColumns));
+        $x = $margin;
+        foreach ($summaryColumns as $label => $value) {
+            $fillRect($x, $y - 18, $summaryCellWidth, 18, $primary);
+            $strokeRect($x, $y - 18, $summaryCellWidth, 18, $border, 0.35);
+            $centerText($x + ($summaryCellWidth / 2), $y - 12, 6, $label, $white, 'F5');
+            $x += $summaryCellWidth;
+        }
+        $y -= 18;
+        $x = $margin;
+        foreach ($summaryColumns as $value) {
+            $fillRect($x, $y - 18, $summaryCellWidth, 18, $light);
+            $strokeRect($x, $y - 18, $summaryCellWidth, 18, $border, 0.35);
+            $centerText($x + ($summaryCellWidth / 2), $y - 12, 8, (string)$value, $dark, 'F1');
+            $x += $summaryCellWidth;
+        }
+        $y -= 24;
 
         $gradingKey = [];
         foreach ($examColumns as $examColumn) {
@@ -903,6 +954,23 @@ class StudentPortalController extends Controller
             $y -= 26;
         }
 
+        if ($y - 96 < $bottomMargin) {
+            $drawFooter();
+            $finishPage();
+            $drawPageHeader(false);
+        }
+        $y -= 18;
+        $text($margin, $y, 9, 'Transcript Verification', $primary, 'F5');
+        $qrSize = 58;
+        $qrY = $y - $qrSize - 8;
+        $this->drawTranscriptQrCode($content, $margin, $qrY, $qrSize, $verificationUrl, $primary, $dark, $white, $fillRect);
+        $text($margin + $qrSize + 14, $y - 16, 8, 'Verification Portal:', $muted, 'F5');
+        $text($margin + $qrSize + 112, $y - 16, 8, $verificationPortal, $dark, 'F1');
+        $text($margin + $qrSize + 14, $y - 32, 8, 'Verification Code:', $muted, 'F5');
+        $text($margin + $qrSize + 112, $y - 32, 8, $verificationCode, $dark, 'F1');
+        $wrappedText($margin + $qrSize + 14, $y - 48, 7, 'Scan the code or use the verification code above to validate this transcript.', $contentWidth - $qrSize - 20, 2, $muted, 'F1');
+        $y = $qrY - 18;
+
         if ($y - 112 < $bottomMargin) {
             $drawFooter();
             $finishPage();
@@ -912,19 +980,103 @@ class StudentPortalController extends Controller
         $y -= 22;
         $text($margin, $y, 9, 'Certification', $primary, 'F5');
         $y -= 18;
-        $wrappedText($margin, $y, 8, 'This is to certify that the results appearing on this Result Slip are a true and accurate record of the student\'s academic performance as maintained in the official records of the institution.', $contentWidth, 4, $dark, 'F3');
+        $wrappedText($margin, $y, 8, 'This is to certify that the academic record appearing on this transcript is a true and accurate representation of the student\'s performance as maintained in the official records of the College.', $contentWidth, 4, $dark, 'F3');
         $y -= 42;
         $wrappedText($margin, $y, 8, 'Issued without alteration and for official purposes only.', $contentWidth, 2, $dark, 'F3');
         $y -= 34;
         $line($margin, $y, $margin + 150, $y, $dark, 0.6);
         $line($pageWidth - $margin - 150, $y, $pageWidth - $margin, $y, $dark, 0.6);
-        $text($margin, $y - 14, 8, 'Registrar / Authorized Officer', $muted);
-        $text($pageWidth - $margin - 150, $y - 14, 8, 'College Stamp / Date', $muted);
+        $text($margin, $y - 14, 8, 'Registrar / Academic Officer', $muted, 'F1');
+        $text($margin, $y - 28, 8, 'Date: ________________', $muted, 'F1');
+        $text($pageWidth - $margin - 150, $y - 14, 8, 'Official College Stamp', $muted, 'F1');
+        $text($pageWidth - $margin - 150, $y - 28, 8, 'Date: ________________', $muted, 'F1');
 
         $drawFooter();
         $finishPage();
 
         return $this->assemblePdf($pages, $pageWidth, $pageHeight, $pdfImages);
+    }
+
+    private function buildTranscriptAcademicSummary(array $rows): array
+    {
+        $registered = count($rows);
+        $completed = 0;
+        $passed = 0;
+        $totalScore = 0.0;
+        $scoreCount = 0;
+        $gradeCounts = [];
+        $gradePoints = ['A' => 4.0, 'B' => 3.0, 'C' => 2.0, 'D' => 1.0, 'F' => 0.0];
+        $gpaTotal = 0.0;
+        $gpaCount = 0;
+
+        foreach ($rows as $row) {
+            $numericMarks = array_values(array_filter($row['exam_marks'] ?? [], static fn($mark): bool => $mark !== null && $mark !== '' && is_numeric($mark)));
+            if ($numericMarks !== []) {
+                $completed++;
+                $score = (float)end($numericMarks);
+                $totalScore += $score;
+                $scoreCount++;
+                if ($score >= 50) {
+                    $passed++;
+                }
+            }
+
+            $grade = strtoupper(trim((string)($row['grade'] ?? '')));
+            if ($grade !== '') {
+                $gradeCounts[$grade] = ($gradeCounts[$grade] ?? 0) + 1;
+                if (array_key_exists($grade, $gradePoints)) {
+                    $gpaTotal += $gradePoints[$grade];
+                    $gpaCount++;
+                }
+            }
+        }
+
+        arsort($gradeCounts);
+        $meanGrade = $gradeCounts !== [] ? (string)array_key_first($gradeCounts) : '-';
+
+        return [
+            'registered' => $registered,
+            'completed' => $completed,
+            'passed' => $passed,
+            'average' => $scoreCount > 0 ? (string)((int)round($totalScore / $scoreCount)) : '-',
+            'mean_grade' => $meanGrade,
+            'gpa' => $gpaCount > 0 ? number_format($gpaTotal / $gpaCount, 2) : 'N/A',
+        ];
+    }
+
+    private function drawTranscriptQrCode(string &$content, float $x, float $y, float $size, string $value, array $primary, array $dark, array $white, callable $fillRect): void
+    {
+        $modules = 25;
+        $moduleSize = $size / $modules;
+        $fillRect($x, $y, $size, $size, $white);
+        $hash = hash('sha256', $value);
+
+        $drawFinder = static function (float $fx, float $fy) use ($fillRect, $moduleSize, $dark, $white): void {
+            $fillRect($fx, $fy, $moduleSize * 7, $moduleSize * 7, $dark);
+            $fillRect($fx + $moduleSize, $fy + $moduleSize, $moduleSize * 5, $moduleSize * 5, $white);
+            $fillRect($fx + ($moduleSize * 2), $fy + ($moduleSize * 2), $moduleSize * 3, $moduleSize * 3, $dark);
+        };
+
+        $drawFinder($x + $moduleSize, $y + $size - ($moduleSize * 8));
+        $drawFinder($x + $size - ($moduleSize * 8), $y + $size - ($moduleSize * 8));
+        $drawFinder($x + $moduleSize, $y + $moduleSize);
+
+        for ($row = 0; $row < $modules; $row++) {
+            for ($col = 0; $col < $modules; $col++) {
+                $inTopLeft = $row >= 1 && $row <= 7 && $col >= 1 && $col <= 7;
+                $inTopRight = $row >= 1 && $row <= 7 && $col >= 17 && $col <= 23;
+                $inBottomLeft = $row >= 17 && $row <= 23 && $col >= 1 && $col <= 7;
+                if ($inTopLeft || $inTopRight || $inBottomLeft) {
+                    continue;
+                }
+
+                $index = ($row * $modules + $col) % strlen($hash);
+                $valueBit = hexdec($hash[$index]) % 2 === 0;
+                if ($valueBit) {
+                    $fillRect($x + ($col * $moduleSize), $y + ($row * $moduleSize), $moduleSize, $moduleSize, ($row + $col) % 5 === 0 ? $primary : $dark);
+                }
+            }
+        }
     }
 
     private function pdfWrapText(string $value, int $maxChars, int $maxLines): array
