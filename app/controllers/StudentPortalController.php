@@ -606,20 +606,54 @@ class StudentPortalController extends Controller
 
     private function buildTranscriptPdf(array $transcript): string
     {
-        $pageWidth = 842;
-        $pageHeight = 595;
+        // A4 portrait in PDF points.
+        $pageWidth = 595;
+        $pageHeight = 842;
         $margin = 32;
-        $bottomMargin = 36;
+        $bottomMargin = 58;
         $pages = [];
         $content = '';
+        $pageNumber = 0;
         $y = $pageHeight - $margin;
 
-        $text = function (float $x, float $textY, int $size, string $value) use (&$content): void {
-            $content .= sprintf("BT /F1 %d Tf %.2f %.2f Td (%s) Tj ET\n", $size, $x, $textY, $this->pdfEscape($value));
-        };
+        $primary = [24, 84, 144];
+        $secondary = [10, 170, 232];
+        $dark = [31, 41, 55];
+        $muted = [75, 85, 99];
+        $border = [216, 225, 238];
+        $light = [248, 250, 252];
+        $white = [255, 255, 255];
 
-        $rect = function (float $x, float $rectY, float $width, float $height) use (&$content): void {
+        $rgb = static fn(array $color): string => sprintf('%.3f %.3f %.3f', $color[0] / 255, $color[1] / 255, $color[2] / 255);
+        $setFill = function (array $color) use (&$content, $rgb): void {
+            $content .= $rgb($color) . " rg\n";
+        };
+        $setStroke = function (array $color, float $width = 0.5) use (&$content, $rgb): void {
+            $content .= $rgb($color) . sprintf(" RG %.2f w\n", $width);
+        };
+        $fillRect = function (float $x, float $rectY, float $width, float $height, array $color) use (&$content, $setFill): void {
+            $setFill($color);
+            $content .= sprintf("%.2f %.2f %.2f %.2f re f\n", $x, $rectY, $width, $height);
+        };
+        $strokeRect = function (float $x, float $rectY, float $width, float $height, array $color, float $lineWidth = 0.5) use (&$content, $setStroke): void {
+            $setStroke($color, $lineWidth);
             $content .= sprintf("%.2f %.2f %.2f %.2f re S\n", $x, $rectY, $width, $height);
+        };
+        $line = function (float $x1, float $y1, float $x2, float $y2, array $color, float $lineWidth = 0.5) use (&$content, $setStroke): void {
+            $setStroke($color, $lineWidth);
+            $content .= sprintf("%.2f %.2f m %.2f %.2f l S\n", $x1, $y1, $x2, $y2);
+        };
+        $text = function (float $x, float $textY, int $size, string $value, array $color, string $font = 'F1') use (&$content, $setFill): void {
+            $setFill($color);
+            $content .= sprintf("BT /%s %d Tf %.2f %.2f Td (%s) Tj ET\n", $font, $size, $x, $textY, $this->pdfEscape($value));
+        };
+        $wrappedText = function (float $x, float $textY, int $size, string $value, float $width, int $maxLines, array $color, string $font = 'F1') use ($text): int {
+            $maxChars = max(4, (int)floor($width / max(3.2, $size * 0.48)));
+            $lines = $this->pdfWrapText($value, $maxChars, $maxLines);
+            foreach ($lines as $lineIndex => $lineText) {
+                $text($x, $textY - ($lineIndex * ($size + 2)), $size, $lineText, $color, $font);
+            }
+            return count($lines);
         };
 
         $finishPage = function () use (&$pages, &$content): void {
@@ -629,106 +663,218 @@ class StudentPortalController extends Controller
             }
         };
 
-        $drawTitle = function () use (&$y, $margin, $pageWidth, $text): void {
-            $text($margin, $y, 16, 'St. Mary\'s Mother and Child Hospital Medical Training College');
-            $y -= 20;
-            $text($margin, $y, 12, 'Official Academic Transcript');
-            $text($pageWidth - 170, $y, 9, 'Generated: ' . date('F j, Y g:i A'));
-            $y -= 22;
-        };
-
-        $drawStudentMeta = function () use (&$y, $margin, $text, $transcript): void {
-            $student = $transcript['student'] ?? [];
-            $text($margin, $y, 10, 'Student: ' . (string)($student['name'] ?? '-'));
-            $text(360, $y, 10, 'Admission No: ' . (string)($student['admission_number'] ?? '-'));
-            $y -= 15;
-            $text($margin, $y, 10, 'Programme: ' . (string)($student['programme_name'] ?? '-'));
-            $text(360, $y, 10, 'Email: ' . (string)($student['email'] ?? '-'));
-            $y -= 15;
-            $text($margin, $y, 10, 'Term: ' . (string)($transcript['term_name'] ?? '-'));
-            $text(360, $y, 10, 'Session: ' . (string)($transcript['session_name'] ?? '-'));
-            $y -= 22;
-        };
-
+        $student = $transcript['student'] ?? [];
+        $settings = $transcript['settings'] ?? [];
         $examColumns = array_values($transcript['examColumns'] ?? []);
-        $examCount = max(1, count($examColumns));
-        $unitCodeWidth = 58;
-        $unitNameWidth = 150;
-        $gradeWidth = 42;
-        $commentWidth = 86;
-        $availableExamWidth = $pageWidth - ($margin * 2) - $unitCodeWidth - $unitNameWidth - $gradeWidth - $commentWidth;
-        $examWidth = max(32, min(68, floor($availableExamWidth / $examCount)));
+        $rows = array_values($transcript['rows'] ?? []);
+
+        $drawPageHeader = function (bool $firstPage) use (&$y, &$pageNumber, $pageWidth, $pageHeight, $margin, $primary, $secondary, $white, $dark, $muted, $fillRect, $line, $text, $wrappedText, $student, $settings): void {
+            $pageNumber++;
+            $y = $pageHeight - $margin;
+            $fillRect(0, $pageHeight - 82, $pageWidth, 82, $primary);
+            $fillRect(0, $pageHeight - 86, $pageWidth, 4, $secondary);
+            $fillRect($margin, $pageHeight - 66, 42, 42, $white);
+            $text($margin + 9, $pageHeight - 49, 14, 'STM', $primary, 'F2');
+            $text($margin + 55, $pageHeight - 36, 15, 'St. Mary\'s Mother and Child Hospital', $white, 'F2');
+            $text($margin + 55, $pageHeight - 52, 11, 'Medical Training College', $white, 'F2');
+            $text($margin + 55, $pageHeight - 68, 8, trim((string)($settings['email'] ?? '') . '  ' . (string)($settings['phone'] ?? '')), $white);
+            $text($pageWidth - 176, $pageHeight - 40, 10, 'OFFICIAL ACADEMIC TRANSCRIPT', $white, 'F2');
+            $text($pageWidth - 176, $pageHeight - 56, 8, 'Generated: ' . date('F j, Y'), $white);
+            $y = $pageHeight - 104;
+
+            if ($firstPage) {
+                $text($margin, $y, 13, 'Academic Record Statement', $primary, 'F2');
+                $line($margin, $y - 7, $pageWidth - $margin, $y - 7, $secondary, 1.2);
+                $y -= 24;
+            } else {
+                $text($margin, $y, 9, 'Continuation for ' . (string)($student['name'] ?? 'Student'), $muted, 'F2');
+                $line($margin, $y - 7, $pageWidth - $margin, $y - 7, $secondary, 0.8);
+                $y -= 20;
+            }
+        };
+
+        $drawFooter = function () use (&$content, $pageWidth, $margin, $primary, $muted, $line, $text, &$pageNumber): void {
+            $line($margin, 42, $pageWidth - $margin, 42, $primary, 0.8);
+            $text($margin, 28, 7, 'This transcript is generated from official student portal records.', $muted);
+            $text($pageWidth - 82, 28, 7, 'Page ' . $pageNumber, $muted);
+        };
+
+        $drawMeta = function () use (&$y, $pageWidth, $margin, $primary, $dark, $muted, $border, $light, $fillRect, $strokeRect, $text, $wrappedText, $student, $transcript): void {
+            $boxWidth = ($pageWidth - ($margin * 2) - 12) / 2;
+            $boxHeight = 96;
+            $leftX = $margin;
+            $rightX = $margin + $boxWidth + 12;
+            $boxY = $y - $boxHeight;
+            $fillRect($leftX, $boxY, $boxWidth, $boxHeight, $light);
+            $fillRect($rightX, $boxY, $boxWidth, $boxHeight, $light);
+            $strokeRect($leftX, $boxY, $boxWidth, $boxHeight, $border);
+            $strokeRect($rightX, $boxY, $boxWidth, $boxHeight, $border);
+            $text($leftX + 10, $y - 17, 10, 'Student Details', $primary, 'F2');
+            $text($rightX + 10, $y - 17, 10, 'Academic Details', $primary, 'F2');
+
+            $metaY = $y - 34;
+            $text($leftX + 10, $metaY, 8, 'Name:', $muted, 'F2');
+            $wrappedText($leftX + 78, $metaY, 8, (string)($student['name'] ?? '-'), $boxWidth - 88, 2, $dark);
+            $metaY -= 18;
+            $text($leftX + 10, $metaY, 8, 'Admission No:', $muted, 'F2');
+            $text($leftX + 78, $metaY, 8, (string)($student['admission_number'] ?? '-'), $dark);
+            $metaY -= 18;
+            $text($leftX + 10, $metaY, 8, 'Email:', $muted, 'F2');
+            $wrappedText($leftX + 78, $metaY, 8, (string)($student['email'] ?? '-'), $boxWidth - 88, 1, $dark);
+
+            $metaY = $y - 34;
+            $text($rightX + 10, $metaY, 8, 'Programme:', $muted, 'F2');
+            $wrappedText($rightX + 78, $metaY, 8, (string)($student['programme_name'] ?? '-'), $boxWidth - 88, 2, $dark);
+            $metaY -= 18;
+            $text($rightX + 10, $metaY, 8, 'Term:', $muted, 'F2');
+            $text($rightX + 78, $metaY, 8, (string)($transcript['term_name'] ?? '-'), $dark);
+            $metaY -= 18;
+            $text($rightX + 10, $metaY, 8, 'Session:', $muted, 'F2');
+            $text($rightX + 78, $metaY, 8, (string)($transcript['session_name'] ?? '-'), $dark);
+            $metaY -= 18;
+            $text($rightX + 10, $metaY, 8, 'Issued:', $muted, 'F2');
+            $text($rightX + 78, $metaY, 8, date('F j, Y'), $dark);
+            $y = $boxY - 24;
+        };
+
+        $contentWidth = $pageWidth - ($margin * 2);
+        $examCount = count($examColumns);
+        $codeWidth = 48;
+        $unitWidth = $examCount > 4 ? 112 : 132;
+        $gradeWidth = 34;
+        $commentWidth = $examCount > 4 ? 72 : 88;
+        $examWidth = $examCount > 0 ? floor(($contentWidth - $codeWidth - $unitWidth - $gradeWidth - $commentWidth) / $examCount) : 0;
+        if ($examWidth < 24 && $examCount > 0) {
+            $examWidth = 24;
+            $unitWidth = max(86, $contentWidth - $codeWidth - $gradeWidth - $commentWidth - ($examWidth * $examCount));
+        }
 
         $columns = [
-            ['label' => 'Unit Code', 'key' => 'course_code', 'width' => $unitCodeWidth],
-            ['label' => 'Unit Name', 'key' => 'course_title', 'width' => $unitNameWidth],
+            ['label' => 'Unit Code', 'key' => 'course_code', 'width' => $codeWidth, 'align' => 'left'],
+            ['label' => 'Unit Name', 'key' => 'course_title', 'width' => $unitWidth, 'align' => 'left'],
         ];
         foreach ($examColumns as $examColumn) {
             $columns[] = [
                 'label' => (string)($examColumn['label'] ?? 'Exam'),
-                'key' => 'exam_' . (string)($examColumn['id'] ?? ''),
                 'exam_id' => (int)($examColumn['id'] ?? 0),
                 'width' => $examWidth,
+                'align' => 'center',
             ];
         }
-        $columns[] = ['label' => 'Grade', 'key' => 'grade', 'width' => $gradeWidth];
-        $columns[] = ['label' => 'Comment', 'key' => 'comment', 'width' => $commentWidth];
+        $columns[] = ['label' => 'Grade', 'key' => 'grade', 'width' => $gradeWidth, 'align' => 'center'];
+        $columns[] = ['label' => 'Remarks', 'key' => 'comment', 'width' => $commentWidth, 'align' => 'left'];
 
-        $drawHeader = function () use (&$y, $margin, $columns, $rect, $text): void {
+        $drawTableHeader = function () use (&$y, $margin, $columns, $primary, $white, $border, $fillRect, $strokeRect, $wrappedText): void {
+            $rowHeight = 28;
             $x = $margin;
-            $rowHeight = 20;
             foreach ($columns as $column) {
                 $width = (float)$column['width'];
-                $rect($x, $y - $rowHeight, $width, $rowHeight);
-                $text($x + 3, $y - 13, 8, $this->truncatePdfText((string)$column['label'], max(6, (int)floor($width / 5))));
+                $fillRect($x, $y - $rowHeight, $width, $rowHeight, $primary);
+                $strokeRect($x, $y - $rowHeight, $width, $rowHeight, $border, 0.35);
+                $wrappedText($x + 3, $y - 10, 6, (string)$column['label'], $width - 6, 2, $white, 'F2');
                 $x += $width;
             }
             $y -= $rowHeight;
         };
 
-        $drawTitle();
-        $drawStudentMeta();
-        $drawHeader();
+        $drawPageHeader(true);
+        $drawMeta();
+        $text($margin, $y, 11, 'Results Summary', $primary, 'F2');
+        $y -= 12;
+        $drawTableHeader();
 
-        $rows = array_values($transcript['rows'] ?? []);
         if ($rows === []) {
-            $text($margin, $y - 16, 10, 'No grades are available to include in this transcript yet.');
-            $finishPage();
+            $text($margin, $y - 18, 9, 'No grades are available to include in this transcript yet.', $muted);
         } else {
-            foreach ($rows as $row) {
-                $rowHeight = 18;
+            foreach ($rows as $rowIndex => $row) {
+                $rowHeight = 30;
                 if ($y - $rowHeight < $bottomMargin) {
+                    $drawFooter();
                     $finishPage();
-                    $y = $pageHeight - $margin;
-                    $drawTitle();
-                    $drawHeader();
+                    $drawPageHeader(false);
+                    $drawTableHeader();
                 }
 
                 $x = $margin;
+                $fill = $rowIndex % 2 === 0 ? $white : $light;
                 foreach ($columns as $column) {
                     $width = (float)$column['width'];
-                    $value = '';
                     if (isset($column['exam_id'])) {
-                        $examId = (int)$column['exam_id'];
-                        $mark = $row['exam_marks'][$examId] ?? null;
+                        $mark = $row['exam_marks'][(int)$column['exam_id']] ?? null;
                         $value = ($mark === null || $mark === '') ? '-' : (string)$mark;
                     } else {
                         $value = (string)($row[$column['key']] ?? '-');
-                        if ($value === '') {
-                            $value = '-';
-                        }
+                        $value = $value === '' ? '-' : $value;
                     }
-
-                    $rect($x, $y - $rowHeight, $width, $rowHeight);
-                    $text($x + 3, $y - 12, 8, $this->truncatePdfText($value, max(5, (int)floor($width / 5))));
+                    $fillRect($x, $y - $rowHeight, $width, $rowHeight, $fill);
+                    $strokeRect($x, $y - $rowHeight, $width, $rowHeight, $border, 0.35);
+                    $font = ($column['key'] ?? '') === 'grade' ? 'F2' : 'F1';
+                    $size = isset($column['exam_id']) || ($column['key'] ?? '') === 'grade' ? 7 : 6;
+                    $textX = ($column['align'] ?? 'left') === 'center' ? $x + ($width / 2) - (strlen($value) * $size * 0.14) : $x + 3;
+                    $wrappedText(max($x + 3, $textX), $y - 11, $size, $value, $width - 6, 2, $dark, $font);
                     $x += $width;
                 }
                 $y -= $rowHeight;
             }
-            $finishPage();
         }
 
+        if ($y - 88 < $bottomMargin) {
+            $drawFooter();
+            $finishPage();
+            $drawPageHeader(false);
+        }
+
+        $y -= 22;
+        $text($margin, $y, 9, 'Certification', $primary, 'F2');
+        $y -= 18;
+        $wrappedText($margin, $y, 8, 'This document reflects the academic records available in the student portal at the time of generation. Any alteration renders this transcript invalid.', $contentWidth, 3, $muted);
+        $y -= 40;
+        $line($margin, $y, $margin + 150, $y, $dark, 0.6);
+        $line($pageWidth - $margin - 150, $y, $pageWidth - $margin, $y, $dark, 0.6);
+        $text($margin, $y - 14, 8, 'Registrar / Authorized Officer', $muted);
+        $text($pageWidth - $margin - 150, $y - 14, 8, 'College Stamp / Date', $muted);
+
+        $drawFooter();
+        $finishPage();
+
         return $this->assemblePdf($pages, $pageWidth, $pageHeight);
+    }
+
+    private function pdfWrapText(string $value, int $maxChars, int $maxLines): array
+    {
+        $value = trim(preg_replace('/\s+/', ' ', $value) ?? $value);
+        if ($value === '') {
+            return ['-'];
+        }
+
+        $words = preg_split('/\s+/', $value) ?: [];
+        $lines = [];
+        $current = '';
+        foreach ($words as $word) {
+            $candidate = $current === '' ? $word : $current . ' ' . $word;
+            if (strlen($candidate) <= $maxChars) {
+                $current = $candidate;
+                continue;
+            }
+            if ($current !== '') {
+                $lines[] = $current;
+            }
+            $current = strlen($word) > $maxChars ? substr($word, 0, max(1, $maxChars - 1)) . '…' : $word;
+            if (count($lines) >= $maxLines) {
+                break;
+            }
+        }
+        if ($current !== '' && count($lines) < $maxLines) {
+            $lines[] = $current;
+        }
+        if (count($lines) > $maxLines) {
+            $lines = array_slice($lines, 0, $maxLines);
+        }
+        if ($lines !== [] && count($lines) === $maxLines && strlen(end($lines)) >= $maxChars) {
+            $last = array_key_last($lines);
+            $lines[$last] = substr($lines[$last], 0, max(1, $maxChars - 1)) . '…';
+        }
+        return $lines === [] ? ['-'] : $lines;
     }
 
     private function truncatePdfText(string $value, int $maxLength): string
@@ -762,9 +908,10 @@ class StudentPortalController extends Controller
             1 => '',
             2 => '',
             3 => "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+            4 => "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
         ];
         $pageObjectIds = [];
-        $nextObjectId = 4;
+        $nextObjectId = 5;
 
         foreach ($pageContents as $pageContent) {
             $contentObjectId = $nextObjectId++;
@@ -772,7 +919,7 @@ class StudentPortalController extends Controller
 
             $pageObjectId = $nextObjectId++;
             $pageObjectIds[] = $pageObjectId;
-            $objects[$pageObjectId] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {$pageWidth} {$pageHeight}] /Resources << /Font << /F1 3 0 R >> >> /Contents {$contentObjectId} 0 R >>";
+            $objects[$pageObjectId] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {$pageWidth} {$pageHeight}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents {$contentObjectId} 0 R >>";
         }
 
         $kids = implode(' ', array_map(static fn(int $id): string => $id . ' 0 R', $pageObjectIds));
