@@ -855,10 +855,10 @@ class StudentPortalController extends Controller
             $centerText($centerX, $pageHeight - 33, 12, $collegeLineOne, $primary, 'F5');
             $centerText($centerX, $pageHeight - 47, 12, $collegeLineTwo, $primary, 'F5');
             if ($collegeAddress !== '') {
-                $centerText($centerX, $pageHeight - 60, 7, $this->truncatePdfText($collegeAddress, 58), $dark, 'F1');
+                $centerText($centerX, $pageHeight - 60, 9, $this->truncatePdfText($collegeAddress, 58), $dark, 'F1');
             }
             if ($collegeContacts !== '') {
-                $centerText($centerX, $pageHeight - 71, 7, $this->truncatePdfText($collegeContacts, 64), $dark, 'F1');
+                $centerText($centerX, $pageHeight - 71, 9, $this->truncatePdfText($collegeContacts, 64), $dark, 'F1');
             }
             $line($margin, $pageHeight - 86, $pageWidth - $margin, $pageHeight - 86, $primary, 1.0);
             $line($margin, $pageHeight - 89, $pageWidth - $margin, $pageHeight - 89, $secondary, 0.6);
@@ -866,7 +866,7 @@ class StudentPortalController extends Controller
 
             if ($firstPage) {
                 $centerText($pageWidth / 2, $y, 17, 'OFFICIAL ACADEMIC TRANSCRIPT', $primary, 'F5');
-                $centerText($pageWidth / 2, $y - 18, 7, 'Serial No: ' . $serialNumber . '  I  Transcript No: ' . $transcriptNumber, $dark, 'F1');
+                $centerText($pageWidth / 2, $y - 18, 9, 'Serial No: ' . $serialNumber . '  I  Transcript No: ' . $transcriptNumber, $dark, 'F1');
                 $line($margin, $y - 30, $pageWidth - $margin, $y - 30, $secondary, 0.9);
                 $y -= 42;
             } else {
@@ -878,8 +878,8 @@ class StudentPortalController extends Controller
 
         $drawFooter = function () use ($pageWidth, $margin, $primary, $muted, $line, $text, $issuedAt): void {
             $line($margin, 42, $pageWidth - $margin, 42, $primary, 0.8);
-            $text($margin, 28, 7, 'Generated from official student portal records.', $muted, 'F4');
-            $text($pageWidth - 145, 28, 7, 'Generated: ' . $issuedAt, $muted, 'F4');
+            $text($margin, 28, 8, 'Generated from official student portal records.', $muted, 'F1');
+            $text($pageWidth - 145, 28, 8, 'Generated: ' . $issuedAt, $muted, 'F1');
         };
 
         $drawMeta = function () use (&$y, $pageWidth, $margin, $primary, $dark, $muted, $border, $white, $fillRect, $strokeRect, $line, $text, $wrappedText, $student, $transcript): void {
@@ -892,38 +892,38 @@ class StudentPortalController extends Controller
             $fillRect($rightX, $boxY, $boxWidth, $boxHeight, $white);
             $strokeRect($leftX, $boxY, $boxWidth, $boxHeight, $border, 0.5);
             $strokeRect($rightX, $boxY, $boxWidth, $boxHeight, $border, 0.5);
-            $text($leftX + 8, $y - 14, 9, 'Student Details', $primary, 'F2');
-            $text($rightX + 8, $y - 14, 9, 'Academic Details', $primary, 'F2');
-            $line($leftX + 8, $y - 20, $leftX + $boxWidth - 8, $y - 20, $border, 0.4);
-            $line($rightX + 8, $y - 20, $rightX + $boxWidth - 8, $y - 20, $border, 0.4);
+            $text($leftX + 8, $y - 14, 10, 'Student Details', $primary, 'F2');
+            $text($rightX + 8, $y - 14, 10, 'Academic Details', $primary, 'F2');
+            $line($leftX + 8, $y - 21, $leftX + $boxWidth - 8, $y - 21, $border, 0.4);
+            $line($rightX + 8, $y - 21, $rightX + $boxWidth - 8, $y - 21, $border, 0.4);
 
-            $metaY = $y - 32;
-            $labelWidth = 70;
-            $text($leftX + 8, $metaY, 7, 'Name', $muted, 'F2');
-            $wrappedText($leftX + $labelWidth, $metaY, 7, (string)($student['name'] ?? '-'), $boxWidth - $labelWidth - 8, 1, $dark);
-            $metaY -= 15;
-            $text($leftX + 8, $metaY, 7, 'Admission No.', $muted, 'F2');
-            $wrappedText($leftX + $labelWidth, $metaY, 7, (string)($student['admission_number'] ?? '-'), $boxWidth - $labelWidth - 8, 1, $dark);
-            $metaY -= 15;
-            $text($leftX + 8, $metaY, 7, 'National ID', $muted, 'F2');
-            $text($leftX + $labelWidth, $metaY, 7, (string)($student['national_id'] ?? '-'), $dark);
-            $metaY -= 15;
-            $text($leftX + 8, $metaY, 7, 'Email', $muted, 'F2');
-            $wrappedText($leftX + $labelWidth, $metaY, 7, (string)($student['email'] ?? '-'), $boxWidth - $labelWidth - 8, 1, $dark);
+            $metaY = $y - 33;
+            $labelWidth = 72;
+            $text($leftX + 8, $metaY, 9, 'Name', $muted, 'F2');
+            $wrappedText($leftX + $labelWidth, $metaY, 9, (string)($student['name'] ?? '-'), $boxWidth - $labelWidth - 8, 1, $dark);
+            $metaY -= 16;
+            $text($leftX + 8, $metaY, 9, 'Admission No.', $muted, 'F2');
+            $wrappedText($leftX + $labelWidth, $metaY, 9, (string)($student['admission_number'] ?? '-'), $boxWidth - $labelWidth - 8, 1, $dark);
+            $metaY -= 16;
+            $text($leftX + 8, $metaY, 9, 'National ID', $muted, 'F2');
+            $text($leftX + $labelWidth, $metaY, 9, (string)($student['national_id'] ?? '-'), $dark);
+            $metaY -= 16;
+            $text($leftX + 8, $metaY, 9, 'Email', $muted, 'F2');
+            $wrappedText($leftX + $labelWidth, $metaY, 9, (string)($student['email'] ?? '-'), $boxWidth - $labelWidth - 8, 1, $dark);
 
-            $metaY = $y - 32;
-            $text($rightX + 8, $metaY, 7, 'Programme', $muted, 'F2');
-            $wrappedText($rightX + $labelWidth, $metaY, 7, (string)($student['programme_name'] ?? '-'), $boxWidth - $labelWidth - 8, 1, $dark);
-            $metaY -= 15;
-            $text($rightX + 8, $metaY, 7, 'Session', $muted, 'F2');
-            $text($rightX + $labelWidth, $metaY, 7, (string)($transcript['session_name'] ?? '-'), $dark);
-            $metaY -= 15;
-            $text($rightX + 8, $metaY, 7, 'Term/Semester', $muted, 'F2');
-            $text($rightX + $labelWidth, $metaY, 7, (string)($transcript['term_name'] ?? '-'), $dark);
-            $metaY -= 15;
-            $text($rightX + 8, $metaY, 7, 'Date Issued', $muted, 'F2');
-            $text($rightX + $labelWidth, $metaY, 7, date('F j, Y'), $dark);
-            $y = $boxY - 18;
+            $metaY = $y - 33;
+            $text($rightX + 8, $metaY, 9, 'Programme', $muted, 'F2');
+            $wrappedText($rightX + $labelWidth, $metaY, 9, (string)($student['programme_name'] ?? '-'), $boxWidth - $labelWidth - 8, 1, $dark);
+            $metaY -= 16;
+            $text($rightX + 8, $metaY, 9, 'Session', $muted, 'F2');
+            $text($rightX + $labelWidth, $metaY, 9, (string)($transcript['session_name'] ?? '-'), $dark);
+            $metaY -= 16;
+            $text($rightX + 8, $metaY, 9, 'Term/Semester', $muted, 'F2');
+            $text($rightX + $labelWidth, $metaY, 9, (string)($transcript['term_name'] ?? '-'), $dark);
+            $metaY -= 16;
+            $text($rightX + 8, $metaY, 9, 'Date Issued', $muted, 'F2');
+            $text($rightX + $labelWidth, $metaY, 9, date('F j, Y'), $dark);
+            $y = $boxY - 14;
         };
 
         $contentWidth = $pageWidth - ($margin * 2);
@@ -947,20 +947,20 @@ class StudentPortalController extends Controller
                 'label' => (string)($examColumn['label'] ?? 'Exam'),
                 'exam_id' => (int)($examColumn['id'] ?? 0),
                 'width' => $examWidth,
-                'align' => 'right',
+                'align' => 'center',
             ];
         }
         $columns[] = ['label' => 'Grade', 'key' => 'grade', 'width' => $gradeWidth, 'align' => 'center'];
         $columns[] = ['label' => 'Remarks', 'key' => 'comment', 'width' => $commentWidth, 'align' => 'left'];
 
         $drawTableHeader = function () use (&$y, $margin, $columns, $light, $dark, $border, $fillRect, $strokeRect, $wrappedText): void {
-            $rowHeight = 28;
+            $rowHeight = 20;
             $x = $margin;
             foreach ($columns as $column) {
                 $width = (float)$column['width'];
                 $fillRect($x, $y - $rowHeight, $width, $rowHeight, $light);
-                $strokeRect($x, $y - $rowHeight, $width, $rowHeight, $border, 0.35);
-                $wrappedText($x + 3, $y - 10, 6, (string)$column['label'], $width - 6, 2, $dark, 'F2');
+                $strokeRect($x, $y - $rowHeight, $width, $rowHeight, $border, 0.3);
+                $wrappedText($x + 3, $y - 7, 8, (string)$column['label'], $width - 6, 2, $dark, 'F2');
                 $x += $width;
             }
             $y -= $rowHeight;
@@ -974,7 +974,7 @@ class StudentPortalController extends Controller
             $text($margin, $y - 18, 9, 'No grades are available to include in this transcript yet.', $muted);
         } else {
             foreach ($rows as $rowIndex => $row) {
-                $rowHeight = 30;
+                $rowHeight = 20;
                 if ($y - $rowHeight < $bottomMargin) {
                     $drawFooter();
                     $finishPage();
@@ -994,18 +994,18 @@ class StudentPortalController extends Controller
                         $value = $value === '' ? '-' : $value;
                     }
                     $fillRect($x, $y - $rowHeight, $width, $rowHeight, $fill);
-                    $strokeRect($x, $y - $rowHeight, $width, $rowHeight, $border, 0.35);
+                    $strokeRect($x, $y - $rowHeight, $width, $rowHeight, $border, 0.3);
                     $font = ($column['key'] ?? '') === 'grade' ? 'F2' : 'F1';
-                    $size = isset($column['exam_id']) || ($column['key'] ?? '') === 'grade' ? 7 : 6;
+                    $size = 9;
                     $align = (string)($column['align'] ?? 'left');
                     if ($align === 'center') {
-                        $textX = $x + ($width / 2) - (strlen($value) * $size * 0.14);
+                        $textX = $x + ($width / 2) - (strlen($value) * $size * 0.26);
                     } elseif ($align === 'right') {
                         $textX = $x + $width - 5 - (strlen($value) * $size * 0.28);
                     } else {
                         $textX = $x + 3;
                     }
-                    $wrappedText(max($x + 3, $textX), $y - 11, $size, $value, $width - 6, 2, $dark, $font);
+                    $wrappedText(max($x + 3, $textX), $y - 7, $size, $value, $width - 6, 1, $dark, $font);
                     $x += $width;
                 }
                 $y -= $rowHeight;
@@ -1018,7 +1018,7 @@ class StudentPortalController extends Controller
             $drawPageHeader(false);
         }
         $y -= 18;
-        $text($margin, $y, 9, 'ACADEMIC SUMMARY', $primary, 'F5');
+        $text($margin, $y, 10, 'ACADEMIC SUMMARY', $primary, 'F5');
         $y -= 14;
         $summaryLineOne = 'Units Registered: ' . $summary['registered']
             . '      Units Completed: ' . $summary['completed']
@@ -1026,9 +1026,9 @@ class StudentPortalController extends Controller
         $summaryLineTwo = 'Average Score: ' . $summary['average'] . '%'
             . '       Mean Grade: ' . $summary['mean_grade']
             . '           GPA: ' . $summary['gpa'];
-        $text($margin, $y, 8, $summaryLineOne, $dark, 'F1');
-        $y -= 13;
-        $text($margin, $y, 8, $summaryLineTwo, $dark, 'F1');
+        $text($margin, $y, 9, $summaryLineOne, $dark, 'F1');
+        $y -= 14;
+        $text($margin, $y, 9, $summaryLineTwo, $dark, 'F1');
         $y -= 22;
 
         $gradingKey = [];
@@ -1064,24 +1064,24 @@ class StudentPortalController extends Controller
                 $drawPageHeader(false);
             }
             $y -= 20;
-            $text($margin, $y, 9, 'Grading System', $primary, 'F5');
+            $text($margin, $y, 10, 'Grading System', $primary, 'F5');
             $y -= 12;
             $x = $margin;
             foreach ($gradingKey as $gradeRange) {
                 $fillRect($x, $y - 18, $gradeCellWidth, 18, $light);
-                $strokeRect($x, $y - 18, $gradeCellWidth, 18, $border, 0.35);
-                $centerText($x + ($gradeCellWidth / 2), $y - 12, 8, (string)$gradeRange['grade'], $dark, 'F5');
+                $strokeRect($x, $y - 18, $gradeCellWidth, 18, $border, 0.3);
+                $centerText($x + ($gradeCellWidth / 2), $y - 11, 9, (string)$gradeRange['grade'], $dark, 'F2');
                 $x += $gradeCellWidth;
             }
             $y -= 18;
             $x = $margin;
             foreach ($gradingKey as $gradeRange) {
-                $fillRect($x, $y - 18, $gradeCellWidth, 18, $light);
-                $strokeRect($x, $y - 18, $gradeCellWidth, 18, $border, 0.35);
-                $centerText($x + ($gradeCellWidth / 2), $y - 12, 8, (string)$gradeRange['range'], $dark, 'F1');
+                $fillRect($x, $y - 16, $gradeCellWidth, 16, $white);
+                $strokeRect($x, $y - 16, $gradeCellWidth, 16, $border, 0.3);
+                $centerText($x + ($gradeCellWidth / 2), $y - 10, 9, (string)$gradeRange['range'], $dark, 'F1');
                 $x += $gradeCellWidth;
             }
-            $y -= 26;
+            $y -= 24;
         }
 
 
@@ -1092,18 +1092,18 @@ class StudentPortalController extends Controller
         }
 
         $y -= 22;
-        $text($margin, $y, 9, 'Certification', $primary, 'F5');
-        $y -= 18;
-        $text($margin, $y, 6, 'This is to certify that the academic record appearing on this transcript is a true and accurate representation of the student\'s performance as maintained in the official records of the College.', $dark, 'F3');
-        $y -= 18;
-        $wrappedText($margin, $y, 8, 'Issued without alteration and for official purposes only.', $contentWidth, 2, $dark, 'F3');
-        $y -= 34;
-        $line($margin, $y, $margin + 150, $y, $dark, 0.6);
-        $line($pageWidth - $margin - 150, $y, $pageWidth - $margin, $y, $dark, 0.6);
-        $text($margin, $y - 14, 8, 'Registrar / Academic Officer', $muted, 'F1');
-        $text($margin, $y - 28, 8, 'Date: ________________', $muted, 'F1');
-        $text($pageWidth - $margin - 150, $y - 14, 8, 'Official College Stamp', $muted, 'F1');
-        $text($pageWidth - $margin - 150, $y - 28, 8, 'Date: ________________', $muted, 'F1');
+        $text($margin, $y, 10, 'Certification', $primary, 'F5');
+        $y -= 16;
+        $wrappedText($margin, $y, 9, 'This is to certify that the academic record appearing on this transcript is a true and accurate representation of the student\'s performance as maintained in the official records of the College.', $contentWidth, 3, $dark, 'F3');
+        $y -= 32;
+        $text($margin, $y, 9, 'Issued without alteration and for official purposes only.', $dark, 'F3');
+        $y -= 36;
+        $line($margin, $y, $margin + 150, $y, $dark, 0.5);
+        $line($pageWidth - $margin - 150, $y, $pageWidth - $margin, $y, $dark, 0.5);
+        $text($margin, $y - 14, 9, 'Registrar / Academic Officer', $muted, 'F1');
+        $text($margin, $y - 26, 9, 'Date: ________________', $muted, 'F1');
+        $text($pageWidth - $margin - 150, $y - 14, 9, 'Official College Stamp', $muted, 'F1');
+        $text($pageWidth - $margin - 150, $y - 26, 9, 'Date: ________________', $muted, 'F1');
 
         $drawFooter();
         $finishPage();
