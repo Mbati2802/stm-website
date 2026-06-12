@@ -139,6 +139,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Trigger term loading on page load if a session is already selected
+    const initialSessionId = document.getElementById('sessionFilter').value;
+    if (initialSessionId) {
+        console.log('Marks Entry: Initial session selected, loading terms for sessionId =', initialSessionId);
+        const url = `<?= e(base_url('admin/semester/terms')) ?>?session_id=${initialSessionId}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Marks Entry: Initial terms data received', data);
+                const termSelect = document.getElementById('termFilter');
+                termSelect.innerHTML = '<option value="">Select term</option>';
+                data.forEach(term => {
+                    termSelect.innerHTML += `<option value="${term.id}" ${term.is_current ? 'selected' : ''}>${term.name}</option>`;
+                });
+                checkAndLoadStudents();
+            })
+            .catch(error => {
+                console.error('Marks Entry: Error fetching initial terms', error);
+            });
+    }
+
     // Auto-load students when any filter changes
     document.getElementById('programmeFilter').addEventListener('change', function() {
         console.log('Marks Entry: Programme changed');
@@ -245,14 +266,22 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 console.log('Marks Entry: Students data received', data);
-                renderMarksTable(data);
+                // Fetch existing marks for these students
+                const gradesUrl = `<?= e(base_url('admin/course-grades/get')) ?>?programme_id=${programmeId}&session_id=${sessionId}&term_id=${termId}&student_session_id=${studentSessionId}&unit_id=${unitId}`;
+                console.log('Marks Entry: Fetching existing grades from', gradesUrl);
+                return fetch(gradesUrl)
+                    .then(response => response.json())
+                    .then(gradesData => {
+                        console.log('Marks Entry: Existing grades received', gradesData);
+                        renderMarksTable(data, gradesData);
+                    });
             })
             .catch(error => {
                 console.error('Marks Entry: Error fetching students', error);
             });
     }
 
-    function renderMarksTable(students) {
+    function renderMarksTable(students, existingGrades = {}) {
         const header = document.getElementById('marksTableHeader');
         const body = document.getElementById('marksTableBody');
         const noStudentsMessage = document.getElementById('noStudentsMessage');
@@ -282,6 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         console.log('Marks Entry: Rendering table with', students.length, 'students');
+        console.log('Marks Entry: Existing grades', existingGrades);
         
         // Show table, hide message
         noStudentsMessage.style.display = 'none';
@@ -321,6 +351,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     const maxMarks = exam.max_marks || 100;
                     const placeholder = entryMode === 'converted' ? `0-${maxMarks}` : '0-100%';
                     const maxValue = entryMode === 'converted' ? maxMarks : 100;
+                    
+                    // Check if there's an existing grade for this student and exam
+                    const key = `${student.id}_${exam.exam_type_id}`;
+                    const existingGrade = existingGrades[key] || {};
+                    const existingValue = entryMode === 'converted' 
+                        ? (existingGrade.marks || '') 
+                        : (existingGrade.marks_percentage || '');
+                    
                     rowHTML += `
                         <td>
                             <input type="number" 
@@ -332,7 +370,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                    min="0" 
                                    max="${maxValue}" 
                                    step="0.01" 
-                                   placeholder="${placeholder}">
+                                   placeholder="${placeholder}"
+                                   value="${existingValue}">
                         </td>
                     `;
                 }
@@ -351,6 +390,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add event listeners for marks input
         document.querySelectorAll('.marks-input').forEach(input => {
             input.addEventListener('input', calculateTotalAndGrade);
+        });
+        
+        // Trigger calculation for rows with pre-populated values
+        document.querySelectorAll('#marksTableBody tr').forEach(row => {
+            const firstInput = row.querySelector('.marks-input');
+            if (firstInput && firstInput.value) {
+                calculateTotalAndGrade({ target: firstInput });
+            }
         });
     }
 
@@ -441,7 +488,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const studentId = row.dataset.studentId;
             row.querySelectorAll('.marks-input').forEach(input => {
                 const examId = input.dataset.examId;
-                const enteredValue = parseFloat(input.value) || 0;
+                const rawValue = input.value.trim();
+                if (rawValue === '') {
+                    return;
+                }
+
+                const enteredValue = parseFloat(rawValue) || 0;
                 const maxMarks = parseFloat(input.dataset.maxMarks) || 100;
                 let percentage, converted;
                 
@@ -456,18 +508,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     converted = (percentage / 100) * maxMarks;
                 }
                 
-                if (percentage > 0) {
-                    marksData.push({
-                        student_id: studentId,
-                        course_id: unitId,
-                        exam_type_id: examId,
-                        marks: converted.toFixed(2),         // Converted marks (e.g., 5/10)
-                        marks_percentage: percentage.toFixed(2), // Original percentage (e.g., 50%)
-                        academic_session_id: sessionId,
-                        term_id: termId,
-                        grading_system_id: window.defaultGradingSystemId
-                    });
-                }
+                marksData.push({
+                    student_id: studentId,
+                    course_id: unitId,
+                    exam_type_id: examId,
+                    marks: converted.toFixed(2),         // Converted marks (e.g., 5/10)
+                    marks_percentage: percentage.toFixed(2), // Original percentage (e.g., 50%)
+                    academic_session_id: sessionId,
+                    term_id: termId,
+                    grading_system_id: window.defaultGradingSystemId
+                });
             });
         });
         

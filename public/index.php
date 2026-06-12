@@ -159,6 +159,7 @@ $router->add('GET', 'admin/accounts/generate-receipt/{id}', [AccountsController:
 // Marks Entry - Students by enrollment endpoint
 $router->add('GET', 'admin/students/by-enrollment', [AdminContentController::class, 'getStudentsByEnrollment']);
 $router->add('POST', 'admin/course-grades/bulk-save', [AdminContentController::class, 'bulkSaveCourseGrades']);
+$router->add('GET', 'admin/course-grades/get', [AdminContentController::class, 'getCourseGrades']);
 
 // Grading System - Bulk Apply Grade Ranges (must be before generic entity routes)
 $router->add('POST', 'admin/grading/grade-range/bulk-apply', [GradingController::class, 'bulkApplyGradeRanges']);

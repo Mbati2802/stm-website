@@ -2409,6 +2409,89 @@ class AdminContentController extends Controller
         }
     }
 
+    public function getCourseGrades(): void
+    {
+        header('Content-Type: application/json');
+        
+        // Check authentication for AJAX requests
+        if (!Auth::check()) {
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+
+        if (!Auth::canViewEntity('course_grades')) {
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+
+        $programmeId = (int)($_GET['programme_id'] ?? 0);
+        $sessionId = (int)($_GET['session_id'] ?? 0);
+        $termId = (int)($_GET['term_id'] ?? 0);
+        $studentSessionId = (int)($_GET['student_session_id'] ?? 0);
+        $unitId = (int)($_GET['unit_id'] ?? 0);
+
+        if ($programmeId === 0 || $sessionId === 0 || $termId === 0 || $unitId === 0) {
+            echo json_encode(['error' => 'Invalid parameters']);
+            return;
+        }
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            
+            // Fetch existing marks for the given filters
+            $sql = '
+                SELECT cg.student_id, cg.exam_type_id, cg.marks, cg.marks_percentage
+                FROM course_grades cg
+                WHERE cg.course_id = ?
+                AND cg.academic_session_id = ?
+                AND cg.term_id = ?
+            ';
+            $params = [$unitId, $sessionId, $termId];
+            
+            // If student session is specified, we need to filter by students enrolled in that session
+            if ($studentSessionId > 0) {
+                $sql .= ' AND cg.student_id IN (
+                    SELECT se.student_id
+                    FROM student_enrollments se
+                    WHERE se.programme_id = ?
+                    AND se.academic_session_id = ?
+                    AND se.term_id = ?
+                    AND se.session_id = ?
+                    AND se.status = "active"
+                )';
+                $params = array_merge($params, [$programmeId, $sessionId, $termId, $studentSessionId]);
+            } else {
+                $sql .= ' AND cg.student_id IN (
+                    SELECT se.student_id
+                    FROM student_enrollments se
+                    WHERE se.programme_id = ?
+                    AND se.academic_session_id = ?
+                    AND se.term_id = ?
+                    AND se.status = "active"
+                )';
+                $params = array_merge($params, [$programmeId, $sessionId, $termId]);
+            }
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $grades = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Format as a key-value map for easy lookup: student_id_exam_type_id => marks
+            $gradesMap = [];
+            foreach ($grades as $grade) {
+                $key = $grade['student_id'] . '_' . $grade['exam_type_id'];
+                $gradesMap[$key] = [
+                    'marks' => $grade['marks'],
+                    'marks_percentage' => $grade['marks_percentage']
+                ];
+            }
+            
+            echo json_encode($gradesMap);
+        } catch (PDOException $e) {
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
     public function buildFormRelations(): array
     {
         $model = new ContentModel($this->config);
