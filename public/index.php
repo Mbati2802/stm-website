@@ -82,6 +82,7 @@ $router->add('GET', 'staff/logout', [StaffAuthController::class, 'logout']);
 // Student Portal - Academic Section
 $router->add('GET', 'portal/courses', [StudentPortalController::class, 'courses']);
 $router->add('GET', 'portal/grades', [StudentPortalController::class, 'grades']);
+$router->add('GET', 'portal/transcript', [StudentPortalController::class, 'transcript']);
 $router->add('GET', 'portal/attendance', [StudentPortalController::class, 'attendance']);
 $router->add('GET', 'portal/timetable', [StudentPortalController::class, 'timetable']);
 

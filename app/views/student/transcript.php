@@ -211,7 +211,7 @@
     <div class="action-bar">
         <a href="<?= e(base_url('portal/grades')) ?>" class="btn btn-secondary">Back to Results</a>
         <button type="button" class="btn btn-secondary" onclick="window.print()">Print Transcript</button>
-        <button type="button" class="btn" id="downloadBtn" onclick="downloadPDF()">Download PDF</button>
+        <a href="<?= e(base_url('portal/transcript?download=1')) ?>" class="btn">Download PDF</a>
     </div>
 
     <div class="transcript-sheet" id="transcriptSheet">
@@ -282,7 +282,8 @@
                             <th>Unit Code</th>
                             <th>Unit Name</th>
                             <?php foreach (($transcript['examColumns'] ?? []) as $examColumn): ?>
-                                <th><?= e((string)$examColumn) ?></th>
+                                <?php $examLabel = is_array($examColumn) ? (string)($examColumn['label'] ?? '') : (string)$examColumn; ?>
+                                <th><?= e($examLabel) ?></th>
                             <?php endforeach; ?>
                             <th>Grade</th>
                             <th>Comment</th>
@@ -294,7 +295,8 @@
                                 <td><?= e((string)($gradeRow['course_code'] ?? 'N/A')) ?></td>
                                 <td><?= e((string)($gradeRow['course_title'] ?? '-')) ?></td>
                                 <?php foreach (($transcript['examColumns'] ?? []) as $examColumn): ?>
-                                    <?php $examMark = $gradeRow['exam_marks'][$examColumn] ?? null; ?>
+                                    <?php $examKey = is_array($examColumn) ? (int)($examColumn['id'] ?? 0) : (string)$examColumn; ?>
+                                    <?php $examMark = $gradeRow['exam_marks'][$examKey] ?? null; ?>
                                     <td><?= $examMark === null || $examMark === '' ? '-' : e((string)$examMark) ?></td>
                                 <?php endforeach; ?>
                                 <td>
@@ -318,57 +320,5 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script>
-        function downloadPDF() {
-            if (typeof html2pdf === 'undefined') {
-                window.print();
-                return;
-            }
-
-            const element = document.getElementById('transcriptSheet');
-            const button = document.getElementById('downloadBtn');
-            const originalText = button ? button.textContent : '';
-
-            if (!element) {
-                alert('Transcript content could not be found.');
-                return;
-            }
-
-            if (button) {
-                button.textContent = 'Generating PDF...';
-                button.disabled = true;
-            }
-
-            const fileName = 'Transcript_<?= e((string)($transcript['student']['admission_number'] ?? 'student')) ?>.pdf';
-            const options = {
-                margin: 8,
-                filename: fileName,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            };
-
-            html2pdf().set(options).from(element).save().then(function () {
-                if (button) {
-                    button.textContent = originalText;
-                    button.disabled = false;
-                }
-            }).catch(function () {
-                if (button) {
-                    button.textContent = originalText;
-                    button.disabled = false;
-                }
-                alert('PDF generation failed. Please try again or use Print Transcript.');
-            });
-        }
-
-        window.addEventListener('load', function () {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('download') === '1') {
-                setTimeout(downloadPDF, 800);
-            }
-        });
-    </script>
 </body>
 </html>

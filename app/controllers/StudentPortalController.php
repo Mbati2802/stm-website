@@ -95,7 +95,7 @@ class StudentPortalController extends Controller
     {
         $student = $this->requireStudent();
         $model = new StudentPortalModel($this->config);
-        
+
         // Fetch programme information
         $programmeName = '';
         if (!empty($student['programme_id'])) {
@@ -104,7 +104,7 @@ class StudentPortalController extends Controller
             $programme = $stmt->fetch(PDO::FETCH_ASSOC);
             $programmeName = $programme['name'] ?? '';
         }
-        
+
         // Fetch student's courses based on their programme (many-to-many support)
         $courses = [];
         if (!empty($student['programme_id'])) {
@@ -126,7 +126,7 @@ class StudentPortalController extends Controller
                 $courses = [];
             }
         }
-        
+
         // Fetch assignments for student's courses
         $assignments = [];
         if (!empty($courses)) {
@@ -148,7 +148,7 @@ class StudentPortalController extends Controller
                 }
             }
         }
-        
+
         $this->view('student/dashboard', [
             'metaTitle' => 'Student Portal - Dashboard',
             'student' => $student,
@@ -222,17 +222,17 @@ class StudentPortalController extends Controller
             flash('error', 'Please provide a valid email address.');
             $this->redirect('portal/reset-password');
         }
-        
+
         if ($code === '' || strlen($code) < 4) {
             flash('error', 'Please provide a valid reset code.');
             $this->redirect('portal/reset-password');
         }
-        
+
         if (strlen($password) < 6) {
             flash('error', 'Password must be at least 6 characters long.');
             $this->redirect('portal/reset-password');
         }
-        
+
         if ($password !== $confirm) {
             flash('error', 'Passwords do not match. Please try again.');
             $this->redirect('portal/reset-password');
@@ -240,7 +240,7 @@ class StudentPortalController extends Controller
 
         $model = new StudentPortalModel($this->config);
         $reset = $model->findValidResetCode($email, $code);
-        
+
         if ($reset === null) {
             flash('error', 'Invalid or expired reset code. Please request a new code.');
             $this->redirect('portal/reset-password');
@@ -399,7 +399,7 @@ class StudentPortalController extends Controller
         $invoices = $model->getStudentInvoices((int)$student['id']);
         $payments = $model->getStudentPayments((int)$student['id']);
         $balance = $model->getStudentBalance((int)$student['id']);
-        
+
         $this->view('student/fees', [
             'metaTitle' => 'Student Portal - Fee Statement',
             'invoices' => $invoices,
@@ -433,10 +433,10 @@ class StudentPortalController extends Controller
     public function receipt(int $paymentId): void
     {
         $student = $this->requireStudent();
-        
+
         try {
             $pdo = Database::getInstance($this->config['db']);
-            
+
             // Get payment details
             $stmt = $pdo->prepare('SELECT p.*, i.invoice_number, i.title AS invoice_title, i.amount AS invoice_amount,
                                           s.name AS student_name, s.admission_number, s.email AS student_email,
@@ -495,38 +495,38 @@ class StudentPortalController extends Controller
     {
         $student = $this->requireStudent();
         $model = new StudentPortalModel($this->config);
-        
+
         try {
             $pdo = Database::getInstance($this->config['db']);
-            
+
             // Get invoice details
             $invoice = $model->getInvoiceById($invoiceId);
-            
+
             if (!$invoice) {
                 flash('error', 'Invoice not found.');
                 $this->redirect('student/fees');
                 return;
             }
-            
+
             // Check if this invoice belongs to the logged-in student
             if ($invoice['student_id'] != $student['id']) {
                 flash('error', 'Access denied.');
                 $this->redirect('student/fees');
                 return;
             }
-            
+
             // Get fee items
             $stmt = $pdo->prepare('SELECT * FROM fee_items WHERE invoice_id = ?');
             $stmt->execute([$invoiceId]);
             $feeItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             // Get payments
             $stmt = $pdo->prepare('SELECT COALESCE(SUM(amount), 0) AS total_paid FROM payments WHERE invoice_id = ?');
             $stmt->execute([$invoiceId]);
             $totalPaid = $stmt->fetch(PDO::FETCH_ASSOC)['total_paid'];
-            
+
             $balance = $invoice['amount'] - $totalPaid;
-            
+
             // Get settings for contact details
             $stmt = $pdo->prepare('SELECT setting_key, setting_value FROM settings WHERE setting_key IN (?, ?, ?)');
             $stmt->execute(['phone', 'email', 'location']);
@@ -535,7 +535,7 @@ class StudentPortalController extends Controller
             foreach ($settingsRows as $row) {
                 $settings[$row['setting_key']] = $row['setting_value'];
             }
-            
+
             // Render invoice without layout for standalone display
             $invoicePath = __DIR__ . '/../../views/student/invoice.php';
             if (!file_exists($invoicePath)) {
@@ -566,6 +566,11 @@ class StudentPortalController extends Controller
             return;
         }
 
+        if ((string)($_GET['download'] ?? '') === '1') {
+            $this->streamTranscriptPdf($transcript);
+            return;
+        }
+
         $transcriptPath = __DIR__ . '/../../views/student/transcript.php';
         if (!file_exists($transcriptPath)) {
             flash('error', 'Transcript view not found.');
@@ -575,6 +580,223 @@ class StudentPortalController extends Controller
 
         require_once $transcriptPath;
         exit;
+    }
+
+    private function streamTranscriptPdf(array $transcript): void
+    {
+        $admissionNumber = preg_replace('/[^A-Za-z0-9_-]+/', '_', (string)($transcript['student']['admission_number'] ?? 'student'));
+        $admissionNumber = trim((string)$admissionNumber, '_');
+        if ($admissionNumber === '') {
+            $admissionNumber = 'student';
+        }
+
+        $pdf = $this->buildTranscriptPdf($transcript);
+
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="Transcript_' . $admissionNumber . '.pdf"');
+        header('Content-Length: ' . strlen($pdf));
+        header('Cache-Control: private, max-age=0, must-revalidate');
+        echo $pdf;
+        exit;
+    }
+
+    private function buildTranscriptPdf(array $transcript): string
+    {
+        $pageWidth = 842;
+        $pageHeight = 595;
+        $margin = 32;
+        $bottomMargin = 36;
+        $pages = [];
+        $content = '';
+        $y = $pageHeight - $margin;
+
+        $text = function (float $x, float $textY, int $size, string $value) use (&$content): void {
+            $content .= sprintf("BT /F1 %d Tf %.2f %.2f Td (%s) Tj ET\n", $size, $x, $textY, $this->pdfEscape($value));
+        };
+
+        $rect = function (float $x, float $rectY, float $width, float $height) use (&$content): void {
+            $content .= sprintf("%.2f %.2f %.2f %.2f re S\n", $x, $rectY, $width, $height);
+        };
+
+        $finishPage = function () use (&$pages, &$content): void {
+            if ($content !== '') {
+                $pages[] = $content;
+                $content = '';
+            }
+        };
+
+        $drawTitle = function () use (&$y, $margin, $pageWidth, $text): void {
+            $text($margin, $y, 16, 'St. Mary\'s Mother and Child Hospital Medical Training College');
+            $y -= 20;
+            $text($margin, $y, 12, 'Official Academic Transcript');
+            $text($pageWidth - 170, $y, 9, 'Generated: ' . date('F j, Y g:i A'));
+            $y -= 22;
+        };
+
+        $drawStudentMeta = function () use (&$y, $margin, $text, $transcript): void {
+            $student = $transcript['student'] ?? [];
+            $text($margin, $y, 10, 'Student: ' . (string)($student['name'] ?? '-'));
+            $text(360, $y, 10, 'Admission No: ' . (string)($student['admission_number'] ?? '-'));
+            $y -= 15;
+            $text($margin, $y, 10, 'Programme: ' . (string)($student['programme_name'] ?? '-'));
+            $text(360, $y, 10, 'Email: ' . (string)($student['email'] ?? '-'));
+            $y -= 15;
+            $text($margin, $y, 10, 'Term: ' . (string)($transcript['term_name'] ?? '-'));
+            $text(360, $y, 10, 'Session: ' . (string)($transcript['session_name'] ?? '-'));
+            $y -= 22;
+        };
+
+        $examColumns = array_values($transcript['examColumns'] ?? []);
+        $examCount = max(1, count($examColumns));
+        $unitCodeWidth = 58;
+        $unitNameWidth = 150;
+        $gradeWidth = 42;
+        $commentWidth = 86;
+        $availableExamWidth = $pageWidth - ($margin * 2) - $unitCodeWidth - $unitNameWidth - $gradeWidth - $commentWidth;
+        $examWidth = max(32, min(68, floor($availableExamWidth / $examCount)));
+
+        $columns = [
+            ['label' => 'Unit Code', 'key' => 'course_code', 'width' => $unitCodeWidth],
+            ['label' => 'Unit Name', 'key' => 'course_title', 'width' => $unitNameWidth],
+        ];
+        foreach ($examColumns as $examColumn) {
+            $columns[] = [
+                'label' => (string)($examColumn['label'] ?? 'Exam'),
+                'key' => 'exam_' . (string)($examColumn['id'] ?? ''),
+                'exam_id' => (int)($examColumn['id'] ?? 0),
+                'width' => $examWidth,
+            ];
+        }
+        $columns[] = ['label' => 'Grade', 'key' => 'grade', 'width' => $gradeWidth];
+        $columns[] = ['label' => 'Comment', 'key' => 'comment', 'width' => $commentWidth];
+
+        $drawHeader = function () use (&$y, $margin, $columns, $rect, $text): void {
+            $x = $margin;
+            $rowHeight = 20;
+            foreach ($columns as $column) {
+                $width = (float)$column['width'];
+                $rect($x, $y - $rowHeight, $width, $rowHeight);
+                $text($x + 3, $y - 13, 8, $this->truncatePdfText((string)$column['label'], max(6, (int)floor($width / 5))));
+                $x += $width;
+            }
+            $y -= $rowHeight;
+        };
+
+        $drawTitle();
+        $drawStudentMeta();
+        $drawHeader();
+
+        $rows = array_values($transcript['rows'] ?? []);
+        if ($rows === []) {
+            $text($margin, $y - 16, 10, 'No grades are available to include in this transcript yet.');
+            $finishPage();
+        } else {
+            foreach ($rows as $row) {
+                $rowHeight = 18;
+                if ($y - $rowHeight < $bottomMargin) {
+                    $finishPage();
+                    $y = $pageHeight - $margin;
+                    $drawTitle();
+                    $drawHeader();
+                }
+
+                $x = $margin;
+                foreach ($columns as $column) {
+                    $width = (float)$column['width'];
+                    $value = '';
+                    if (isset($column['exam_id'])) {
+                        $examId = (int)$column['exam_id'];
+                        $mark = $row['exam_marks'][$examId] ?? null;
+                        $value = ($mark === null || $mark === '') ? '-' : (string)$mark;
+                    } else {
+                        $value = (string)($row[$column['key']] ?? '-');
+                        if ($value === '') {
+                            $value = '-';
+                        }
+                    }
+
+                    $rect($x, $y - $rowHeight, $width, $rowHeight);
+                    $text($x + 3, $y - 12, 8, $this->truncatePdfText($value, max(5, (int)floor($width / 5))));
+                    $x += $width;
+                }
+                $y -= $rowHeight;
+            }
+            $finishPage();
+        }
+
+        return $this->assemblePdf($pages, $pageWidth, $pageHeight);
+    }
+
+    private function truncatePdfText(string $value, int $maxLength): string
+    {
+        $value = trim(preg_replace('/\s+/', ' ', $value) ?? $value);
+        if ($maxLength <= 0 || strlen($value) <= $maxLength) {
+            return $value;
+        }
+        return substr($value, 0, max(1, $maxLength - 1)) . '…';
+    }
+
+    private function pdfEscape(string $value): string
+    {
+        $value = str_replace(["\r", "\n"], ' ', $value);
+        if (function_exists('iconv')) {
+            $converted = @iconv('UTF-8', 'ISO-8859-1//TRANSLIT//IGNORE', $value);
+            if ($converted !== false) {
+                $value = $converted;
+            }
+        }
+        return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $value);
+    }
+
+    private function assemblePdf(array $pageContents, int $pageWidth, int $pageHeight): string
+    {
+        if ($pageContents === []) {
+            $pageContents = [''];
+        }
+
+        $objects = [
+            1 => '',
+            2 => '',
+            3 => "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        ];
+        $pageObjectIds = [];
+        $nextObjectId = 4;
+
+        foreach ($pageContents as $pageContent) {
+            $contentObjectId = $nextObjectId++;
+            $objects[$contentObjectId] = "<< /Length " . strlen($pageContent) . " >>\nstream\n" . $pageContent . "endstream";
+
+            $pageObjectId = $nextObjectId++;
+            $pageObjectIds[] = $pageObjectId;
+            $objects[$pageObjectId] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {$pageWidth} {$pageHeight}] /Resources << /Font << /F1 3 0 R >> >> /Contents {$contentObjectId} 0 R >>";
+        }
+
+        $kids = implode(' ', array_map(static fn(int $id): string => $id . ' 0 R', $pageObjectIds));
+        $objects[1] = '<< /Type /Catalog /Pages 2 0 R >>';
+        $objects[2] = '<< /Type /Pages /Kids [' . $kids . '] /Count ' . count($pageObjectIds) . ' >>';
+        ksort($objects);
+
+        $pdf = "%PDF-1.4\n";
+        $offsets = [0 => 0];
+        foreach ($objects as $id => $body) {
+            $offsets[$id] = strlen($pdf);
+            $pdf .= $id . " 0 obj\n" . $body . "\nendobj\n";
+        }
+
+        $xrefOffset = strlen($pdf);
+        $pdf .= "xref\n0 " . (count($objects) + 1) . "\n";
+        $pdf .= "0000000000 65535 f \n";
+        for ($i = 1; $i <= count($objects); $i++) {
+            $pdf .= sprintf("%010d 00000 n \n", $offsets[$i] ?? 0);
+        }
+        $pdf .= "trailer\n<< /Size " . (count($objects) + 1) . " /Root 1 0 R >>\n";
+        $pdf .= "startxref\n" . $xrefOffset . "\n%%EOF";
+
+        return $pdf;
     }
 
     public function submitSupportTicket(): void

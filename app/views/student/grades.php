@@ -26,7 +26,8 @@
                                 <th>Unit Code</th>
                                 <th>Unit Name</th>
                                 <?php foreach (($examColumns ?? []) as $examColumn): ?>
-                                    <th><?= e((string)$examColumn) ?></th>
+                                    <?php $examLabel = is_array($examColumn) ? (string)($examColumn['label'] ?? '') : (string)$examColumn; ?>
+                                    <th><?= e($examLabel) ?></th>
                                 <?php endforeach; ?>
                                 <th>Grade</th>
                                 <th>Comment</th>
@@ -38,7 +39,8 @@
                                     <td><?= e((string)($gradeRow['course_code'] ?? 'N/A')) ?></td>
                                     <td><?= e((string)($gradeRow['course_title'] ?? '')) ?></td>
                                     <?php foreach (($examColumns ?? []) as $examColumn): ?>
-                                        <?php $examMark = $gradeRow['exam_marks'][$examColumn] ?? null; ?>
+                                        <?php $examKey = is_array($examColumn) ? (int)($examColumn['id'] ?? 0) : (string)$examColumn; ?>
+                                        <?php $examMark = $gradeRow['exam_marks'][$examKey] ?? null; ?>
                                         <td><?= $examMark === null || $examMark === '' ? '-' : e((string)$examMark) ?></td>
                                     <?php endforeach; ?>
                                     <td>

@@ -302,23 +302,33 @@ class StudentPortalModel
     public function getStudentGradesTable(int $studentId): array
     {
         try {
-            $examTypeStmt = $this->pdo->query("
-                SELECT
-                    gs.name AS grading_system_name,
-                    et.name AS exam_type_name
-                FROM grading_systems gs
-                INNER JOIN exam_types et ON et.id = gs.exam_type_id
-                WHERE gs.is_active = 1
-                  AND et.is_active = 1
-                  AND et.type <> 'consolidated'
-                ORDER BY gs.id ASC
-            ");
+            $examTypeStmt = $this->pdo->query('
+                SELECT id, name, code, type
+                FROM exam_types
+                WHERE is_active = 1
+                ORDER BY id ASC
+            ');
+
             $examColumns = [];
-            foreach ($examTypeStmt->fetchAll() as $examTypeRow) {
-                $examLabel = trim((string)($examTypeRow['grading_system_name'] ?? $examTypeRow['exam_type_name'] ?? ''));
-                if ($examLabel !== '') {
-                    $examColumns[$examLabel] = $examLabel;
+            foreach ($examTypeStmt->fetchAll(PDO::FETCH_ASSOC) as $examTypeRow) {
+                $examTypeId = (int)($examTypeRow['id'] ?? 0);
+                if ($examTypeId <= 0) {
+                    continue;
                 }
+
+                $label = trim((string)($examTypeRow['name'] ?? ''));
+                if ($label === '') {
+                    $label = trim((string)($examTypeRow['code'] ?? ''));
+                }
+                if ($label === '') {
+                    $label = 'Exam ' . $examTypeId;
+                }
+
+                $examColumns[$examTypeId] = [
+                    'id' => $examTypeId,
+                    'label' => $label,
+                    'type' => (string)($examTypeRow['type'] ?? ''),
+                ];
             }
 
             $stmt = $this->pdo->prepare('
@@ -327,18 +337,19 @@ class StudentPortalModel
                     pc.title AS course_title,
                     pc.code AS course_code,
                     gs.name AS grading_system_name,
+                    gs.exam_type_id AS grading_system_exam_type_id,
                     et.name AS exam_name,
                     et.code AS exam_code,
                     et.type AS exam_type
                 FROM course_grades cg
                 LEFT JOIN portal_courses pc ON pc.id = cg.course_id
                 LEFT JOIN grading_systems gs ON gs.id = cg.grading_system_id
-                LEFT JOIN exam_types et ON et.id = cg.exam_type_id
+                LEFT JOIN exam_types et ON et.id = COALESCE(cg.exam_type_id, gs.exam_type_id)
                 WHERE cg.student_id = :student_id
                 ORDER BY pc.code ASC, cg.created_at ASC, cg.id ASC
             ');
             $stmt->execute(['student_id' => $studentId]);
-            $records = $stmt->fetchAll();
+            $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException) {
             return [
                 'examColumns' => [],
@@ -349,10 +360,21 @@ class StudentPortalModel
         $rowsByCourse = [];
 
         foreach ($records as $record) {
-            $examType = (string)($record['exam_type'] ?? '');
-            $examLabel = trim((string)($record['grading_system_name'] ?? $record['exam_name'] ?? $record['exam_code'] ?? ''));
-            if ($examType !== 'consolidated' && $examLabel !== '') {
-                $examColumns[$examLabel] = $examLabel;
+            $examTypeId = (int)($record['exam_type_id'] ?? 0);
+            if ($examTypeId <= 0) {
+                $examTypeId = (int)($record['grading_system_exam_type_id'] ?? 0);
+            }
+
+            if ($examTypeId > 0 && !isset($examColumns[$examTypeId])) {
+                $examLabel = trim((string)($record['exam_name'] ?? $record['exam_code'] ?? $record['grading_system_name'] ?? ''));
+                if ($examLabel === '') {
+                    $examLabel = 'Exam ' . $examTypeId;
+                }
+                $examColumns[$examTypeId] = [
+                    'id' => $examTypeId,
+                    'label' => $examLabel,
+                    'type' => (string)($record['exam_type'] ?? ''),
+                ];
             }
 
             $courseId = (int)($record['course_id'] ?? 0);
@@ -368,11 +390,11 @@ class StudentPortalModel
                 ];
             }
 
-            if ($examType !== 'consolidated' && $examLabel !== '') {
-                $rowsByCourse[$courseKey]['exam_marks'][$examLabel] = $record['marks'] ?? $record['marks_percentage'] ?? null;
+            if ($examTypeId > 0) {
+                $rowsByCourse[$courseKey]['exam_marks'][$examTypeId] = $record['marks'] ?? $record['marks_percentage'] ?? null;
             }
 
-            $isPreferredSummary = $examType === 'consolidated' || $rowsByCourse[$courseKey]['grade'] === '';
+            $isPreferredSummary = (string)($record['exam_type'] ?? '') === 'consolidated' || $rowsByCourse[$courseKey]['grade'] === '';
             if ($isPreferredSummary) {
                 $rowsByCourse[$courseKey]['grade'] = (string)($record['grade'] ?? '');
                 $rowsByCourse[$courseKey]['comment'] = (string)($record['remarks'] ?? '');
@@ -383,10 +405,13 @@ class StudentPortalModel
             }
         }
 
+        ksort($examColumns);
+
         $rows = array_values(array_map(function (array $row) use ($examColumns): array {
-            foreach ($examColumns as $examLabel) {
-                if (!array_key_exists($examLabel, $row['exam_marks'])) {
-                    $row['exam_marks'][$examLabel] = null;
+            foreach ($examColumns as $examColumn) {
+                $examTypeId = (int)$examColumn['id'];
+                if (!array_key_exists($examTypeId, $row['exam_marks'])) {
+                    $row['exam_marks'][$examTypeId] = null;
                 }
             }
 
