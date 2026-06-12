@@ -473,6 +473,12 @@ class StudentPortalController extends Controller
                 $settings[$row['setting_key']] = $row['setting_value'];
             }
 
+            if ((string)($_GET['download'] ?? '') === '1') {
+                $pdf = $this->buildStudentReceiptPdf($payment, (float)$totalPaid, $settings);
+                $this->streamPdfDownload($pdf, 'Receipt_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', (string)$payment['payment_number']) . '.pdf');
+                return;
+            }
+
             // Render receipt without layout for standalone display
             $receiptPath = __DIR__ . '/../../views/student/receipt.php';
             if (!file_exists($receiptPath)) {
@@ -536,6 +542,12 @@ class StudentPortalController extends Controller
                 $settings[$row['setting_key']] = $row['setting_value'];
             }
 
+            if ((string)($_GET['download'] ?? '') === '1') {
+                $pdf = $this->buildStudentInvoicePdf($invoice, $feeItems, (float)$totalPaid, (float)$balance, $settings);
+                $this->streamPdfDownload($pdf, 'Invoice_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', (string)$invoice['invoice_number']) . '.pdf');
+                return;
+            }
+
             // Render invoice without layout for standalone display
             $invoicePath = __DIR__ . '/../../views/student/invoice.php';
             if (!file_exists($invoicePath)) {
@@ -552,6 +564,109 @@ class StudentPortalController extends Controller
             flash('error', 'Error: ' . $e->getMessage());
             $this->redirect('student/fees');
         }
+    }
+
+    private function streamPdfDownload(string $pdf, string $filename): void
+    {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . strlen($pdf));
+        header('Cache-Control: private, max-age=0, must-revalidate');
+        echo $pdf;
+        exit;
+    }
+
+    private function buildStudentInvoicePdf(array $invoice, array $feeItems, float $totalPaid, float $balance, array $settings): string
+    {
+        $lines = [
+            ['Official Student Invoice', 16],
+            ['Invoice Number: ' . (string)($invoice['invoice_number'] ?? '-'), 10],
+            ['Student: ' . (string)($invoice['student_name'] ?? '-'), 10],
+            ['Admission No: ' . (string)($invoice['admission_number'] ?? '-'), 10],
+            ['Title: ' . (string)($invoice['title'] ?? '-'), 10],
+            ['Issue Date: ' . (string)($invoice['issue_date'] ?? '-'), 10],
+            ['Due Date: ' . (string)($invoice['due_date'] ?? '-'), 10],
+            ['', 8],
+            ['Fee Items', 12],
+        ];
+
+        foreach ($feeItems as $item) {
+            $lines[] = [(string)($item['description'] ?? $item['title'] ?? 'Fee Item') . ': KES ' . number_format((float)($item['amount'] ?? 0), 2), 9];
+        }
+
+        $lines[] = ['', 8];
+        $lines[] = ['Total Amount: KES ' . number_format((float)($invoice['amount'] ?? 0), 2), 10];
+        $lines[] = ['Total Paid: KES ' . number_format($totalPaid, 2), 10];
+        $lines[] = ['Balance: KES ' . number_format($balance, 2), 10];
+        $lines[] = ['Status: ' . ucfirst((string)($invoice['status'] ?? '-')), 10];
+
+        return $this->buildSimpleFinancialPdf($lines, $settings);
+    }
+
+    private function buildStudentReceiptPdf(array $payment, float $totalPaid, array $settings): string
+    {
+        $lines = [
+            ['Official Payment Receipt', 16],
+            ['Receipt Number: ' . (string)($payment['payment_number'] ?? '-'), 10],
+            ['Payment Date: ' . (string)($payment['payment_date'] ?? '-'), 10],
+            ['Student: ' . (string)($payment['student_name'] ?? '-'), 10],
+            ['Admission No: ' . (string)($payment['admission_number'] ?? '-'), 10],
+            ['Invoice Number: ' . (string)($payment['invoice_number'] ?? '-'), 10],
+            ['Invoice Title: ' . (string)($payment['invoice_title'] ?? '-'), 10],
+            ['Payment Method: ' . (string)($payment['payment_method_name'] ?? '-'), 10],
+            ['Reference: ' . (string)($payment['transaction_code'] ?? $payment['cheque_number'] ?? 'N/A'), 10],
+            ['', 8],
+            ['Amount Paid: KES ' . number_format((float)($payment['amount'] ?? 0), 2), 12],
+            ['Invoice Total Paid: KES ' . number_format($totalPaid, 2), 10],
+        ];
+
+        return $this->buildSimpleFinancialPdf($lines, $settings);
+    }
+
+    private function buildSimpleFinancialPdf(array $lines, array $settings): string
+    {
+        $pageWidth = 595;
+        $pageHeight = 842;
+        $content = '';
+        $y = 790;
+        $x = 58;
+        $collegeName = 'St. Mary\'s Mother and Child Hospital Medical Training College';
+
+        $write = function (string $value, int $size = 10, string $font = 'F1') use (&$content, &$y, $x): void {
+            if ($value === '') {
+                $y -= 8;
+                return;
+            }
+            $content .= sprintf("BT /%s %d Tf %.2f %.2f Td (%s) Tj ET\n", $font, $size, $x, $y, $this->pdfEscape($value));
+            $y -= ($size + 8);
+        };
+
+        $write($collegeName, 13, 'F2');
+        if (!empty($settings['location'])) {
+            $write((string)$settings['location'], 9);
+        }
+        $contact = trim(implode(' | ', array_filter([(string)($settings['phone'] ?? ''), (string)($settings['email'] ?? '')])));
+        if ($contact !== '') {
+            $write($contact, 9);
+        }
+        $content .= sprintf("%.2f %.2f m %.2f %.2f l S\n", $x, $y, $pageWidth - $x, $y);
+        $y -= 24;
+
+        foreach ($lines as $line) {
+            $write((string)($line[0] ?? ''), (int)($line[1] ?? 10), ((int)($line[1] ?? 10) >= 12 ? 'F2' : 'F1'));
+            if ($y < 70) {
+                break;
+            }
+        }
+
+        $y -= 20;
+        $write('Generated: ' . date('F j, Y'), 8);
+
+        return $this->assemblePdf([$content], $pageWidth, $pageHeight);
     }
 
     public function transcript(): void
@@ -903,15 +1018,17 @@ class StudentPortalController extends Controller
             $drawPageHeader(false);
         }
         $y -= 18;
-        $text($margin, $y, 9, 'Academic Summary', $primary, 'F5');
+        $text($margin, $y, 9, 'ACADEMIC SUMMARY', $primary, 'F5');
         $y -= 14;
-        $summaryText = 'Units Registered: ' . $summary['registered']
-            . '    Units Completed: ' . $summary['completed']
-            . '    Units Passed: ' . $summary['passed']
-            . '    Average Score: ' . $summary['average'] . '%'
-            . '    Mean Grade: ' . $summary['mean_grade']
-            . '    GPA: ' . $summary['gpa'];
-        $text($margin, $y, 7, $this->truncatePdfText($summaryText, 132), $dark, 'F1');
+        $summaryLineOne = 'Units Registered: ' . $summary['registered']
+            . '      Units Completed: ' . $summary['completed']
+            . '      Units Passed: ' . $summary['passed'];
+        $summaryLineTwo = 'Average Score: ' . $summary['average'] . '%'
+            . '       Mean Grade: ' . $summary['mean_grade']
+            . '           GPA: ' . $summary['gpa'];
+        $text($margin, $y, 8, $summaryLineOne, $dark, 'F1');
+        $y -= 13;
+        $text($margin, $y, 8, $summaryLineTwo, $dark, 'F1');
         $y -= 22;
 
         $gradingKey = [];
