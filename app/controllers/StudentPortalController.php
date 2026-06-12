@@ -298,9 +298,11 @@ class StudentPortalController extends Controller
     {
         $student = $this->requireStudent();
         $model = new StudentPortalModel($this->config);
+        $gradesTable = $model->getStudentGradesTable((int)($student['id'] ?? 0));
         $this->view('student/grades', [
             'metaTitle' => 'Student Portal - Grades',
-            'grades' => array_values(array_filter($model->allCourseGrades(), fn($row) => (int)($row['student_id'] ?? 0) === (int)($student['id'] ?? 0))),
+            'gradeRows' => $gradesTable['rows'],
+            'examColumns' => $gradesTable['examColumns'],
         ], 'student');
     }
 

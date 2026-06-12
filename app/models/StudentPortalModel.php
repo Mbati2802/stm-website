@@ -299,6 +299,99 @@ class StudentPortalModel
         }
     }
 
+    public function getStudentGradesTable(int $studentId): array
+    {
+        try {
+            $examTypeStmt = $this->pdo->query("
+                SELECT name
+                FROM exam_types
+                WHERE is_active = 1 AND type <> 'consolidated'
+                ORDER BY id ASC
+            ");
+            $examColumns = [];
+            foreach ($examTypeStmt->fetchAll() as $examTypeRow) {
+                $examLabel = trim((string)($examTypeRow['name'] ?? ''));
+                if ($examLabel !== '') {
+                    $examColumns[$examLabel] = $examLabel;
+                }
+            }
+
+            $stmt = $this->pdo->prepare('
+                SELECT
+                    cg.*,
+                    pc.title AS course_title,
+                    pc.code AS course_code,
+                    et.name AS exam_name,
+                    et.code AS exam_code,
+                    et.type AS exam_type
+                FROM course_grades cg
+                LEFT JOIN portal_courses pc ON pc.id = cg.course_id
+                LEFT JOIN exam_types et ON et.id = cg.exam_type_id
+                WHERE cg.student_id = :student_id
+                ORDER BY pc.code ASC, cg.created_at ASC, cg.id ASC
+            ');
+            $stmt->execute(['student_id' => $studentId]);
+            $records = $stmt->fetchAll();
+        } catch (PDOException) {
+            return [
+                'examColumns' => [],
+                'rows' => [],
+            ];
+        }
+
+        $rowsByCourse = [];
+
+        foreach ($records as $record) {
+            $examType = (string)($record['exam_type'] ?? '');
+            $examLabel = trim((string)($record['exam_name'] ?? $record['exam_code'] ?? ''));
+            if ($examType !== 'consolidated' && $examLabel !== '') {
+                $examColumns[$examLabel] = $examLabel;
+            }
+
+            $courseId = (int)($record['course_id'] ?? 0);
+            $courseKey = $courseId > 0 ? (string)$courseId : 'grade_' . (string)($record['id'] ?? uniqid('', true));
+            if (!isset($rowsByCourse[$courseKey])) {
+                $rowsByCourse[$courseKey] = [
+                    'course_code' => (string)($record['course_code'] ?? 'N/A'),
+                    'course_title' => (string)($record['course_title'] ?? 'Unnamed Unit'),
+                    'exam_marks' => [],
+                    'grade' => '',
+                    'comment' => '',
+                    'sort_created_at' => (string)($record['created_at'] ?? ''),
+                ];
+            }
+
+            if ($examType !== 'consolidated' && $examLabel !== '') {
+                $rowsByCourse[$courseKey]['exam_marks'][$examLabel] = $record['marks'] ?? $record['marks_percentage'] ?? null;
+            }
+
+            $isPreferredSummary = $examType === 'consolidated' || $rowsByCourse[$courseKey]['grade'] === '';
+            if ($isPreferredSummary) {
+                $rowsByCourse[$courseKey]['grade'] = (string)($record['grade'] ?? '');
+                $rowsByCourse[$courseKey]['comment'] = (string)($record['remarks'] ?? '');
+            }
+
+            if ($rowsByCourse[$courseKey]['comment'] === '' && !empty($record['remarks'])) {
+                $rowsByCourse[$courseKey]['comment'] = (string)$record['remarks'];
+            }
+        }
+
+        $rows = array_values(array_map(function (array $row) use ($examColumns): array {
+            foreach ($examColumns as $examLabel) {
+                if (!array_key_exists($examLabel, $row['exam_marks'])) {
+                    $row['exam_marks'][$examLabel] = null;
+                }
+            }
+
+            return $row;
+        }, $rowsByCourse));
+
+        return [
+            'examColumns' => array_values($examColumns),
+            'rows' => $rows,
+        ];
+    }
+
     public function allAssignments(): array
     {
         try {
