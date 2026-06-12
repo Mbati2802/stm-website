@@ -838,7 +838,7 @@ class StudentPortalController extends Controller
         $columns[] = ['label' => 'Grade', 'key' => 'grade', 'width' => $gradeWidth, 'align' => 'center'];
         $columns[] = ['label' => 'Remarks', 'key' => 'comment', 'width' => $commentWidth, 'align' => 'left'];
 
-        $drawTableHeader = function () use (&$y, $margin, $columns, $primary, $white, $border, $fillRect, $strokeRect, $wrappedText): void {
+        $drawTableHeader = function () use (&$y, $margin, $columns, $light, $dark, $border, $fillRect, $strokeRect, $wrappedText): void {
             $rowHeight = 28;
             $x = $margin;
             foreach ($columns as $column) {
