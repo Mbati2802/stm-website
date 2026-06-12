@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const maxValue = entryMode === 'converted' ? maxMarks : 100;
                     
                     // Check if there's an existing grade for this student and exam
-                    const key = `${student.id}_${exam.exam_type_id}`;
+                    const key = `${student.id}_${exam.id}`;
                     const existingGrade = existingGrades[key] || {};
                     const existingValue = entryMode === 'converted' 
                         ? (existingGrade.marks || '') 
@@ -363,7 +363,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>
                             <input type="number" 
                                    class="form-control form-control-sm marks-input" 
-                                   data-exam-id="${exam.exam_type_id}" 
+                                   data-grading-system-id="${exam.id}" 
+                                   data-exam-type-id="${exam.exam_type_id}"
                                    data-student-id="${student.id}"
                                    data-max-marks="${maxMarks}"
                                    data-entry-mode="${entryMode}"
@@ -476,18 +477,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const sessionId = document.getElementById('sessionFilter').value;
         const termId = document.getElementById('termFilter').value;
         const unitId = document.getElementById('unitFilter').value;
-        
-        if (!window.defaultGradingSystemId) {
-            alert('No default grading system found. Please create a grading system in the Grading System page.');
-            return;
-        }
-        
         const entryMode = document.getElementById('entryModeSelector')?.value || 'percentage';
         const marksData = [];
         document.querySelectorAll('#marksTableBody tr').forEach(row => {
             const studentId = row.dataset.studentId;
             row.querySelectorAll('.marks-input').forEach(input => {
-                const examId = input.dataset.examId;
+                const gradingSystemId = input.dataset.gradingSystemId;
+                const examTypeId = input.dataset.examTypeId;
                 const rawValue = input.value.trim();
                 if (rawValue === '') {
                     return;
@@ -511,12 +507,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 marksData.push({
                     student_id: studentId,
                     course_id: unitId,
-                    exam_type_id: examId,
+                    exam_type_id: examTypeId,
                     marks: converted.toFixed(2),         // Converted marks (e.g., 5/10)
                     marks_percentage: percentage.toFixed(2), // Original percentage (e.g., 50%)
                     academic_session_id: sessionId,
                     term_id: termId,
-                    grading_system_id: window.defaultGradingSystemId
+                    grading_system_id: gradingSystemId
                 });
             });
         });

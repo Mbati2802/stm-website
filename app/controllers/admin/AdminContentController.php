@@ -2335,12 +2335,19 @@ class AdminContentController extends Controller
             $pdo->beginTransaction();
 
             foreach ($marks as $mark) {
+                $gradingSystemId = (int)($mark['grading_system_id'] ?? 0);
+                $examTypeId = (int)($mark['exam_type_id'] ?? 0);
+
+                if ($gradingSystemId <= 0 || $examTypeId <= 0) {
+                    throw new RuntimeException('Each mark must include a valid grading system and exam type.');
+                }
+
                 // Check if grade already exists
                 $checkStmt = $pdo->prepare('
                     SELECT id FROM course_grades 
                     WHERE student_id = ? 
                     AND course_id = ? 
-                    AND exam_type_id = ? 
+                    AND grading_system_id = ?
                     AND academic_session_id = ? 
                     AND term_id = ?
                     LIMIT 1
@@ -2348,15 +2355,36 @@ class AdminContentController extends Controller
                 $checkStmt->execute([
                     $mark['student_id'],
                     $mark['course_id'],
-                    $mark['exam_type_id'],
+                    $gradingSystemId,
                     $mark['academic_session_id'],
                     $mark['term_id']
                 ]);
                 $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
+                if (!$existing) {
+                    // Backfill older rows that were saved against the wrong grading_system_id.
+                    $legacyStmt = $pdo->prepare('
+                        SELECT id FROM course_grades
+                        WHERE student_id = ?
+                        AND course_id = ?
+                        AND exam_type_id = ?
+                        AND academic_session_id = ?
+                        AND term_id = ?
+                        LIMIT 1
+                    ');
+                    $legacyStmt->execute([
+                        $mark['student_id'],
+                        $mark['course_id'],
+                        $examTypeId,
+                        $mark['academic_session_id'],
+                        $mark['term_id']
+                    ]);
+                    $existing = $legacyStmt->fetch(PDO::FETCH_ASSOC);
+                }
+
                 // Calculate grade based on marks
                 $gradeLookup = $pdo->prepare('SELECT grade_letter FROM grade_ranges WHERE grading_system_id = ? AND ? >= min_marks AND ? <= max_marks LIMIT 1');
-                $gradeLookup->execute([$mark['grading_system_id'], $mark['marks'], $mark['marks']]);
+                $gradeLookup->execute([$gradingSystemId, $mark['marks'], $mark['marks']]);
                 $gradeResult = $gradeLookup->fetch(PDO::FETCH_ASSOC);
                 $grade = $gradeResult['grade_letter'] ?? null;
 
@@ -2373,7 +2401,7 @@ class AdminContentController extends Controller
                         $mark['marks'],
                         $marksPercentage,
                         $grade,
-                        $mark['grading_system_id'],
+                        $gradingSystemId,
                         $existing['id']
                     ]);
                 } else {
@@ -2386,13 +2414,13 @@ class AdminContentController extends Controller
                     $insertStmt->execute([
                         $mark['student_id'],
                         $mark['course_id'],
-                        $mark['exam_type_id'],
+                        $examTypeId,
                         $mark['academic_session_id'],
                         $mark['term_id'],
                         $mark['marks'],
                         $marksPercentage,
                         $grade,
-                        $mark['grading_system_id']
+                        $gradingSystemId
                     ]);
                 }
             }
@@ -2440,7 +2468,7 @@ class AdminContentController extends Controller
             
             // Fetch existing marks for the given filters
             $sql = '
-                SELECT cg.student_id, cg.exam_type_id, cg.marks, cg.marks_percentage
+                SELECT cg.student_id, cg.exam_type_id, cg.grading_system_id, cg.marks, cg.marks_percentage
                 FROM course_grades cg
                 WHERE cg.course_id = ?
                 AND cg.academic_session_id = ?
@@ -2479,8 +2507,13 @@ class AdminContentController extends Controller
             // Format as a key-value map for easy lookup: student_id_exam_type_id => marks
             $gradesMap = [];
             foreach ($grades as $grade) {
-                $key = $grade['student_id'] . '_' . $grade['exam_type_id'];
+                $gradingSystemId = (int)($grade['grading_system_id'] ?? 0);
+                $examTypeId = (int)($grade['exam_type_id'] ?? 0);
+                $gradeKeyId = $gradingSystemId > 0 ? $gradingSystemId : $examTypeId;
+                $key = $grade['student_id'] . '_' . $gradeKeyId;
                 $gradesMap[$key] = [
+                    'exam_type_id' => $examTypeId,
+                    'grading_system_id' => $gradingSystemId,
                     'marks' => $grade['marks'],
                     'marks_percentage' => $grade['marks_percentage']
                 ];
