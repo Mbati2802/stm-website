@@ -647,6 +647,10 @@ class StudentPortalController extends Controller
             $setFill($color);
             $content .= sprintf("BT /%s %d Tf %.2f %.2f Td (%s) Tj ET\n", $font, $size, $x, $textY, $this->pdfEscape($value));
         };
+        $centerText = function (float $centerX, float $textY, int $size, string $value, array $color, string $font = 'F1') use ($text): void {
+            $textWidth = strlen($value) * $size * 0.26;
+            $text($centerX - ($textWidth / 2), $textY, $size, $value, $color, $font);
+        };
         $wrappedText = function (float $x, float $textY, int $size, string $value, float $width, int $maxLines, array $color, string $font = 'F1') use ($text): int {
             $maxChars = max(4, (int)floor($width / max(3.2, $size * 0.48)));
             $lines = $this->pdfWrapText($value, $maxChars, $maxLines);
@@ -673,6 +677,8 @@ class StudentPortalController extends Controller
         $transcriptNumber = 'TR-' . date('Ymd-His') . '-' . strtoupper(substr(sha1((string)($student['admission_number'] ?? '') . microtime(true)), 0, 6));
         $appName = (string)($this->config['app_name'] ?? 'St. Mary\'s Mother and Child Hospital Medical Training College');
         $collegeName = $appName !== '' ? $appName : 'St. Mary\'s Mother and Child Hospital Medical Training College';
+        $collegeLineOne = 'ST. MARY\'S MOTHER AND CHILD HOSPITAL';
+        $collegeLineTwo = 'MEDICAL TRAINING COLLEGE';
         $collegeAddress = trim((string)($settings['address'] ?? $settings['location'] ?? ''));
         $collegeContacts = trim(implode(' | ', array_filter([
             (string)($settings['phone'] ?? ''),
@@ -691,29 +697,29 @@ class StudentPortalController extends Controller
             $text($x + 8, $logoY + ($size / 2) - 4, 12, 'STM', $primary, 'F2');
         };
 
-        $drawPageHeader = function (bool $firstPage) use (&$y, &$pageNumber, $pageWidth, $pageHeight, $margin, $primary, $secondary, $dark, $muted, $line, $text, $wrappedText, $drawLogo, $collegeName, $collegeAddress, $collegeContacts, $issuedAt, $serialNumber, $transcriptNumber): void {
+        $drawPageHeader = function (bool $firstPage) use (&$y, &$pageNumber, $pageWidth, $pageHeight, $margin, $primary, $secondary, $dark, $muted, $line, $text, $centerText, $wrappedText, $drawLogo, $collegeLineOne, $collegeLineTwo, $collegeAddress, $collegeContacts, $serialNumber, $transcriptNumber): void {
             $pageNumber++;
             $y = $pageHeight - $margin;
             $drawLogo($margin, $pageHeight - 78, 46);
             $drawLogo($pageWidth - $margin - 46, $pageHeight - 78, 46);
-            $wrappedText($margin + 66, $pageHeight - 38, 14, strtoupper($collegeName), $pageWidth - (($margin + 66) * 2), 2, $primary, 'F5');
+            $centerX = $pageWidth / 2;
+            $centerText($centerX, $pageHeight - 34, 14, $collegeLineOne, $primary, 'F5');
+            $centerText($centerX, $pageHeight - 50, 13, $collegeLineTwo, $primary, 'F5');
             if ($collegeAddress !== '') {
-                $wrappedText($margin + 74, $pageHeight - 62, 8, $collegeAddress, $pageWidth - (($margin + 74) * 2), 1, $dark, 'F4');
+                $centerText($centerX, $pageHeight - 64, 8, $this->truncatePdfText($collegeAddress, 82), $dark, 'F1');
             }
             if ($collegeContacts !== '') {
-                $wrappedText($margin + 74, $pageHeight - 74, 8, $collegeContacts, $pageWidth - (($margin + 74) * 2), 1, $dark, 'F4');
+                $centerText($centerX, $pageHeight - 76, 8, $this->truncatePdfText($collegeContacts, 82), $dark, 'F1');
             }
             $line($margin, $pageHeight - 92, $pageWidth - $margin, $pageHeight - 92, $primary, 1.4);
             $line($margin, $pageHeight - 96, $pageWidth - $margin, $pageHeight - 96, $secondary, 0.8);
             $y = $pageHeight - 116;
 
             if ($firstPage) {
-                $wrappedText($margin, $y, 16, 'OFFICIAL ACADEMIC TRANSCRIPT', $pageWidth - ($margin * 2), 1, $primary, 'F5');
-                $text($margin, $y - 20, 8, 'Serial No: ' . $serialNumber, $dark, 'F4');
-                $text($pageWidth - $margin - 190, $y - 20, 8, 'Transcript No: ' . $transcriptNumber, $dark, 'F4');
-                $text($margin, $y - 34, 8, 'Generated: ' . $issuedAt, $muted, 'F4');
-                $line($margin, $y - 42, $pageWidth - $margin, $y - 42, $secondary, 1.2);
-                $y -= 58;
+                $centerText($pageWidth / 2, $y, 16, 'OFFICIAL ACADEMIC TRANSCRIPT', $primary, 'F5');
+                $centerText($pageWidth / 2, $y - 20, 8, 'Serial No: ' . $serialNumber . '  I  Transcript No: ' . $transcriptNumber, $dark, 'F1');
+                $line($margin, $y - 32, $pageWidth - $margin, $y - 32, $secondary, 1.2);
+                $y -= 46;
             } else {
                 $text($margin, $y, 9, 'Continuation for ' . (string)($student['name'] ?? 'Student'), $muted, 'F2');
                 $line($margin, $y - 7, $pageWidth - $margin, $y - 7, $secondary, 0.8);
@@ -807,8 +813,6 @@ class StudentPortalController extends Controller
 
         $drawPageHeader(true);
         $drawMeta();
-        $text($margin, $y, 11, 'Results Summary', $primary, 'F2');
-        $y -= 12;
         $drawTableHeader();
 
         if ($rows === []) {
@@ -859,7 +863,10 @@ class StudentPortalController extends Controller
                 }
                 $min = (int)round((float)($range['min_marks'] ?? 0));
                 $max = (int)round((float)($range['max_marks'] ?? 0));
-                $gradingKey[] = $grade . ': ' . $min . '-' . $max;
+                $gradingKey[] = [
+                    'grade' => $grade,
+                    'range' => $min . '-' . $max,
+                ];
             }
             if ($gradingKey !== []) {
                 break;
@@ -867,16 +874,33 @@ class StudentPortalController extends Controller
         }
 
         if ($gradingKey !== []) {
-            if ($y - 54 < $bottomMargin) {
+            $gradeCount = count($gradingKey);
+            $gradeCellWidth = $gradeCount > 0 ? floor($contentWidth / $gradeCount) : $contentWidth;
+            $gradingTableHeight = 42;
+            if ($y - ($gradingTableHeight + 30) < $bottomMargin) {
                 $drawFooter();
                 $finishPage();
                 $drawPageHeader(false);
             }
             $y -= 20;
             $text($margin, $y, 9, 'Grading System', $primary, 'F5');
-            $y -= 14;
-            $wrappedText($margin, $y, 8, implode('    ', $gradingKey), $contentWidth, 3, $dark, 'F4');
-            $y -= 32;
+            $y -= 12;
+            $x = $margin;
+            foreach ($gradingKey as $gradeRange) {
+                $fillRect($x, $y - 18, $gradeCellWidth, 18, $primary);
+                $strokeRect($x, $y - 18, $gradeCellWidth, 18, $border, 0.35);
+                $centerText($x + ($gradeCellWidth / 2), $y - 12, 8, (string)$gradeRange['grade'], $white, 'F5');
+                $x += $gradeCellWidth;
+            }
+            $y -= 18;
+            $x = $margin;
+            foreach ($gradingKey as $gradeRange) {
+                $fillRect($x, $y - 18, $gradeCellWidth, 18, $light);
+                $strokeRect($x, $y - 18, $gradeCellWidth, 18, $border, 0.35);
+                $centerText($x + ($gradeCellWidth / 2), $y - 12, 8, (string)$gradeRange['range'], $dark, 'F1');
+                $x += $gradeCellWidth;
+            }
+            $y -= 26;
         }
 
         if ($y - 112 < $bottomMargin) {
@@ -1026,11 +1050,11 @@ class StudentPortalController extends Controller
         $objects = [
             1 => '',
             2 => '',
-            3 => "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-            4 => "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
-            5 => "<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman >>",
-            6 => "<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>",
-            7 => "<< /Type /Font /Subtype /Type1 /BaseFont /Times-Bold >>",
+            3 => "<< /Type /Font /Subtype /Type1 /BaseFont /Cambria >>",
+            4 => "<< /Type /Font /Subtype /Type1 /BaseFont /Cambria-Bold >>",
+            5 => "<< /Type /Font /Subtype /Type1 /BaseFont /Cambria-Italic >>",
+            6 => "<< /Type /Font /Subtype /Type1 /BaseFont /Cambria >>",
+            7 => "<< /Type /Font /Subtype /Type1 /BaseFont /Cambria-Bold >>",
         ];
         $pageObjectIds = [];
         $imageObjectIds = [];
