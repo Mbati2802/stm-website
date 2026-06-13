@@ -91,24 +91,64 @@
         <label class="form-label">KCSE Index Number</label>
         <input type="text" name="kcse_index" class="form-control" value="<?= e((string)($student['kcse_index'] ?? '')) ?>">
     </div>
-    <div class="col-md-6">
-        <label class="form-label">Programme</label>
-        <select name="programme_id" class="form-select">
-            <option value="">Select Programme</option>
-            <?php foreach ($programmes as $programme): ?>
-                <option value="<?= e((string)$programme['id']) ?>" <?= (int)($student['programme_id'] ?? 0) === (int)$programme['id'] ? 'selected' : '' ?>><?= e((string)$programme['name']) ?></option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Preferred Intake</label>
-        <select name="preferred_intake" class="form-select">
-            <option value="">Select Intake</option>
-            <?php foreach (['January', 'March', 'May', 'July', 'September', 'November'] as $intake): ?>
-                <option value="<?= e($intake) ?>" <?= (string)($student['preferred_intake'] ?? '') === $intake ? 'selected' : '' ?>><?= e($intake) ?></option>
-            <?php endforeach; ?>
-        </select>
-    </div>
+    	<div class="col-md-6">
+    		<label class="form-label">Programme</label>
+    		<select name="programme_id" class="form-select">
+    			<option value="">Select Programme</option>
+    			<?php foreach ($programmes as $programme): ?>
+    				<option value="<?= e((string)$programme['id']) ?>" <?= (int)($student['programme_id'] ?? 0) === (int)$programme['id'] ? 'selected' : '' ?>><?= e((string)$programme['name']) ?></option>
+    			<?php endforeach; ?>
+    		</select>
+    	</div>
+    	<div class="col-md-6">
+    		<label class="form-label">Preferred Intake</label>
+    		<select name="preferred_intake" class="form-select">
+    			<option value="">Select Intake</option>
+    			<?php foreach (['January', 'March', 'May', 'July', 'September', 'November'] as $intake): ?>
+    				<option value="<?= e($intake) ?>" <?= (string)($student['preferred_intake'] ?? '') === $intake ? 'selected' : '' ?>><?= e($intake) ?></option>
+    			<?php endforeach; ?>
+    		</select>
+    	</div>
+
+    	<div class="col-12 mt-3">
+    		<h6 class="text-uppercase text-muted mb-2">Enrollment</h6>
+    		<?php if (!empty($enrollment)): ?>
+    			<p class="mb-1"><strong>Current Academic Year:</strong> <?= e((string)($enrollment['academic_session_id'] ?? '-')) ?></p>
+    			<p class="mb-1"><strong>Current Term:</strong> <?= e((string)($enrollment['term_id'] ?? '-')) ?></p>
+    		<?php else: ?>
+    			<p class="mb-1 text-warning">No active enrollment found for this student.</p>
+    		<?php endif; ?>
+
+    		<div class="row g-2">
+    			<div class="col-md-4">
+    				<label class="form-label">Academic Year</label>
+    				<select name="academic_session_id" id="editAcademicYearSelect" class="form-select">
+    					<option value="">Select Academic Year</option>
+    					<?php foreach (($academicYears ?? []) as $ay): ?>
+    						<option value="<?= e((string)$ay['id']) ?>" <?= (!empty($enrollment) && (int)$enrollment['academic_session_id'] === (int)$ay['id']) ? 'selected' : '' ?>><?= e((string)$ay['name']) ?></option>
+    					<?php endforeach; ?>
+    				</select>
+    			</div>
+    			<div class="col-md-4">
+    				<label class="form-label">Term</label>
+    				<select name="term_id" id="editTermSelect" class="form-select">
+    					<option value="">Select Term</option>
+    					<?php foreach (($termsForSession ?? []) as $t): ?>
+    						<option value="<?= e((string)$t['id']) ?>" <?= (!empty($enrollment) && (int)$enrollment['term_id'] === (int)$t['id']) ? 'selected' : '' ?>><?= e((string)$t['name']) ?></option>
+    					<?php endforeach; ?>
+    				</select>
+    			</div>
+    			<div class="col-md-4">
+    				<label class="form-label">Student Session</label>
+    				<select name="session_id" id="editSessionSelect" class="form-select">
+    					<option value="">Select session</option>
+    					<?php foreach (($sessions ?? []) as $s): ?>
+    						<option value="<?= e((string)$s['id']) ?>" <?= (!empty($enrollment) && (int)$enrollment['session_id'] === (int)$s['id']) ? 'selected' : '' ?>><?= e((string)$s['name']) ?></option>
+    					<?php endforeach; ?>
+    				</select>
+    			</div>
+    		</div>
+    	</div>
 </div>
 
 <h6 class="text-uppercase text-muted mb-3">Additional Information</h6>
@@ -149,3 +189,30 @@
 </div>
 
 <input type="hidden" name="student_id" value="<?= (int)$student['id'] ?>">
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const ay = document.getElementById('editAcademicYearSelect');
+    const term = document.getElementById('editTermSelect');
+    if (!ay || !term) return;
+    ay.addEventListener('change', function(){
+        const sessionId = this.value;
+        term.innerHTML = '<option value="">Loading...</option>';
+        if (!sessionId) { term.innerHTML = '<option value="">Select Term</option>'; return; }
+        fetch('<?= e(base_url('admin/semester/terms')) ?>?session_id=' + encodeURIComponent(sessionId))
+            .then(r => r.json())
+            .then(data => {
+                term.innerHTML = '<option value="">Select Term</option>';
+                if (Array.isArray(data)) {
+                    data.forEach(t => {
+                        const opt = document.createElement('option');
+                        opt.value = t.id;
+                        opt.textContent = t.name;
+                        term.appendChild(opt);
+                    });
+                }
+            })
+            .catch(err => { console.error(err); term.innerHTML = '<option value="">Select Term</option>'; });
+    });
+});
+</script>

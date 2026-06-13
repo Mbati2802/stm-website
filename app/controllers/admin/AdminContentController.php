@@ -1171,8 +1171,38 @@ class AdminContentController extends Controller
             'Vihiga','Wajir','West Pokot'
         ];
 
+        // Load student's active enrollment and session/term/year options
+        $pdo = Database::getInstance($this->config['db']);
+        $enrollment = null;
+        try {
+            $stmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE student_id = ? AND status = "active" ORDER BY id DESC LIMIT 1');
+            $stmt->execute([$studentId]);
+            $enrollment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Load sessions list
+            $sessions = [];
+            $stmt = $pdo->query('SELECT id, name FROM sessions ORDER BY sequence_number ASC');
+            $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Load academic years and terms
+            $academicYears = [];
+            $termsForSession = [];
+            $stmt = $pdo->query('SELECT id, name FROM academic_years ORDER BY start_date DESC');
+            $academicYears = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (!empty($enrollment) && !empty($enrollment['academic_session_id'])) {
+                $tstmt = $pdo->prepare('SELECT id, name FROM terms WHERE academic_session_id = ? ORDER BY start_date ASC');
+                $tstmt->execute([(int)$enrollment['academic_session_id']]);
+                $termsForSession = $tstmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+        } catch (PDOException $e) {
+            $enrollment = null;
+            $sessions = [];
+            $academicYears = [];
+            $termsForSession = [];
+        }
+
         // Extract variables for the view
-        extract(['student' => $student, 'programmes' => $programmes, 'kenyanCounties' => $kenyanCounties]);
+        extract(['student' => $student, 'programmes' => $programmes, 'kenyanCounties' => $kenyanCounties, 'enrollment' => $enrollment, 'sessions' => $sessions, 'academicYears' => $academicYears, 'termsForSession' => $termsForSession]);
 
         // Render partial view without layout for modal
         ob_start();
@@ -1259,25 +1289,78 @@ class AdminContentController extends Controller
                     is_suspended = ?
                 WHERE id = ?
             SQL);
-            $stmt->execute([
-                $name, $email, $gender ?: null, $dateOfBirth ?: null, $nationalId ?: null,
-                $phone ?: null, $county ?: null, $subCounty ?: null,
-                $guardianName ?: null, $guardianRelationship ?: null, $guardianPhone ?: null, $guardianEmail ?: null,
-                $previousSchool ?: null, $kcseYear ?: null, $kcseGrade ?: null, $kcseIndex ?: null,
-                $programmeId ?: null, $preferredIntake ?: null,
-                $disabilityStatus, $referralSource ?: null, $additionalNotes ?: null,
-                $admissionNumber, $admissionNumber,
-                $isSuspended,
-                $studentId,
-            ]);
 
-            flash('success', 'Student record updated successfully.');
-        } catch (PDOException $e) {
-            flash('error', 'Failed to update student: ' . $e->getMessage());
-        }
+                        $stmt->execute([
+                            $name, $email, $gender ?: null, $dateOfBirth ?: null, $nationalId ?: null,
+                            $phone ?: null, $county ?: null, $subCounty ?: null,
+                            $guardianName ?: null, $guardianRelationship ?: null, $guardianPhone ?: null, $guardianEmail ?: null,
+                            $previousSchool ?: null, $kcseYear ?: null, $kcseGrade ?: null, $kcseIndex ?: null,
+                            $programmeId ?: null, $preferredIntake ?: null,
+                            $disabilityStatus, $referralSource ?: null, $additionalNotes ?: null,
+                            $admissionNumber, $admissionNumber,
+                            $isSuspended,
+                            $studentId,
+                        ]);
 
-        $this->redirect('admin/students');
-    }
+                        // Handle enrollment updates if provided
+                        $postedAcademicSessionId = (int)($_POST['academic_session_id'] ?? 0);
+                        $postedTermId = (int)($_POST['term_id'] ?? 0);
+                        $postedStudentSessionId = (int)($_POST['session_id'] ?? 0);
+
+                        try {
+                            // Find active enrollment
+                            $enStmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE student_id = ? AND status = "active" ORDER BY id DESC LIMIT 1');
+                            $enStmt->execute([$studentId]);
+                            $enrollment = $enStmt->fetch(PDO::FETCH_ASSOC);
+
+                            if ($enrollment) {
+                                $fields = [];
+                                $params = [];
+                                if ($postedStudentSessionId > 0) {
+                                    $fields[] = 'session_id = ?';
+                                    $params[] = $postedStudentSessionId;
+                                }
+                                if ($postedAcademicSessionId > 0) {
+                                    $fields[] = 'academic_session_id = ?';
+                                    $params[] = $postedAcademicSessionId;
+                                }
+                                if ($postedTermId > 0) {
+                                    $fields[] = 'term_id = ?';
+                                    $params[] = $postedTermId;
+                                }
+                                if (!empty($fields)) {
+                                    $params[] = $enrollment['id'];
+                                    $updSql = 'UPDATE student_enrollments SET ' . implode(', ', $fields) . ', updated_at = NOW() WHERE id = ?';
+                                    $upd = $pdo->prepare($updSql);
+                                    $upd->execute($params);
+                                }
+                            } else {
+                                // No active enrollment - create one if we have enough data
+                                if ($postedAcademicSessionId > 0 && $postedTermId > 0 && $postedStudentSessionId > 0) {
+                                    $intakeId = null;
+                                    // Try to use preferred_intake code to find intake id
+                                    if (!empty($preferredIntake)) {
+                                        $iStmt = $pdo->prepare('SELECT id FROM intakes WHERE code = ? LIMIT 1');
+                                        $iStmt->execute([$preferredIntake]);
+                                        $intakeRow = $iStmt->fetch(PDO::FETCH_ASSOC);
+                                        $intakeId = $intakeRow['id'] ?? null;
+                                    }
+                                    $insert = $pdo->prepare('INSERT INTO student_enrollments (student_id, academic_session_id, term_id, intake_id, programme_id, session_id, enrollment_date, status) VALUES (?, ?, ?, ?, ?, ?, CURDATE(), ?)');
+                                    $insert->execute([$studentId, $postedAcademicSessionId, $postedTermId, $intakeId, $programmeId ?: null, $postedStudentSessionId, 'active']);
+                                }
+                            }
+                        } catch (PDOException $e) {
+                            // Log but don't fail the whole update
+                            error_log('Failed to update student enrollment: ' . $e->getMessage());
+                        }
+
+                        flash('success', 'Student record updated successfully.');
+                    } catch (PDOException $e) {
+                        flash('error', 'Failed to update student: ' . $e->getMessage());
+                    }
+
+                    $this->redirect('admin/students');
+                }
 
     public function resetStudentPassword(): void
     {
