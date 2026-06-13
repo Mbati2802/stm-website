@@ -1,7 +1,7 @@
-<?php 
-$isEdit = $isEdit ?? false; 
-$row = $row ?? []; 
-$programmeContent = $programmeContent ?? []; 
+<?php
+$isEdit = $isEdit ?? false;
+$row = $row ?? [];
+$programmeContent = $programmeContent ?? [];
 $canManage = Auth::canManageEntity($entity);
 $formDisabled = !$canManage ? 'disabled' : '';
 $formReadonly = !$canManage ? 'readonly' : '';
@@ -122,6 +122,7 @@ $selectedIds = array_map('strval', $selectedProgrammeIds);
 </div>
 <div class="col-md-6"><label class="form-label">Teacher</label><select name="teacher_id" class="form-select"><option value="">Select teacher (optional)</option><?php foreach(($teachers ?? []) as $teacher): ?><option value="<?= e((string)$teacher['id']) ?>" <?= ((string)($row['teacher_id'] ?? '') === (string)$teacher['id']) ? 'selected' : '' ?>><?= e((string)$teacher['name']) ?> (<?= e((string)$teacher['email']) ?>)</option><?php endforeach; ?></select></div>
 <div class="col-md-4"><label class="form-label">Unit Code</label><input name="code" class="form-control" value="<?= e($row['code'] ?? '') ?>" placeholder="MCH-101"></div>
+<div class="col-md-4"><label class="form-label">Session</label><select name="session_id" class="form-select"><option value="">Select session (optional)</option><?php foreach(($sessions ?? []) as $s): ?><option value="<?= e((string)$s['id']) ?>" <?= ((string)($row['session_id'] ?? '') === (string)$s['id']) ? 'selected' : '' ?>><?= e((string)$s['name']) ?></option><?php endforeach; ?></select></div>
 <div class="col-12"><label class="form-label">Unit Title</label><input name="title" class="form-control" value="<?= e($row['title'] ?? '') ?>" required></div>
 <div class="col-12"><label class="form-label">Description</label><textarea name="description" class="form-control rich-editor"><?= e($row['description'] ?? '') ?></textarea></div>
 <?php elseif($entity==='programme_timetables'): ?>
@@ -180,7 +181,7 @@ $selectedIds = array_map('strval', $selectedProgrammeIds);
 <?php endif; ?>
 </div><div class="mt-3">
 <?php if ($canManage): ?>
-<button class="btn btn-primary"><?= $isEdit ? 'Update' : 'Save' ?></button> 
+<button class="btn btn-primary"><?= $isEdit ? 'Update' : 'Save' ?></button>
 <?php endif; ?>
 <a class="btn btn-outline-secondary" href="<?= e(base_url('admin/list/' . $entity)) ?>">Cancel</a>
 </div>

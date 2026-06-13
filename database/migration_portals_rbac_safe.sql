@@ -103,6 +103,33 @@ SET @sql := IF(
 );
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
+-- Add session_id column to portal_courses for session-specific units
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'portal_courses'
+          AND COLUMN_NAME = 'session_id'
+    ),
+    'SELECT "portal_courses.session_id exists" AS info',
+    'ALTER TABLE portal_courses ADD COLUMN session_id INT NULL AFTER description'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    EXISTS(
+        SELECT 1
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @db
+          AND TABLE_NAME = 'portal_courses'
+          AND INDEX_NAME = 'idx_portal_courses_session'
+    ),
+    'SELECT "idx_portal_courses_session exists" AS info',
+    'CREATE INDEX idx_portal_courses_session ON portal_courses(session_id)'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 -- ---------------------------------------------------------------------
 -- programme_timetables
 -- ---------------------------------------------------------------------

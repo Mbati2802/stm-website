@@ -1938,22 +1938,23 @@ class AdminContentController extends Controller
                 // Use first programme as legacy programme_id for backward compatibility
                 $primaryProgrammeId = (int)($programmeIds[0] ?? 0);
                 $stmtData = [
-                    'programme_id' => $primaryProgrammeId,
-                    'teacher_id' => (int)($_POST['teacher_id'] ?? 0),
-                    'code' => trim($_POST['code'] ?? ''),
-                    'title' => trim($_POST['title'] ?? ''),
-                    'description' => trim($_POST['description'] ?? ''),
-                ];
-                if ($isUpdate) {
-                    $stmt = $pdo->prepare('UPDATE portal_courses SET programme_id=:programme_id, teacher_id=:teacher_id, code=:code, title=:title, description=:description WHERE id=:id');
-                    $stmtData['id'] = $id;
-                    $stmt->execute($stmtData);
-                    $portalCourseId = $id;
-                } else {
-                    $stmt = $pdo->prepare('INSERT INTO portal_courses(programme_id, teacher_id, code, title, description, created_at) VALUES(:programme_id, :teacher_id, :code, :title, :description, NOW())');
-                    $stmt->execute($stmtData);
-                    $portalCourseId = (int)$pdo->lastInsertId();
-                }
+                                    'programme_id' => $primaryProgrammeId,
+                                    'teacher_id' => (int)($_POST['teacher_id'] ?? 0),
+                                    'code' => trim($_POST['code'] ?? ''),
+                                    'title' => trim($_POST['title'] ?? ''),
+                                    'description' => trim($_POST['description'] ?? ''),
+                                    'session_id' => (int)($_POST['session_id'] ?? 0),
+                                ];
+                                if ($isUpdate) {
+                                    $stmt = $pdo->prepare('UPDATE portal_courses SET programme_id=:programme_id, teacher_id=:teacher_id, code=:code, title=:title, description=:description, session_id=:session_id WHERE id=:id');
+                                    $stmtData['id'] = $id;
+                                    $stmt->execute($stmtData);
+                                    $portalCourseId = $id;
+                                } else {
+                                    $stmt = $pdo->prepare('INSERT INTO portal_courses(programme_id, teacher_id, code, title, description, session_id, created_at) VALUES(:programme_id, :teacher_id, :code, :title, :description, :session_id, NOW())');
+                                    $stmt->execute($stmtData);
+                                    $portalCourseId = (int)$pdo->lastInsertId();
+                                }
                 // Save many-to-many relationships in junction table
                 // First, remove existing relationships
                 $stmt = $pdo->prepare('DELETE FROM portal_course_programmes WHERE portal_course_id = ?');
