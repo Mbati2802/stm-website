@@ -1064,14 +1064,14 @@ class AdminContentController extends Controller
 
         try {
             $pdo = Database::getInstance($this->config['db']);
-            $stmt = $pdo->prepare('SELECT id FROM student_enrollments WHERE student_id = ? AND status = "active" ORDER BY id DESC LIMIT 1');
-            $stmt->execute([$studentId]);
-            $enrollment = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE student_id = ? ORDER BY id DESC LIMIT 1');
+                        $stmt->execute([$studentId]);
+                        $enrollment = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$enrollment) {
-                echo json_encode(['success' => false, 'message' => 'No active enrollment found for this student.']);
-                return;
-            }
+                        if (!$enrollment) {
+                            echo json_encode(['success' => false, 'message' => 'No enrollment record found for this student.']);
+                            return;
+                        }
 
                 // Validate term belongs to academic session if both provided
                 if ($academicSessionId > 0 && $termId > 0) {
@@ -1221,10 +1221,14 @@ class AdminContentController extends Controller
             $stmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE student_id = ? ORDER BY id DESC');
             $stmt->execute([$studentId]);
             $allEnrollments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            // find active if any
+            // find active if any; otherwise use most recent enrollment
             $enrollment = null;
             foreach ($allEnrollments as $er) {
                 if (($er['status'] ?? '') === 'active') { $enrollment = $er; break; }
+            }
+            if ($enrollment === null && !empty($allEnrollments)) {
+                // use most recent enrollment even if not active
+                $enrollment = $allEnrollments[0];
             }
 
             // Load sessions list
