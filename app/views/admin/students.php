@@ -372,15 +372,19 @@
                             if (!enrollmentId) return;
                             if (!confirm('Set this enrollment as active?')) return;
                             fetch('<?= e(base_url('admin/students/set-enrollment-status')) ?>', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                                body: new URLSearchParams({ enrollment_id: enrollmentId, student_id: studentId, status: 'active' })
-                            })
-                            .then(r => r.json())
-                            .then(resp => {
-                                if (resp.success) { loadEnrollments(studentId, listArea); location.reload(); } else { alert(resp.message || 'Failed'); }
-                            })
-                            .catch(err => { console.error(err); alert('Request failed'); });
+                                                            method: 'POST',
+                                                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                                            body: new URLSearchParams({ enrollment_id: enrollmentId, student_id: studentId, status: 'active' })
+                                                        })
+                                                        .then(async r => {
+                                                            const ct = r.headers.get('content-type') || '';
+                                                            if (ct.indexOf('application/json') !== -1) return r.json();
+                                                            const text = await r.text(); throw new Error('Server returned non-JSON response:\n' + text);
+                                                        })
+                                                        .then(resp => {
+                                                            if (resp.success) { loadEnrollments(studentId, listArea); location.reload(); } else { alert(resp.message || 'Failed'); }
+                                                        })
+                                                        .catch(err => { console.error(err); alert('Request failed: ' + (err.message || '')); });
                         });
                     }
 
@@ -391,25 +395,33 @@
                 if (!listArea) return;
                 listArea.innerHTML = 'Loading...';
                 fetch('<?= e(base_url('admin/students/enrollments')) ?>?student_id=' + studentId)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (!Array.isArray(data)) { listArea.innerHTML = '<div class="alert alert-danger">Failed to load</div>'; return; }
-                        if (data.length === 0) { listArea.innerHTML = '<div class="alert alert-info">No enrollments found</div>'; return; }
-                        let html = '<ul class="list-group">';
-                        data.forEach(row => {
-                            const badgeClass = (row.status === 'active') ? 'bg-success' : 'bg-secondary';
-                            let actions = '';
-                            if (row.status !== 'active') {
-                                actions += `<button class="btn btn-sm btn-primary me-1 btn-reactivate" data-id="${row.id}" data-student="${studentId}">Make Active</button>`;
-                            } else {
-                                actions += `<span class="text-muted small">Active</span>`;
-                            }
-                            html += `<li class="list-group-item d-flex justify-content-between align-items-start"><div><strong>${escapeHtml(row.academic_session_name||row.academic_session_id||'')}</strong> — ${escapeHtml(row.term_name||row.term_id||'')} <br><small>Session: ${escapeHtml(row.session_name||row.session_id||'')}</small></div><div>${actions}<span class="badge ${badgeClass} ms-2">${escapeHtml(row.status)}</span></div></li>`;
-                        });
-                        html += '</ul>';
-                        listArea.innerHTML = html;
-                    })
-                    .catch(err => { console.error(err); listArea.innerHTML = '<div class="alert alert-danger">Failed to load</div>'; });
+                                    .then(async r => {
+                                        const ct = r.headers.get('content-type') || '';
+                                        if (ct.indexOf('application/json') !== -1) {
+                                            return r.json();
+                                        }
+                                        // Not JSON - return text for debugging
+                                        const text = await r.text();
+                                        throw new Error('Server returned non-JSON response:\n' + text);
+                                    })
+                                    .then(data => {
+                                        if (!Array.isArray(data)) { listArea.innerHTML = '<div class="alert alert-danger">Failed to load</div>'; return; }
+                                        if (data.length === 0) { listArea.innerHTML = '<div class="alert alert-info">No enrollments found</div>'; return; }
+                                        let html = '<ul class="list-group">';
+                                        data.forEach(row => {
+                                            const badgeClass = (row.status === 'active') ? 'bg-success' : 'bg-secondary';
+                                            let actions = '';
+                                            if (row.status !== 'active') {
+                                                actions += `<button class="btn btn-sm btn-primary me-1 btn-reactivate" data-id="${row.id}" data-student="${studentId}">Make Active</button>`;
+                                            } else {
+                                                actions += `<span class="text-muted small">Active</span>`;
+                                            }
+                                            html += `<li class="list-group-item d-flex justify-content-between align-items-start"><div><strong>${escapeHtml(row.academic_session_name||row.academic_session_id||'')}</strong> — ${escapeHtml(row.term_name||row.term_id||'')} <br><small>Session: ${escapeHtml(row.session_name||row.session_id||'')}</small></div><div>${actions}<span class="badge ${badgeClass} ms-2">${escapeHtml(row.status)}</span></div></li>`;
+                                        });
+                                        html += '</ul>';
+                                        listArea.innerHTML = html;
+                                    })
+                                    .catch(err => { console.error(err); listArea.innerHTML = '<div class="alert alert-danger">Failed to load: ' + (err.message || '') + '</div>'; });
             }
 
 

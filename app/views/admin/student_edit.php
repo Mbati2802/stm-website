@@ -333,11 +333,15 @@ document.addEventListener('DOMContentLoaded', function(){
             if (!ay || !term || !session) { alert('Select academic year, term, and session'); return; }
             const body = new URLSearchParams({ student_id: studentId, academic_session_id: ay, term_id: term, session_id: session, programme_id: <?= (int)($student['programme_id'] ?? 0) ?>, intake_id: '' });
             fetch('<?= e(base_url('admin/students/create-enrollment')) ?>', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body })
-                .then(r => r.json())
-                .then(resp => {
-                    if (resp.success) { loadEnrollments(); alert('Enrollment created'); location.reload(); } else { alert(resp.message || 'Failed'); }
-                })
-                .catch(err => { console.error(err); alert('Request failed'); });
+                                            .then(async r => {
+                                                const ct = r.headers.get('content-type') || '';
+                                                if (ct.indexOf('application/json') !== -1) return r.json();
+                                                const text = await r.text(); throw new Error('Server returned non-JSON response:\n' + text);
+                                            })
+                                            .then(resp => {
+                                                if (resp.success) { loadEnrollments(studentId, listArea); alert('Enrollment created'); location.reload(); } else { alert(resp.message || 'Failed'); }
+                                            })
+                                            .catch(err => { console.error(err); alert('Request failed: ' + (err.message || '')); });
         });
     }
 
