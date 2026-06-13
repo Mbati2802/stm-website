@@ -1177,11 +1177,12 @@ class AdminContentController extends Controller
                     'term_name' => $tName,
                 ]);
                 return;
-        } catch (PDOException $e) {
+        } catch (Throwable $e) {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-            return;
         }
     }
+
+    // Update enrollment via AJAX (already implemented) - ensure it also catches Throwable
 
     public function editStudentForm(): void
     {
@@ -2935,7 +2936,9 @@ class AdminContentController extends Controller
             $stmt = $pdo->prepare('SELECT se.*, t.name AS term_name, ay.name AS academic_session_name, s.name AS session_name FROM student_enrollments se LEFT JOIN terms t ON se.term_id = t.id LEFT JOIN academic_years ay ON se.academic_session_id = ay.id LEFT JOIN sessions s ON se.session_id = s.id WHERE se.student_id = ? ORDER BY se.id DESC');
             $stmt->execute([$studentId]);
             echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
-        } catch (PDOException $e) {
+        } catch (Throwable $e) {
+            // Return error as JSON to help debugging instead of a 500 with an empty response
+            header('Content-Type: application/json');
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
@@ -2987,7 +2990,7 @@ class AdminContentController extends Controller
                 $auditStmt->execute([$studentId, $enId, 'created', $_SESSION['admin_id'] ?? null, null, json_encode(['id'=>$enId,'student_id'=>$studentId,'academic_session_id'=>$academicSessionId,'term_id'=>$termId,'session_id'=>$sessionId], JSON_UNESCAPED_SLASHES)]);
             } catch (Throwable) {}
             echo json_encode(['success' => true, 'message' => 'Enrollment created', 'enrollment_id' => $enId]);
-        } catch (PDOException $e) {
+        } catch (Throwable $e) {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     }
