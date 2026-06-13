@@ -183,6 +183,7 @@ $router->add('POST', 'admin/students/delete', [AdminContentController::class, 'd
 $router->add('POST', 'admin/students/assign', [AdminContentController::class, 'assignStudentAdmissionNumber']);
 $router->add('POST', 'admin/students/assign/{id}', [AdminContentController::class, 'assignStudentAdmissionNumber']);
 $router->add('POST', 'admin/students/bulk-assign', [AdminContentController::class, 'bulkAssignAdmissionNumbers']);
+$router->add('POST', 'admin/students/update-enrollment', [AdminContentController::class, 'updateStudentEnrollment']);
 $router->add('GET', 'admin/admission', [AdminContentController::class, 'admission']);
 $router->add('POST', 'admin/admission', [AdminContentController::class, 'submitAdmission']);
 $router->add('GET', 'admin/deleted-records', [AdminContentController::class, 'deletedRecords']);

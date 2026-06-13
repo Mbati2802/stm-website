@@ -473,12 +473,6 @@ class StudentPortalController extends Controller
                 $settings[$row['setting_key']] = $row['setting_value'];
             }
 
-            if ((string)($_GET['download'] ?? '') === '1') {
-                $pdf = $this->buildStudentReceiptPdf($payment, (float)$totalPaid, $settings);
-                $this->streamPdfDownload($pdf, 'Receipt_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', (string)$payment['payment_number']) . '.pdf');
-                return;
-            }
-
             // Render receipt without layout for standalone display
             $receiptPath = __DIR__ . '/../../views/student/receipt.php';
             if (!file_exists($receiptPath)) {
@@ -540,12 +534,6 @@ class StudentPortalController extends Controller
             $settings = [];
             foreach ($settingsRows as $row) {
                 $settings[$row['setting_key']] = $row['setting_value'];
-            }
-
-            if ((string)($_GET['download'] ?? '') === '1') {
-                $pdf = $this->buildStudentInvoicePdf($invoice, $feeItems, (float)$totalPaid, (float)$balance, $settings);
-                $this->streamPdfDownload($pdf, 'Invoice_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', (string)$invoice['invoice_number']) . '.pdf');
-                return;
             }
 
             // Render invoice without layout for standalone display

@@ -21,6 +21,48 @@
             <?php endif; ?>
         </p>
     </div>
+
+    <div class="col-12 mt-3">
+        <h5 class="mb-2">Enrollment</h5>
+        <?php if (!empty($enrollment)): ?>
+            <p class="mb-1"><strong>Academic Year:</strong> <?= e((string)($academicSessionName ?? ($enrollment['academic_session_id'] ?? '-'))) ?></p>
+            <p class="mb-1"><strong>Term:</strong> <?= e((string)($termName ?? ($enrollment['term_id'] ?? '-'))) ?></p>
+        <?php else: ?>
+            <p class="mb-1 text-warning">No active enrollment found for this student.</p>
+        <?php endif; ?>
+
+        <label class="form-label fw-semibold">Academic Year</label>
+        <div class="d-flex gap-2 align-items-start mb-2">
+            <select id="enrollmentAcademicYearSelect" class="form-select" style="max-width:320px;" data-student-id="<?= e((string)$student['id']) ?>">
+                <option value="">Select academic year</option>
+                <?php foreach ($academicYears ?? [] as $ay): ?>
+                    <option value="<?= (int)$ay['id'] ?>" <?= (!empty($enrollment) && ((int)$enrollment['academic_session_id'] === (int)$ay['id'])) ? 'selected' : '' ?>><?= e($ay['name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <label class="form-label fw-semibold">Term</label>
+        <div class="d-flex gap-2 align-items-start mb-2">
+            <select id="enrollmentTermSelect" class="form-select" style="max-width:320px;">
+                <option value="">Select term</option>
+                <?php foreach ($termsForSession ?? [] as $t): ?>
+                    <option value="<?= (int)$t['id'] ?>" <?= (!empty($enrollment) && ((int)$enrollment['term_id'] === (int)$t['id'])) ? 'selected' : '' ?>><?= e($t['name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <label class="form-label fw-semibold">Student Session</label>
+        <div class="d-flex gap-2 align-items-start">
+            <select id="enrollmentSessionSelect" class="form-select" style="max-width:240px;">
+                <option value="">Select session</option>
+                <?php foreach ($sessions ?? [] as $s): ?>
+                    <option value="<?= (int)$s['id'] ?>" <?= (!empty($enrollment) && ((int)$enrollment['session_id'] === (int)$s['id'])) ? 'selected' : '' ?>><?= e($s['name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <button id="saveEnrollmentBtn" class="btn btn-sm btn-primary">Save</button>
+        </div>
+        <div id="enrollmentMessage" class="mt-2"></div>
+    </div>
     <?php if (!empty($student['national_id'])): ?>
     <div class="col-md-6">
         <label class="form-label fw-bold">National ID</label>
@@ -106,3 +148,81 @@
     </div>
     <?php endif; ?>
 </div>
+
+<script>
+(function(){
+    const btn = document.getElementById('saveEnrollmentBtn');
+    if (!btn) return;
+
+    const aySelect = document.getElementById('enrollmentAcademicYearSelect');
+    const termSelect = document.getElementById('enrollmentTermSelect');
+    const sessionSelect = document.getElementById('enrollmentSessionSelect');
+    const studentId = aySelect ? aySelect.getAttribute('data-student-id') : null;
+
+    // When academic year changes, load terms via AJAX
+    if (aySelect) {
+        aySelect.addEventListener('change', function() {
+            const ay = this.value;
+            termSelect.innerHTML = '<option value="">Loading...</option>';
+            if (!ay) {
+                termSelect.innerHTML = '<option value="">Select term</option>';
+                return;
+            }
+            fetch('<?= e(base_url('admin/semester/terms')) ?>?session_id=' + encodeURIComponent(ay))
+                .then(r => r.json())
+                .then(data => {
+                    termSelect.innerHTML = '<option value="">Select term</option>';
+                    if (Array.isArray(data)) {
+                        data.forEach(t => {
+                            const opt = document.createElement('option');
+                            opt.value = t.id;
+                            opt.textContent = t.name;
+                            termSelect.appendChild(opt);
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    termSelect.innerHTML = '<option value="">Select term</option>';
+                });
+        });
+    }
+
+    btn.addEventListener('click', function(){
+        const sessionId = sessionSelect.value;
+        const academicSessionId = aySelect ? aySelect.value : '';
+        const termId = termSelect ? termSelect.value : '';
+        const msg = document.getElementById('enrollmentMessage');
+        msg.innerHTML = '';
+        if (!sessionId) {
+            msg.innerHTML = '<div class="alert alert-warning">Please select a session.</div>';
+            return;
+        }
+        const body = new URLSearchParams({ student_id: studentId, session_id: sessionId });
+        if (academicSessionId) body.append('academic_session_id', academicSessionId);
+        if (termId) body.append('term_id', termId);
+
+        fetch('<?= e(base_url('admin/students/update-enrollment')) ?>', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                let html = '<div class="alert alert-success">' + (data.message || 'Updated') + '</div>';
+                if (data.academic_session_name) html += '<div>Academic Year: ' + data.academic_session_name + '</div>';
+                if (data.term_name) html += '<div>Term: ' + data.term_name + '</div>';
+                if (data.new_session_name) html += '<div>Session: ' + data.new_session_name + '</div>';
+                msg.innerHTML = html;
+            } else {
+                msg.innerHTML = '<div class="alert alert-danger">' + (data.message || 'Failed to update enrollment') + '</div>';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            msg.innerHTML = '<div class="alert alert-danger">Request failed</div>';
+        });
+    });
+})();
+</script>

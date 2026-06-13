@@ -216,7 +216,7 @@
         <button class="btn" onclick="window.print()">Print Invoice</button>
         <button class="btn btn-primary" onclick="downloadPDF()">Download PDF</button>
     </div>
-    
+
     <div class="invoice-container">
         <div class="invoice-header">
             <img src="/assets/images/logo.png" alt="College Logo" class="logo" onerror="this.style.display='none'">
@@ -228,7 +228,7 @@
             <?php if (!empty($settings['location'])): ?><p class="location"><?= e($settings['location']) ?></p><?php endif; ?>
         </div>
         <h2 style="text-align: center; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 15px 0; color: #666; font-size: 13px;">Official Invoice</h2>
-        
+
         <div class="invoice-info">
             <table>
                 <tr>
@@ -327,123 +327,38 @@
 
     <!-- html2pdf.js library for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
-    <!-- Debug info display - Reverted and re-committed -->
-    <div id="errorDisplay" style="position: fixed; top: 10px; left: 10px; right: 10px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 5px; padding: 15px; font-family: monospace; font-size: 12px; z-index: 9999; display: block; max-height: 200px; overflow-y: auto;">
-        <strong>Debug Info:</strong>
-        <div id="errorMessage">Initializing...</div>
-        <button onclick="document.getElementById('errorDisplay').style.display='none'" style="margin-top: 10px; padding: 5px 10px;">Close</button>
-    </div>
-    
+
     <script>
-        function showError(msg) {
-            console.error(msg);
-            document.getElementById('errorMessage').innerHTML += '<br>' + msg;
-            document.getElementById('errorDisplay').style.display = 'block';
-        }
-        
-        function showDebug(msg) {
-            console.log(msg);
-            document.getElementById('errorMessage').innerHTML += '<br>' + msg;
-        }
-        
-        // IMMEDIATE TEST - show box is working
-        document.getElementById('errorMessage').innerHTML = 'Page loaded. Testing debug box...';
-        
-        // Check if library loaded
-        showDebug('Checking html2pdf library...');
-        if (typeof html2pdf === 'undefined') {
-            showError('ERROR: html2pdf.js library NOT loaded');
-        } else {
-            showDebug('OK: html2pdf library loaded');
-        }
-        
         function downloadPDF() {
-            showDebug('downloadPDF() called');
-            
-            // Check if library is available
             if (typeof html2pdf === 'undefined') {
-                showError('PDF library not loaded. Cannot generate PDF.');
-                alert('PDF library not loaded. Please refresh the page and try again.');
+                window.print();
                 return;
             }
-            
-            // Get the invoice container element
             const element = document.querySelector('.invoice-container');
-            showDebug('Element found: ' + (element ? 'YES' : 'NO'));
-            if (!element) {
-                showError('Invoice container (.invoice-container) not found');
-                alert('Could not find invoice content.');
-                return;
-            }
-            
-            // Show loading feedback
+            if (!element) { window.print(); return; }
             const btn = document.querySelector('.btn-primary');
-            const originalText = btn ? btn.innerHTML : '';
-            if (btn) {
-                btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating...';
-                btn.disabled = true;
-            }
-            showDebug('Starting PDF generation...');
-            
-            // Configure PDF options
+            const orig = btn ? btn.innerHTML : '';
+            if (btn) { btn.innerHTML = 'Generating...'; btn.disabled = true; }
             const opt = {
-                margin:       10,
-                filename:     'Invoice_<?= e($invoice['invoice_number']) ?>.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                margin: 10,
+                filename: 'Invoice_<?= e($invoice['invoice_number']) ?>.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            
-            // Create a timeout to catch hanging operations
-            let timeoutId = setTimeout(function() {
-                showError('TIMEOUT: PDF generation taking too long (30 seconds)');
-                if (btn) {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }
-            }, 30000);
-            
-            // Generate and download PDF
-            try {
-                showDebug('Calling html2pdf()...');
-                html2pdf().set(opt).from(element).save().then(function() {
-                    clearTimeout(timeoutId);
-                    showDebug('PDF generated successfully!');
-                    if (btn) {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    }
-                }).catch(function(error) {
-                    clearTimeout(timeoutId);
-                    showError('PDF generation error: ' + error.message);
-                    console.error('Full error:', error);
-                    if (btn) {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    }
-                    alert('Failed to generate PDF: ' + error.message + '\n\nPlease try using Print instead.');
+            html2pdf().set(opt).from(element).save()
+                .then(function() {
+                    if (btn) { btn.innerHTML = orig; btn.disabled = false; }
+                })
+                .catch(function() {
+                    if (btn) { btn.innerHTML = orig; btn.disabled = false; }
+                    window.print();
                 });
-            } catch (e) {
-                clearTimeout(timeoutId);
-                showError('Exception caught: ' + e.message);
-                console.error('Exception:', e);
-                if (btn) {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }
-                alert('Error: ' + e.message);
-            }
         }
-        
-        // Auto-trigger download on load if URL has download parameter
+
         window.addEventListener('load', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('download') === '1') {
-                showDebug('Auto-download triggered');
-                setTimeout(() => {
-                    downloadPDF();
-                }, 1500);
+            if (new URLSearchParams(window.location.search).get('download') === '1') {
+                setTimeout(downloadPDF, 1200);
             }
         });
     </script>

@@ -679,14 +679,14 @@ class AdminContentController extends Controller
             $this->redirect('admin');
         }
         $portalModel = new StudentPortalModel($this->config);
-        
+
         // Get default admission number format from admission_number_formats table
         $pdo = Database::getInstance($this->config['db']);
         $stmt = $pdo->prepare('SELECT format_pattern FROM admission_number_formats WHERE is_default = 1 LIMIT 1');
         $stmt->execute();
         $defaultFormat = $stmt->fetch(PDO::FETCH_ASSOC);
         $admissionNumberFormat = $defaultFormat['format_pattern'] ?? 'STM/{YEAR}/{SEQ4}';
-        
+
         $this->view('admin/students', [
             'metaTitle' => 'Student Accounts',
             'rows' => $portalModel->allStudents(),
@@ -722,7 +722,7 @@ class AdminContentController extends Controller
             $stmt->execute();
             $defaultFormat = $stmt->fetch(PDO::FETCH_ASSOC);
             $format = $defaultFormat['format_pattern'] ?? 'STM/{YEAR}/{SEQ4}';
-            
+
             // Get programme abbreviation if student has a programme assigned
             $programmeAbbr = null;
             if (!empty($student['programme_id'])) {
@@ -731,7 +731,7 @@ class AdminContentController extends Controller
                 $programme = $stmt->fetch(PDO::FETCH_ASSOC);
                 $programmeAbbr = $programme['abbreviation'] ?? null;
             }
-            
+
             $admissionNumber = $this->buildAdmissionNumber($format, (int)$student['id'], $programmeAbbr, $student['preferred_intake'] ?? null);
         }
 
@@ -760,7 +760,7 @@ class AdminContentController extends Controller
 
         $contentModel = new ContentModel($this->config);
         $programmes = $contentModel->getProgrammes();
-        
+
         // Get sessions for selection
         $pdo = Database::getInstance($this->config['db']);
         $stmt = $pdo->query('SELECT * FROM sessions ORDER BY sequence_number ASC');
@@ -825,7 +825,7 @@ class AdminContentController extends Controller
         }
 
         $portalModel = new StudentPortalModel($this->config);
-        
+
         // Check if email already exists
         if ($portalModel->findStudentByEmail($email) !== null) {
             flash('error', 'An account with that email already exists.');
@@ -844,7 +844,7 @@ class AdminContentController extends Controller
         $stmt->execute();
         $defaultFormat = $stmt->fetch(PDO::FETCH_ASSOC);
         $format = $defaultFormat['format_pattern'] ?? 'STM/{YEAR}/{SEQ4}';
-        
+
         // Get programme abbreviation
         $programmeAbbr = null;
         $stmt = $pdo->prepare('SELECT abbreviation FROM programmes WHERE id = ?');
@@ -889,22 +889,22 @@ class AdminContentController extends Controller
             $stmt = $pdo->prepare('SELECT id FROM academic_years WHERE is_current = 1 LIMIT 1');
             $stmt->execute();
             $currentYear = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             // Get current term
             $stmt = $pdo->prepare('SELECT id FROM terms WHERE is_current = 1 LIMIT 1');
             $stmt->execute();
             $currentTerm = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             // Get intake by preferred intake
             $stmt = $pdo->prepare('SELECT id FROM intakes WHERE code = ? LIMIT 1');
             $stmt->execute([$preferredIntake]);
             $intake = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             // Get selected session from admission form
             $stmt = $pdo->prepare('SELECT id FROM sessions WHERE id = ? LIMIT 1');
             $stmt->execute([$sessionId]);
             $session = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             if ($currentYear && $currentTerm && $intake && $session) {
                 $enrollmentStmt = $pdo->prepare('INSERT INTO student_enrollments (student_id, academic_session_id, term_id, intake_id, programme_id, session_id, enrollment_date, status) VALUES (?, ?, ?, ?, ?, ?, CURDATE(), ?)');
                 $enrollmentStmt->execute([$studentId, $currentYear['id'], $currentTerm['id'], $intake['id'], $programmeId, $session['id'], 'active']);
@@ -947,13 +947,179 @@ class AdminContentController extends Controller
             $programme = $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
+        // Fetch active enrollment and session/term/year names for the student
+        $pdo = Database::getInstance($this->config['db']);
+        $enrollment = null;
+        try {
+            $stmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE student_id = ? AND status = "active" ORDER BY id DESC LIMIT 1');
+            $stmt->execute([$studentId]);
+            $enrollment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Get readable names for academic year and term if enrollment exists
+            $academicSessionName = null;
+            $termName = null;
+            if ($enrollment) {
+                $stmt = $pdo->prepare('SELECT name FROM academic_years WHERE id = ? LIMIT 1');
+                $stmt->execute([(int)$enrollment['academic_session_id']]);
+                $academicSessionName = $stmt->fetchColumn() ?: null;
+
+                $stmt = $pdo->prepare('SELECT name FROM terms WHERE id = ? LIMIT 1');
+                $stmt->execute([(int)$enrollment['term_id']]);
+                $termName = $stmt->fetchColumn() ?: null;
+            }
+
+            // Load sessions list
+            $sessions = [];
+            try {
+                $stmt = $pdo->query('SELECT id, name FROM sessions ORDER BY sequence_number ASC');
+                $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                $sessions = [];
+            }
+
+            // Load academic years and terms for the enrollment's academic session (or all)
+            $academicYears = [];
+            $termsForSession = [];
+            try {
+                $stmt = $pdo->query('SELECT id, name FROM academic_years ORDER BY start_date DESC');
+                $academicYears = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                if (!empty($enrollment) && !empty($enrollment['academic_session_id'])) {
+                    $tstmt = $pdo->prepare('SELECT id, name FROM terms WHERE academic_session_id = ? ORDER BY start_date ASC');
+                    $tstmt->execute([(int)$enrollment['academic_session_id']]);
+                    $termsForSession = $tstmt->fetchAll(PDO::FETCH_ASSOC);
+                }
+            } catch (PDOException $e) {
+                $academicYears = [];
+                $termsForSession = [];
+            }
+        } catch (PDOException $e) {
+            $enrollment = null;
+            $sessions = [];
+            $academicSessionName = null;
+            $termName = null;
+            $academicYears = [];
+            $termsForSession = [];
+        }
+
         // Extract variables for the view
-        extract(['student' => $student, 'programme' => $programme]);
+        extract([
+            'student' => $student,
+            'programme' => $programme,
+            'enrollment' => $enrollment,
+            'sessions' => $sessions,
+            'academicSessionName' => $academicSessionName,
+            'termName' => $termName,
+            'academicYears' => $academicYears,
+            'termsForSession' => $termsForSession,
+        ]);
 
         // Render partial view without layout for modal
         ob_start();
         include __DIR__ . '/../../views/admin/student_details.php';
         echo ob_get_clean();
+    }
+
+    public function updateStudentEnrollment(): void
+    {
+        header('Content-Type: application/json');
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $studentId = (int)($_POST['student_id'] ?? 0);
+        $sessionId = (int)($_POST['session_id'] ?? 0);
+        $academicSessionId = (int)($_POST['academic_session_id'] ?? 0);
+        $termId = (int)($_POST['term_id'] ?? 0);
+
+        if ($studentId === 0 || $sessionId === 0) {
+            echo json_encode(['success' => false, 'message' => 'Student and session are required.']);
+            return;
+        }
+
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('SELECT id FROM student_enrollments WHERE student_id = ? AND status = "active" ORDER BY id DESC LIMIT 1');
+            $stmt->execute([$studentId]);
+            $enrollment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$enrollment) {
+                echo json_encode(['success' => false, 'message' => 'No active enrollment found for this student.']);
+                return;
+            }
+
+            // Validate term belongs to academic session if both provided
+            if ($academicSessionId > 0 && $termId > 0) {
+                $chk = $pdo->prepare('SELECT id FROM terms WHERE id = ? AND academic_session_id = ? LIMIT 1');
+                $chk->execute([$termId, $academicSessionId]);
+                if (!$chk->fetch()) {
+                    echo json_encode(['success' => false, 'message' => 'Selected term does not belong to the selected academic year.']);
+                    return;
+                }
+            }
+
+            // Build update dynamically
+            $fields = ['session_id = ?'];
+            $params = [$sessionId];
+            if ($academicSessionId > 0) {
+                $fields[] = 'academic_session_id = ?';
+                $params[] = $academicSessionId;
+            }
+            if ($termId > 0) {
+                $fields[] = 'term_id = ?';
+                $params[] = $termId;
+            }
+            $params[] = $enrollment['id'];
+
+            $sql = 'UPDATE student_enrollments SET ' . implode(', ', $fields) . ', updated_at = NOW() WHERE id = ?';
+            $update = $pdo->prepare($sql);
+            $update->execute($params);
+
+            // Return readable names
+            $sstmt = $pdo->prepare('SELECT name FROM sessions WHERE id = ? LIMIT 1');
+            $sstmt->execute([$sessionId]);
+            $sessionName = $sstmt->fetchColumn() ?: '';
+
+            $ayName = '';
+            $tName = '';
+            if ($academicSessionId > 0) {
+                $astmt = $pdo->prepare('SELECT name FROM academic_years WHERE id = ? LIMIT 1');
+                $astmt->execute([$academicSessionId]);
+                $ayName = $astmt->fetchColumn() ?: '';
+            } else {
+                $astmt = $pdo->prepare('SELECT name FROM academic_years WHERE id = ? LIMIT 1');
+                $astmt->execute([(int)$enrollment['academic_session_id']]);
+                $ayName = $astmt->fetchColumn() ?: '';
+            }
+            if ($termId > 0) {
+                $tstmt = $pdo->prepare('SELECT name FROM terms WHERE id = ? LIMIT 1');
+                $tstmt->execute([$termId]);
+                $tName = $tstmt->fetchColumn() ?: '';
+            } else {
+                $tstmt = $pdo->prepare('SELECT name FROM terms WHERE id = ? LIMIT 1');
+                $tstmt->execute([(int)$enrollment['term_id']]);
+                $tName = $tstmt->fetchColumn() ?: '';
+            }
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Enrollment updated successfully.',
+                'new_session_name' => $sessionName,
+                'academic_session_name' => $ayName,
+                'term_name' => $tName,
+            ]);
+            return;
+        } catch (PDOException $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            return;
+        }
     }
 
     public function editStudentForm(): void
@@ -1280,12 +1446,12 @@ class AdminContentController extends Controller
 
         try {
             $pdo = Database::getInstance($this->config['db']);
-            
+
             // Archive the record before deletion
             $recordData = json_encode($student);
             $stmt = $pdo->prepare('INSERT INTO deleted_records (table_name, record_id, record_data, deleted_by) VALUES (?, ?, ?, ?)');
             $stmt->execute(['student_accounts', $studentId, $recordData, $_SESSION['admin_id'] ?? null]);
-            
+
             // Delete the record
             $stmt = $pdo->prepare('DELETE FROM student_accounts WHERE id = ?');
             $stmt->execute([$studentId]);
@@ -1305,17 +1471,17 @@ class AdminContentController extends Controller
             $this->redirect('admin');
         }
         $portalModel = new StudentPortalModel($this->config);
-        
+
         // Get default format from admission_number_formats table
         $pdo = Database::getInstance($this->config['db']);
         $stmt = $pdo->prepare('SELECT format_pattern FROM admission_number_formats WHERE is_default = 1 LIMIT 1');
         $stmt->execute();
         $defaultFormat = $stmt->fetch(PDO::FETCH_ASSOC);
         $format = $defaultFormat['format_pattern'] ?? 'STM/{YEAR}/{SEQ4}';
-        
+
         $stmt = $pdo->query('SELECT id, programme_id, preferred_intake FROM student_accounts');
         $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         $assigned = 0;
         foreach ($students as $student) {
             $id = (int)$student['id'];
@@ -1323,7 +1489,7 @@ class AdminContentController extends Controller
             if ($current !== '') {
                 continue;
             }
-            
+
             // Get programme abbreviation if student has a programme assigned
             $programmeAbbr = null;
             if (!empty($student['programme_id'])) {
@@ -1332,7 +1498,7 @@ class AdminContentController extends Controller
                 $programme = $progStmt->fetch(PDO::FETCH_ASSOC);
                 $programmeAbbr = $programme['abbreviation'] ?? null;
             }
-            
+
             $admissionNumber = $this->buildAdmissionNumber($format, $id, $programmeAbbr, $student['preferred_intake'] ?? null);
             try {
                 $portalModel->assignAdmissionNumber($id, $admissionNumber);
@@ -1551,13 +1717,13 @@ class AdminContentController extends Controller
                     $existing = (new ContentModel($this->config))->findById('programmes', (int)$id);
                     $oldSlug = (string)($existing['slug'] ?? '');
                 }
-                
+
                 // Generate or use provided abbreviation
                 $abbreviation = trim($_POST['abbreviation'] ?? '');
                 if ($abbreviation === '') {
                     $abbreviation = generate_program_abbreviation($name);
                 }
-                
+
                 $params = [
                     'name' => $name,
                     'abbreviation' => strtoupper($abbreviation),
@@ -2140,7 +2306,7 @@ class AdminContentController extends Controller
         if (!Auth::canViewEntity('students')) {
             $this->redirect('admin');
         }
-        
+
         $portalModel = new StudentPortalModel($this->config);
         $rows = $portalModel->allStudents();
 
@@ -2256,42 +2422,42 @@ class AdminContentController extends Controller
 
         try {
             $pdo = Database::getInstance($this->config['db']);
-            
+
             // Check if the course is linked to the selected programme via junction table
             $courseStmt = $pdo->prepare('
-                SELECT pc.id, pc.title 
+                SELECT pc.id, pc.title
                 FROM portal_courses pc
                 INNER JOIN portal_course_programmes pcp ON pcp.portal_course_id = pc.id
                 WHERE pc.id = ? AND pcp.programme_id = ?
             ');
             $courseStmt->execute([$unitId, $programmeId]);
             $course = $courseStmt->fetch(PDO::FETCH_ASSOC);
-            
+
             if (!$course) {
                 header('Content-Type: application/json');
                 echo json_encode(['error' => 'Course not found for this programme']);
                 return;
             }
-            
+
             // Build query with optional session filter
             $sql = '
-                SELECT sa.id, sa.name, sa.admission_number 
+                SELECT sa.id, sa.name, sa.admission_number
                 FROM student_accounts sa
                 JOIN student_enrollments se ON sa.id = se.student_id
-                WHERE se.programme_id = ? 
-                AND se.academic_session_id = ? 
-                AND se.term_id = ? 
+                WHERE se.programme_id = ?
+                AND se.academic_session_id = ?
+                AND se.term_id = ?
                 AND se.status = "active"
             ';
             $params = [$programmeId, $sessionId, $termId];
-            
+
             if ($studentSessionId > 0) {
                 $sql .= ' AND se.session_id = ?';
                 $params[] = $studentSessionId;
             }
-            
+
             $sql .= ' ORDER BY sa.name ASC';
-            
+
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
             $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -2306,7 +2472,7 @@ class AdminContentController extends Controller
     public function bulkSaveCourseGrades(): void
     {
         header('Content-Type: application/json');
-        
+
         // Check auth without redirect for AJAX
         if (!Auth::check()) {
             echo json_encode(['success' => false, 'message' => 'Not authenticated']);
@@ -2344,11 +2510,11 @@ class AdminContentController extends Controller
 
                 // Check if grade already exists
                 $checkStmt = $pdo->prepare('
-                    SELECT id FROM course_grades 
-                    WHERE student_id = ? 
-                    AND course_id = ? 
+                    SELECT id FROM course_grades
+                    WHERE student_id = ?
+                    AND course_id = ?
                     AND grading_system_id = ?
-                    AND academic_session_id = ? 
+                    AND academic_session_id = ?
                     AND term_id = ?
                     LIMIT 1
                 ');
@@ -2393,8 +2559,8 @@ class AdminContentController extends Controller
                 if ($existing) {
                     // Update existing grade
                     $updateStmt = $pdo->prepare('
-                        UPDATE course_grades 
-                        SET marks = ?, marks_percentage = ?, grade = ?, grading_system_id = ? 
+                        UPDATE course_grades
+                        SET marks = ?, marks_percentage = ?, grade = ?, grading_system_id = ?
                         WHERE id = ?
                     ');
                     $updateStmt->execute([
@@ -2407,8 +2573,8 @@ class AdminContentController extends Controller
                 } else {
                     // Insert new grade
                     $insertStmt = $pdo->prepare('
-                        INSERT INTO course_grades 
-                        (student_id, course_id, exam_type_id, academic_session_id, term_id, marks, marks_percentage, grade, grading_system_id, created_at) 
+                        INSERT INTO course_grades
+                        (student_id, course_id, exam_type_id, academic_session_id, term_id, marks, marks_percentage, grade, grading_system_id, created_at)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
                     ');
                     $insertStmt->execute([
@@ -2440,7 +2606,7 @@ class AdminContentController extends Controller
     public function getCourseGrades(): void
     {
         header('Content-Type: application/json');
-        
+
         // Check authentication for AJAX requests
         if (!Auth::check()) {
             echo json_encode(['error' => 'Unauthorized']);
@@ -2465,7 +2631,7 @@ class AdminContentController extends Controller
 
         try {
             $pdo = Database::getInstance($this->config['db']);
-            
+
             // Fetch existing marks for the given filters
             $sql = '
                 SELECT cg.student_id, cg.exam_type_id, cg.grading_system_id, cg.marks, cg.marks_percentage
@@ -2475,7 +2641,7 @@ class AdminContentController extends Controller
                 AND cg.term_id = ?
             ';
             $params = [$unitId, $sessionId, $termId];
-            
+
             // If student session is specified, we need to filter by students enrolled in that session
             if ($studentSessionId > 0) {
                 $sql .= ' AND cg.student_id IN (
@@ -2499,11 +2665,11 @@ class AdminContentController extends Controller
                 )';
                 $params = array_merge($params, [$programmeId, $sessionId, $termId]);
             }
-            
+
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
             $grades = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             // Format as a key-value map for easy lookup: student_id_exam_type_id => marks
             $gradesMap = [];
             foreach ($grades as $grade) {
@@ -2518,7 +2684,7 @@ class AdminContentController extends Controller
                     'marks_percentage' => $grade['marks_percentage']
                 ];
             }
-            
+
             echo json_encode($gradesMap);
         } catch (PDOException $e) {
             echo json_encode(['error' => $e->getMessage()]);
@@ -2536,19 +2702,19 @@ class AdminContentController extends Controller
         $pdo = Database::getInstance($this->config['db']);
         $stmt = $pdo->query('SELECT gs.*, et.name as exam_type_name FROM grading_systems gs LEFT JOIN exam_types et ON gs.exam_type_id = et.id ORDER BY gs.id ASC');
         $gradingSystems = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         // Get academic years
         $stmt = $pdo->query('SELECT * FROM academic_years ORDER BY start_date DESC');
         $academicYears = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         // Get terms
         $stmt = $pdo->query('SELECT t.*, ay.name as year_name FROM terms t LEFT JOIN academic_years ay ON t.academic_session_id = ay.id ORDER BY ay.start_date DESC, t.start_date ASC');
         $terms = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         // Get sessions
         $stmt = $pdo->query('SELECT * FROM sessions ORDER BY sequence_number ASC');
         $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         $settings = $model->getSettings();
 
         return [
@@ -2606,7 +2772,7 @@ class AdminContentController extends Controller
         $seq4 = str_pad((string)$studentId, 4, '0', STR_PAD_LEFT);
         $seq5 = str_pad((string)$studentId, 5, '0', STR_PAD_LEFT);
         $seq6 = str_pad((string)$studentId, 6, '0', STR_PAD_LEFT);
-        
+
         $replacements = [
             '{YEAR}' => $year,
             '{YYYY}' => $year,
