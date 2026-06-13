@@ -212,18 +212,18 @@
                             echo e($teacherName);
                             ?>
                         </td>
-+                        <td class="col-sm">
-+                            <?php
-+                            $sessionName = '-';
-+                            foreach (($sessions ?? []) as $s) {
-+                                if ((string)($s['id'] ?? '') === (string)($row['session_id'] ?? '')) {
-+                                    $sessionName = $s['name'] ?? '-';
-+                                    break;
-+                                }
-+                            }
-+                            echo e($sessionName);
-+                            ?>
-+                        </td>
+                        <td class="col-sm">
+                            <?php
+                            $sessionName = '-';
+                            foreach (($sessions ?? []) as $s) {
+                                if ((string)($s['id'] ?? '') === (string)($row['session_id'] ?? '')) {
+                                    $sessionName = $s['name'] ?? '-';
+                                    break;
+                                }
+                            }
+                            echo e($sessionName);
+                            ?>
+                        </td>
                     <?php endif; ?>
                         <td class="col-sm"><?php
                             $hiddenIds = $hiddenIds ?? [];
