@@ -173,6 +173,17 @@ class AdminContentController extends Controller
         if ($entity === 'users' && Auth::isJuniorAdmin()) {
             $rows = array_values(array_filter($rows, static fn($user) => (string)($user['role'] ?? '') !== 'super_admin'));
         }
+
+        // If listing portal_courses and a session filter is specified, filter the rows
+        if ($entity === 'portal_courses') {
+            $filterSessionId = (int)($_GET['session_id'] ?? 0);
+            if ($filterSessionId > 0) {
+                $rows = array_values(array_filter($rows, static function($r) use ($filterSessionId) {
+                    return isset($r['session_id']) && (int)$r['session_id'] === $filterSessionId;
+                }));
+            }
+        }
+
         $viewData = [
             'metaTitle' => 'Manage ' . ucfirst(str_replace('_', ' ', $entity)),
             'entity' => $entity,
@@ -1944,24 +1955,36 @@ class AdminContentController extends Controller
                 }
                 // Use first programme as legacy programme_id for backward compatibility
                 $primaryProgrammeId = (int)($programmeIds[0] ?? 0);
+
+                // Require session selection for portal units
+                $selectedSessionId = (int)($_POST['session_id'] ?? 0);
+                if ($selectedSessionId === 0) {
+                    flash('error', 'Please select a session for this unit.');
+                    if ($isUpdate) {
+                        $this->redirect('admin/edit/portal_courses/' . (int)$id);
+                    } else {
+                        $this->redirect('admin/create/portal_courses');
+                    }
+                }
+
                 $stmtData = [
-                                    'programme_id' => $primaryProgrammeId,
-                                    'teacher_id' => (int)($_POST['teacher_id'] ?? 0),
-                                    'code' => trim($_POST['code'] ?? ''),
-                                    'title' => trim($_POST['title'] ?? ''),
-                                    'description' => trim($_POST['description'] ?? ''),
-                                    'session_id' => (int)($_POST['session_id'] ?? 0),
-                                ];
-                                if ($isUpdate) {
-                                    $stmt = $pdo->prepare('UPDATE portal_courses SET programme_id=:programme_id, teacher_id=:teacher_id, code=:code, title=:title, description=:description, session_id=:session_id WHERE id=:id');
-                                    $stmtData['id'] = $id;
-                                    $stmt->execute($stmtData);
-                                    $portalCourseId = $id;
-                                } else {
-                                    $stmt = $pdo->prepare('INSERT INTO portal_courses(programme_id, teacher_id, code, title, description, session_id, created_at) VALUES(:programme_id, :teacher_id, :code, :title, :description, :session_id, NOW())');
-                                    $stmt->execute($stmtData);
-                                    $portalCourseId = (int)$pdo->lastInsertId();
-                                }
+                    'programme_id' => $primaryProgrammeId,
+                    'teacher_id' => (int)($_POST['teacher_id'] ?? 0),
+                    'code' => trim($_POST['code'] ?? ''),
+                    'title' => trim($_POST['title'] ?? ''),
+                    'description' => trim($_POST['description'] ?? ''),
+                    'session_id' => $selectedSessionId,
+                ];
+                if ($isUpdate) {
+                    $stmt = $pdo->prepare('UPDATE portal_courses SET programme_id=:programme_id, teacher_id=:teacher_id, code=:code, title=:title, description=:description, session_id=:session_id WHERE id=:id');
+                    $stmtData['id'] = $id;
+                    $stmt->execute($stmtData);
+                    $portalCourseId = $id;
+                } else {
+                    $stmt = $pdo->prepare('INSERT INTO portal_courses(programme_id, teacher_id, code, title, description, session_id, created_at) VALUES(:programme_id, :teacher_id, :code, :title, :description, :session_id, NOW())');
+                    $stmt->execute($stmtData);
+                    $portalCourseId = (int)$pdo->lastInsertId();
+                }
                 // Save many-to-many relationships in junction table
                 // First, remove existing relationships
                 $stmt = $pdo->prepare('DELETE FROM portal_course_programmes WHERE portal_course_id = ?');
