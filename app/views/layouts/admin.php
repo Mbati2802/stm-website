@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* --- Sidebar collapse toggle --- */
     const sidebarCollapseBtn = document.getElementById('adminSidebarCollapse');
-    const sidebar = document.getElementById('adminSidebar');
+    // reuse previously defined `sidebar` variable above
     if (sidebarCollapseBtn && sidebar) {
         sidebarCollapseBtn.addEventListener('click', function(e) {
             e.stopPropagation();
