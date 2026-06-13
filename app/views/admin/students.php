@@ -249,63 +249,67 @@
 
             if (resetPasswordModal) {
                 resetPasswordModal.addEventListener('show.bs.modal', function(event) {
-                    const button = event.relatedTarget;
-                    document.getElementById('resetStudentId').value = button.getAttribute('data-student-id');
-                    document.getElementById('resetStudentName').value = button.getAttribute('data-student-name');
-                    document.getElementById('resetStudentEmail').value = button.getAttribute('data-student-email');
-                });
+                                    const button = event.relatedTarget;
+                                    if (!button) return;
+                                    document.getElementById('resetStudentId').value = button.getAttribute('data-student-id');
+                                    document.getElementById('resetStudentName').value = button.getAttribute('data-student-name');
+                                    document.getElementById('resetStudentEmail').value = button.getAttribute('data-student-email');
+                                });
             }
 
             if (assignAdmissionModal) {
                 assignAdmissionModal.addEventListener('show.bs.modal', function(event) {
-                    const button = event.relatedTarget;
-                    document.getElementById('assignStudentId').value = button.getAttribute('data-student-id');
-                    document.getElementById('assignAdmissionNumber').value = button.getAttribute('data-admission-number');
-                });
+                                    const button = event.relatedTarget;
+                                    if (!button) return;
+                                    document.getElementById('assignStudentId').value = button.getAttribute('data-student-id');
+                                    document.getElementById('assignAdmissionNumber').value = button.getAttribute('data-admission-number');
+                                });
             }
 
             if (viewStudentModal) {
                 viewStudentModal.addEventListener('show.bs.modal', function(event) {
-                    const button = event.relatedTarget;
-                    const studentId = button.getAttribute('data-student-id');
-                    fetch('<?= e(base_url('admin/students/view')) ?>?id=' + studentId, {
-                        credentials: 'same-origin'
-                    })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.text();
-                        })
-                        .then(html => {
-                            document.getElementById('viewStudentContent').innerHTML = html;
-                        })
-                        .catch(() => {
-                            document.getElementById('viewStudentContent').innerHTML = '<p class="text-danger">Failed to load student details.</p>';
-                        });
-                });
+                                    const button = event.relatedTarget;
+                                    if (!button) return;
+                                    const studentId = button.getAttribute('data-student-id');
+                                    fetch('<?= e(base_url('admin/students/view')) ?>?id=' + studentId, {
+                                        credentials: 'same-origin'
+                                    })
+                                        .then(response => {
+                                            if (!response.ok) {
+                                                throw new Error('Network response was not ok');
+                                            }
+                                            return response.text();
+                                        })
+                                        .then(html => {
+                                            document.getElementById('viewStudentContent').innerHTML = html;
+                                        })
+                                        .catch(() => {
+                                            document.getElementById('viewStudentContent').innerHTML = '<p class="text-danger">Failed to load student details.</p>';
+                                        });
+                                });
             }
 
             // Initialize edit modal loader
             if (editStudentModal) {
                 editStudentModal.addEventListener('show.bs.modal', function(event) {
-                    const button = event.relatedTarget;
-                    const studentId = button.getAttribute('data-student-id');
-                    fetch('<?= e(base_url('admin/students/edit-form')) ?>?id=' + studentId, {
-                        credentials: 'same-origin'
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.text();
-                    })
-                    .then(html => {
-                        document.getElementById('editStudentContent').innerHTML = html;
-                        try { initStudentEditContent(studentId); } catch (e) { console.error('initStudentEditContent error', e); }
-                    })
-                    .catch(() => {
-                        document.getElementById('editStudentContent').innerHTML = '<p class="text-danger">Failed to load edit form.</p>';
-                    });
-                });
+                                    const button = event.relatedTarget;
+                                    if (!button) return;
+                                    const studentId = button.getAttribute('data-student-id');
+                                    fetch('<?= e(base_url('admin/students/edit-form')) ?>?id=' + studentId, {
+                                        credentials: 'same-origin'
+                                    })
+                                    .then(response => {
+                                        if (!response.ok) throw new Error('Network response was not ok');
+                                        return response.text();
+                                    })
+                                    .then(html => {
+                                        document.getElementById('editStudentContent').innerHTML = html;
+                                        try { initStudentEditContent(studentId); } catch (e) { console.error('initStudentEditContent error', e); }
+                                    })
+                                    .catch(() => {
+                                        document.getElementById('editStudentContent').innerHTML = '<p class="text-danger">Failed to load edit form.</p>';
+                                    });
+                                });
             }
 
             function initStudentEditContent(studentId) {
@@ -411,35 +415,37 @@
 
             if (suspendStudentModal) {
                 suspendStudentModal.addEventListener('show.bs.modal', function(event) {
-                    const button = event.relatedTarget;
-                    const studentId = button.getAttribute('data-student-id');
-                    const studentName = button.getAttribute('data-student-name');
-                    const isSuspended = button.getAttribute('data-is-suspended') === '1';
+                                    const button = event.relatedTarget;
+                                    if (!button) return;
+                                    const studentId = button.getAttribute('data-student-id');
+                                    const studentName = button.getAttribute('data-student-name');
+                                    const isSuspended = button.getAttribute('data-is-suspended') === '1';
 
-                    document.getElementById('suspendStudentId').value = studentId;
-                    document.getElementById('suspendIsSuspended').value = isSuspended ? '0' : '1';
-                    document.getElementById('deleteStudentName').textContent = studentName;
+                                    document.getElementById('suspendStudentId').value = studentId;
+                                    document.getElementById('suspendIsSuspended').value = isSuspended ? '0' : '1';
+                                    document.getElementById('deleteStudentName').textContent = studentName;
 
-                    if (isSuspended) {
-                        document.getElementById('suspendModalTitle').textContent = 'Activate Student';
-                        document.getElementById('suspendModalMessage').textContent = 'Are you sure you want to activate this student? They will be able to log in.';
-                        document.getElementById('suspendSubmitBtn').textContent = 'Activate';
-                        document.getElementById('suspendSubmitBtn').className = 'btn btn-success';
-                    } else {
-                        document.getElementById('suspendModalTitle').textContent = 'Suspend Student';
-                        document.getElementById('suspendModalMessage').textContent = 'Are you sure you want to suspend this student? They will not be able to log in.';
-                        document.getElementById('suspendSubmitBtn').textContent = 'Suspend';
-                        document.getElementById('suspendSubmitBtn').className = 'btn btn-warning';
-                    }
-                });
+                                    if (isSuspended) {
+                                        document.getElementById('suspendModalTitle').textContent = 'Activate Student';
+                                        document.getElementById('suspendModalMessage').textContent = 'Are you sure you want to activate this student? They will be able to log in.';
+                                        document.getElementById('suspendSubmitBtn').textContent = 'Activate';
+                                        document.getElementById('suspendSubmitBtn').className = 'btn btn-success';
+                                    } else {
+                                        document.getElementById('suspendModalTitle').textContent = 'Suspend Student';
+                                        document.getElementById('suspendModalMessage').textContent = 'Are you sure you want to suspend this student? They will not be able to log in.';
+                                        document.getElementById('suspendSubmitBtn').textContent = 'Suspend';
+                                        document.getElementById('suspendSubmitBtn').className = 'btn btn-warning';
+                                    }
+                                });
             }
 
             if (deleteStudentModal) {
                 deleteStudentModal.addEventListener('show.bs.modal', function(event) {
-                    const button = event.relatedTarget;
-                    document.getElementById('deleteStudentId').value = button.getAttribute('data-student-id');
-                    document.getElementById('deleteStudentName').textContent = button.getAttribute('data-student-name');
-                });
+                                    const button = event.relatedTarget;
+                                    if (!button) return;
+                                    document.getElementById('deleteStudentId').value = button.getAttribute('data-student-id');
+                                    document.getElementById('deleteStudentName').textContent = button.getAttribute('data-student-name');
+                                });
             }
         });
         </script>
