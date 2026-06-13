@@ -269,13 +269,40 @@ document.addEventListener('DOMContentLoaded', function(){
                 if (data.length === 0) { listArea.innerHTML = '<div class="alert alert-info">No enrollments found</div>'; return; }
                 let html = '<ul class="list-group">';
                 data.forEach(row => {
-                    html += `<li class="list-group-item d-flex justify-content-between align-items-start"><div><strong>${escapeHtml(row.academic_session_name||row.academic_session_id||'')}</strong> — ${escapeHtml(row.term_name||row.term_id||'')} <br><small>Session: ${escapeHtml(row.session_name||row.session_id||'')}</small></div><div><span class="badge bg-${(row.status==='active'?'success':'secondary')}">${escapeHtml(row.status)}</span></div></li>`;
-                });
+                                    const badgeClass = (row.status === 'active') ? 'bg-success' : 'bg-secondary';
+                                    let actions = '';
+                                    if (row.status !== 'active') {
+                                        actions += `<button class="btn btn-sm btn-primary me-1 btn-reactivate" data-id="${row.id}" data-student="${<?= (int)$student['id'] ?>}">Make Active</button>`;
+                                    } else {
+                                        actions += `<span class="text-muted small">Active</span>`;
+                                    }
+                                    html += `<li class="list-group-item d-flex justify-content-between align-items-start"><div><strong>${escapeHtml(row.academic_session_name||row.academic_session_id||'')}</strong> — ${escapeHtml(row.term_name||row.term_id||'')} <br><small>Session: ${escapeHtml(row.session_name||row.session_id||'')}</small></div><div>${actions}<span class="badge ${badgeClass} ms-2">${escapeHtml(row.status)}</span></div></li>`;
+                                });
                 html += '</ul>';
                 listArea.innerHTML = html;
             })
             .catch(err => { console.error(err); listArea.innerHTML = '<div class="alert alert-danger">Failed to load</div>'; });
     }
+
+    // delegate clicks for reactivate buttons
+    listArea.addEventListener('click', function(e){
+        const btn = e.target.closest('.btn-reactivate');
+        if (!btn) return;
+        const enrollmentId = btn.getAttribute('data-id');
+        const studentId = btn.getAttribute('data-student');
+        if (!enrollmentId || !studentId) return;
+        if (!confirm('Set this enrollment as active?')) return;
+        fetch('<?= e(base_url('admin/students/set-enrollment-status')) ?>', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ enrollment_id: enrollmentId, student_id: studentId, status: 'active' })
+        })
+        .then(r => r.json())
+        .then(resp => {
+            if (resp.success) { loadEnrollments(); location.reload(); } else { alert(resp.message || 'Failed'); }
+        })
+        .catch(err => { console.error(err); alert('Request failed'); });
+    });
 
     // Create new enrollment flows
     const newAY = document.getElementById('newAcademicSession');

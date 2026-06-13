@@ -214,6 +214,7 @@ $router->add('GET', 'admin/grading/exam-types', [GradingController::class, 'getE
 $router->add('GET', 'admin/students/by-enrollment', [AdminContentController::class, 'getStudentsByEnrollment']);
 $router->add('GET', 'admin/students/enrollments', [AdminContentController::class, 'getStudentEnrollments']);
 $router->add('POST', 'admin/students/create-enrollment', [AdminContentController::class, 'createStudentEnrollment']);
+$router->add('POST', 'admin/students/set-enrollment-status', [AdminContentController::class, 'setEnrollmentStatus']);
 $router->add('GET', 'admin/exam-types/by-grading-system', [AdminContentController::class, 'getExamTypesByGradingSystem']);
 $router->add('POST', 'admin/course-grades/bulk-save', [AdminContentController::class, 'bulkSaveCourseGrades']);
 $router->add('GET', 'admin/course-grades/get', [AdminContentController::class, 'getCourseGrades']);
