@@ -3006,51 +3006,50 @@ class AdminContentController extends Controller
         }
     }
 
-+    public function setEnrollmentStatus(): void
-+    {
-+        header('Content-Type: application/json');
-+        Auth::requireAdmin();
-+        if (!Auth::canManageEntity('students')) {
-+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-+            return;
-+        }
-+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-+            return;
-+        }
-+        $enrollmentId = (int)($_POST['enrollment_id'] ?? 0);
-+        $studentId = (int)($_POST['student_id'] ?? 0);
-+        $status = trim($_POST['status'] ?? '');
-+        $allowed = ['active','suspended','graduated','withdrawn'];
-+        if ($enrollmentId === 0 || $studentId === 0 || !in_array($status, $allowed, true)) {
-+            echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
-+            return;
-+        }
-+        try {
-+            $pdo = Database::getInstance($this->config['db']);
-+            $stmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE id = ? AND student_id = ? LIMIT 1');
-+            $stmt->execute([$enrollmentId, $studentId]);
-+            $existing = $stmt->fetch(PDO::FETCH_ASSOC);
-+            if (!$existing) {
-+                echo json_encode(['success' => false, 'message' => 'Enrollment not found']);
-+                return;
-+            }
-+            $old = $existing;
-+            $upd = $pdo->prepare('UPDATE student_enrollments SET status = ?, updated_at = NOW() WHERE id = ?');
-+            $upd->execute([$status, $enrollmentId]);
-+            $nstmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE id = ? LIMIT 1');
-+            $nstmt->execute([$enrollmentId]);
-+            $new = $nstmt->fetch(PDO::FETCH_ASSOC);
-+            try {
-+                $audit = $pdo->prepare('INSERT INTO student_enrollment_audit (student_id, enrollment_id, action, changed_by, old_data, new_data) VALUES (?, ?, ?, ?, ?, ?)');
-+                $audit->execute([$studentId, $enrollmentId, 'updated', $_SESSION['admin_id'] ?? null, json_encode($old, JSON_UNESCAPED_SLASHES), json_encode($new, JSON_UNESCAPED_SLASHES)]);
-+            } catch (Throwable) {}
-+            echo json_encode(['success' => true, 'message' => 'Status updated']);
-+        } catch (PDOException $e) {
-+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-+        }
-+    }
-+
+    public function setEnrollmentStatus(): void
+    {
+        header('Content-Type: application/json');
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+        $enrollmentId = (int)($_POST['enrollment_id'] ?? 0);
+        $studentId = (int)($_POST['student_id'] ?? 0);
+        $status = trim($_POST['status'] ?? '');
+        $allowed = ['active','suspended','graduated','withdrawn'];
+        if ($enrollmentId === 0 || $studentId === 0 || !in_array($status, $allowed, true)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
+            return;
+        }
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE id = ? AND student_id = ? LIMIT 1');
+            $stmt->execute([$enrollmentId, $studentId]);
+            $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$existing) {
+                echo json_encode(['success' => false, 'message' => 'Enrollment not found']);
+                return;
+            }
+            $old = $existing;
+            $upd = $pdo->prepare('UPDATE student_enrollments SET status = ?, updated_at = NOW() WHERE id = ?');
+            $upd->execute([$status, $enrollmentId]);
+            $nstmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE id = ? LIMIT 1');
+            $nstmt->execute([$enrollmentId]);
+            $new = $nstmt->fetch(PDO::FETCH_ASSOC);
+            try {
+                $audit = $pdo->prepare('INSERT INTO student_enrollment_audit (student_id, enrollment_id, action, changed_by, old_data, new_data) VALUES (?, ?, ?, ?, ?, ?)');
+                $audit->execute([$studentId, $enrollmentId, 'updated', $_SESSION['admin_id'] ?? null, json_encode($old, JSON_UNESCAPED_SLASHES), json_encode($new, JSON_UNESCAPED_SLASHES)]);
+            } catch (Throwable) {}
+            echo json_encode(['success' => true, 'message' => 'Status updated']);
+        } catch (PDOException $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
 
 
     private function buildAdmissionNumber(string $format, int $studentId, ?string $programmeAbbr = null, ?string $intakeMonth = null): string
