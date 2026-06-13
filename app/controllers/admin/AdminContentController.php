@@ -692,24 +692,35 @@ class AdminContentController extends Controller
 
     public function students(): void
     {
-        Auth::requireAdmin();
-        if (!Auth::canViewEntity('students')) {
+        try {
+            Auth::requireAdmin();
+            if (!Auth::canViewEntity('students')) {
+                $this->redirect('admin');
+            }
+            $portalModel = new StudentPortalModel($this->config);
+
+            // Get default admission number format from admission_number_formats table
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('SELECT format_pattern FROM admission_number_formats WHERE is_default = 1 LIMIT 1');
+            $stmt->execute();
+            $defaultFormat = $stmt->fetch(PDO::FETCH_ASSOC);
+            $admissionNumberFormat = $defaultFormat['format_pattern'] ?? 'STM/{YEAR}/{SEQ4}';
+
+            $this->view('admin/students', [
+                'metaTitle' => 'Student Accounts',
+                'rows' => $portalModel->allStudents(),
+                'admissionNumberFormat' => $admissionNumberFormat,
+            ]);
+        } catch (Throwable $e) {
+            // Show error in admin UI for debugging (admins only)
+            if (Auth::check() && Auth::isAdmin()) {
+                echo '<div class="container py-4"><div class="alert alert-danger"><strong>Error loading students page:</strong> ' . htmlspecialchars($e->getMessage()) . '</div></div>';
+                return;
+            }
+            // Otherwise, redirect to admin dashboard
+            error_log('Error in AdminContentController::students: ' . $e->getMessage());
             $this->redirect('admin');
         }
-        $portalModel = new StudentPortalModel($this->config);
-
-        // Get default admission number format from admission_number_formats table
-        $pdo = Database::getInstance($this->config['db']);
-        $stmt = $pdo->prepare('SELECT format_pattern FROM admission_number_formats WHERE is_default = 1 LIMIT 1');
-        $stmt->execute();
-        $defaultFormat = $stmt->fetch(PDO::FETCH_ASSOC);
-        $admissionNumberFormat = $defaultFormat['format_pattern'] ?? 'STM/{YEAR}/{SEQ4}';
-
-        $this->view('admin/students', [
-            'metaTitle' => 'Student Accounts',
-            'rows' => $portalModel->allStudents(),
-            'admissionNumberFormat' => $admissionNumberFormat,
-        ]);
     }
 
     public function assignStudentAdmissionNumber(int $id = 0): void
