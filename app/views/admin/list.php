@@ -70,6 +70,36 @@
                 <a class="btn btn-outline-secondary" href="<?= e(base_url('admin')) ?>"><i class="bi bi-arrow-left me-1"></i>Dashboard</a>
             </div>
         </div>
+
+        <?php if ($entity === 'portal_courses'): ?>
+            <?php $currentSessionFilter = (int)($_GET['session_id'] ?? 0); ?>
+            <form id="portalCoursesFilterForm" method="GET" action="<?= e(base_url('admin/list/portal_courses')) ?>" class="mb-3">
+                <div class="row g-2 align-items-center">
+                    <div class="col-auto">
+                        <label class="form-label mb-0">Filter by Session</label>
+                    </div>
+                    <div class="col-auto">
+                        <select name="session_id" id="portalSessionFilter" class="form-select">
+                            <option value="">All sessions</option>
+                            <?php foreach (($sessions ?? []) as $s): ?>
+                                <option value="<?= e((string)$s['id']) ?>" <?= $currentSessionFilter === (int)$s['id'] ? 'selected' : '' ?>><?= e((string)$s['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-sm btn-outline-primary">Apply</button>
+                        <a class="btn btn-sm btn-outline-secondary" href="<?= e(base_url('admin/list/portal_courses')) ?>">Reset</a>
+                    </div>
+                </div>
+            </form>
+            <script>
+                document.addEventListener('DOMContentLoaded', function(){
+                    const sel = document.getElementById('portalSessionFilter');
+                    if (!sel) return;
+                    sel.addEventListener('change', function(){ document.getElementById('portalCoursesFilterForm').submit(); });
+                });
+            </script>
+        <?php endif; ?>
         <?php if ($msg=flash('success')): ?><div class="alert alert-success"><?= e($msg) ?></div><?php endif; ?>
         <?php if ($msg=flash('error')): ?><div class="alert alert-danger"><?= e($msg) ?></div><?php endif; ?>
         <div class="table-responsive admin-table-card">
