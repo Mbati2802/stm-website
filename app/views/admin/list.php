@@ -91,6 +91,7 @@
                     <?php if ($entity === 'portal_courses'): ?>
                         <th class="col-sm"><?= e($columnHeaderMap[$entity]['programme_abbreviation'] ?? 'Programme') ?></th>
                         <th class="col-sm"><?= e($columnHeaderMap[$entity]['teacher_name'] ?? 'Teacher') ?></th>
+                        <th class="col-sm">Session</th>
                     <?php endif; ?>
                     <th class="col-sm">Visibility</th>
                     <th class="col-actions">Actions</th>
@@ -181,6 +182,18 @@
                             echo e($teacherName);
                             ?>
                         </td>
++                        <td class="col-sm">
++                            <?php
++                            $sessionName = '-';
++                            foreach (($sessions ?? []) as $s) {
++                                if ((string)($s['id'] ?? '') === (string)($row['session_id'] ?? '')) {
++                                    $sessionName = $s['name'] ?? '-';
++                                    break;
++                                }
++                            }
++                            echo e($sessionName);
++                            ?>
++                        </td>
                     <?php endif; ?>
                         <td class="col-sm"><?php
                             $hiddenIds = $hiddenIds ?? [];

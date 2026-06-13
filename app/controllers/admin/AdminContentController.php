@@ -182,7 +182,7 @@ class AdminContentController extends Controller
         if (in_array($entity, ['testimonials', 'social_updates'], true)) {
             $viewData['settings'] = $model->getSettings();
         }
-        // For portal_courses, fetch programmes, teachers, and programme-unit relationships for display
+        // For portal_courses, fetch programmes, teachers, sessions and programme-unit relationships for display
         if ($entity === 'portal_courses') {
             $viewData['programmes'] = $model->all('programmes');
             $users = $model->all('users');
@@ -191,6 +191,13 @@ class AdminContentController extends Controller
             $pdo = Database::getInstance($this->config['db']);
             $stmt = $pdo->query('SELECT portal_course_id, programme_id FROM portal_course_programmes');
             $viewData['courseProgrammes'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // Fetch sessions for display
+            try {
+                $stmt = $pdo->query('SELECT id, name FROM sessions ORDER BY sequence_number ASC');
+                $viewData['sessions'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                $viewData['sessions'] = [];
+            }
         }
         $this->view('admin/list', $viewData);
     }
