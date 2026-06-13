@@ -1073,67 +1073,110 @@ class AdminContentController extends Controller
                 return;
             }
 
-            // Validate term belongs to academic session if both provided
-            if ($academicSessionId > 0 && $termId > 0) {
-                $chk = $pdo->prepare('SELECT id FROM terms WHERE id = ? AND academic_session_id = ? LIMIT 1');
-                $chk->execute([$termId, $academicSessionId]);
-                if (!$chk->fetch()) {
-                    echo json_encode(['success' => false, 'message' => 'Selected term does not belong to the selected academic year.']);
+                // Validate term belongs to academic session if both provided
+                if ($academicSessionId > 0 && $termId > 0) {
+                    $chk = $pdo->prepare('SELECT id FROM terms WHERE id = ? AND academic_session_id = ? LIMIT 1');
+                    $chk->execute([$termId, $academicSessionId]);
+                    if (!$chk->fetch()) {
+                        echo json_encode(['success' => false, 'message' => 'Selected term does not belong to the selected academic year.']);
+                        return;
+                    }
+                }
+
+                // Validate session exists
+                $sChk = $pdo->prepare('SELECT id FROM sessions WHERE id = ? LIMIT 1');
+                $sChk->execute([$sessionId]);
+                if (!$sChk->fetch()) {
+                    echo json_encode(['success' => false, 'message' => 'Selected session does not exist.']);
                     return;
                 }
-            }
 
-            // Build update dynamically
-            $fields = ['session_id = ?'];
-            $params = [$sessionId];
-            if ($academicSessionId > 0) {
-                $fields[] = 'academic_session_id = ?';
-                $params[] = $academicSessionId;
-            }
-            if ($termId > 0) {
-                $fields[] = 'term_id = ?';
-                $params[] = $termId;
-            }
-            $params[] = $enrollment['id'];
+                // Build update dynamically
+                $fields = ['session_id = ?'];
+                $params = [$sessionId];
+                if ($academicSessionId > 0) {
+                    $fields[] = 'academic_session_id = ?';
+                    $params[] = $academicSessionId;
+                }
+                if ($termId > 0) {
+                    $fields[] = 'term_id = ?';
+                    $params[] = $termId;
+                }
+                $params[] = $enrollment['id'];
 
-            $sql = 'UPDATE student_enrollments SET ' . implode(', ', $fields) . ', updated_at = NOW() WHERE id = ?';
-            $update = $pdo->prepare($sql);
-            $update->execute($params);
+                // Capture old enrollment for audit
+                $oldEnrollment = null;
+                try {
+                    $oStmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE id = ? LIMIT 1');
+                    $oStmt->execute([$enrollment['id']]);
+                    $oldEnrollment = $oStmt->fetch(PDO::FETCH_ASSOC) ?: null;
+                } catch (Throwable) {
+                    $oldEnrollment = null;
+                }
 
-            // Return readable names
-            $sstmt = $pdo->prepare('SELECT name FROM sessions WHERE id = ? LIMIT 1');
-            $sstmt->execute([$sessionId]);
-            $sessionName = $sstmt->fetchColumn() ?: '';
+                $sql = 'UPDATE student_enrollments SET ' . implode(', ', $fields) . ', updated_at = NOW() WHERE id = ?';
+                $update = $pdo->prepare($sql);
+                $update->execute($params);
 
-            $ayName = '';
-            $tName = '';
-            if ($academicSessionId > 0) {
-                $astmt = $pdo->prepare('SELECT name FROM academic_years WHERE id = ? LIMIT 1');
-                $astmt->execute([$academicSessionId]);
-                $ayName = $astmt->fetchColumn() ?: '';
-            } else {
-                $astmt = $pdo->prepare('SELECT name FROM academic_years WHERE id = ? LIMIT 1');
-                $astmt->execute([(int)$enrollment['academic_session_id']]);
-                $ayName = $astmt->fetchColumn() ?: '';
-            }
-            if ($termId > 0) {
-                $tstmt = $pdo->prepare('SELECT name FROM terms WHERE id = ? LIMIT 1');
-                $tstmt->execute([$termId]);
-                $tName = $tstmt->fetchColumn() ?: '';
-            } else {
-                $tstmt = $pdo->prepare('SELECT name FROM terms WHERE id = ? LIMIT 1');
-                $tstmt->execute([(int)$enrollment['term_id']]);
-                $tName = $tstmt->fetchColumn() ?: '';
-            }
+                // Fetch new enrollment for audit & response
+                $newEnrollment = null;
+                try {
+                    $nStmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE id = ? LIMIT 1');
+                    $nStmt->execute([$enrollment['id']]);
+                    $newEnrollment = $nStmt->fetch(PDO::FETCH_ASSOC) ?: null;
+                } catch (Throwable) {
+                    $newEnrollment = null;
+                }
 
-            echo json_encode([
-                'success' => true,
-                'message' => 'Enrollment updated successfully.',
-                'new_session_name' => $sessionName,
-                'academic_session_name' => $ayName,
-                'term_name' => $tName,
-            ]);
-            return;
+                // Insert audit record if audit table exists
+                try {
+                    $auditStmt = $pdo->prepare('INSERT INTO student_enrollment_audit (student_id, enrollment_id, action, changed_by, old_data, new_data) VALUES (?, ?, ?, ?, ?, ?)');
+                    $auditStmt->execute([
+                        $studentId,
+                        $enrollment['id'],
+                        'updated',
+                        $_SESSION['admin_id'] ?? null,
+                        $oldEnrollment ? json_encode($oldEnrollment, JSON_UNESCAPED_SLASHES) : null,
+                        $newEnrollment ? json_encode($newEnrollment, JSON_UNESCAPED_SLASHES) : null,
+                    ]);
+                } catch (Throwable) {
+                    // ignore audit failures
+                }
+
+                // Return readable names
+                $sstmt = $pdo->prepare('SELECT name FROM sessions WHERE id = ? LIMIT 1');
+                $sstmt->execute([$sessionId]);
+                $sessionName = $sstmt->fetchColumn() ?: '';
+
+                $ayName = '';
+                $tName = '';
+                if ($academicSessionId > 0) {
+                    $astmt = $pdo->prepare('SELECT name FROM academic_years WHERE id = ? LIMIT 1');
+                    $astmt->execute([$academicSessionId]);
+                    $ayName = $astmt->fetchColumn() ?: '';
+                } else {
+                    $astmt = $pdo->prepare('SELECT name FROM academic_years WHERE id = ? LIMIT 1');
+                    $astmt->execute([(int)$enrollment['academic_session_id']]);
+                    $ayName = $astmt->fetchColumn() ?: '';
+                }
+                if ($termId > 0) {
+                    $tstmt = $pdo->prepare('SELECT name FROM terms WHERE id = ? LIMIT 1');
+                    $tstmt->execute([$termId]);
+                    $tName = $tstmt->fetchColumn() ?: '';
+                } else {
+                    $tstmt = $pdo->prepare('SELECT name FROM terms WHERE id = ? LIMIT 1');
+                    $tstmt->execute([(int)$enrollment['term_id']]);
+                    $tName = $tstmt->fetchColumn() ?: '';
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Enrollment updated successfully.',
+                    'new_session_name' => $sessionName,
+                    'academic_session_name' => $ayName,
+                    'term_name' => $tName,
+                ]);
+                return;
         } catch (PDOException $e) {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
             return;
@@ -1175,9 +1218,14 @@ class AdminContentController extends Controller
         $pdo = Database::getInstance($this->config['db']);
         $enrollment = null;
         try {
-            $stmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE student_id = ? AND status = "active" ORDER BY id DESC LIMIT 1');
+            $stmt = $pdo->prepare('SELECT * FROM student_enrollments WHERE student_id = ? ORDER BY id DESC');
             $stmt->execute([$studentId]);
-            $enrollment = $stmt->fetch(PDO::FETCH_ASSOC);
+            $allEnrollments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // find active if any
+            $enrollment = null;
+            foreach ($allEnrollments as $er) {
+                if (($er['status'] ?? '') === 'active') { $enrollment = $er; break; }
+            }
 
             // Load sessions list
             $sessions = [];
@@ -2863,6 +2911,80 @@ class AdminContentController extends Controller
         } catch (PDOException $e) {
             header('Content-Type: application/json');
             echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function getStudentEnrollments(): void
+    {
+        header('Content-Type: application/json');
+        if (!Auth::check() || !Auth::canViewEntity('students')) {
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+        $studentId = (int)($_GET['student_id'] ?? $_GET['id'] ?? 0);
+        if ($studentId === 0) {
+            echo json_encode(['error' => 'Invalid student id']);
+            return;
+        }
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            $stmt = $pdo->prepare('SELECT se.*, t.name AS term_name, ay.name AS academic_session_name, s.name AS session_name FROM student_enrollments se LEFT JOIN terms t ON se.term_id = t.id LEFT JOIN academic_years ay ON se.academic_session_id = ay.id LEFT JOIN sessions s ON se.session_id = s.id WHERE se.student_id = ? ORDER BY se.id DESC');
+            $stmt->execute([$studentId]);
+            echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (PDOException $e) {
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function createStudentEnrollment(): void
+    {
+        header('Content-Type: application/json');
+        Auth::requireAdmin();
+        if (!Auth::canManageEntity('students')) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+        $studentId = (int)($_POST['student_id'] ?? 0);
+        $academicSessionId = (int)($_POST['academic_session_id'] ?? 0);
+        $termId = (int)($_POST['term_id'] ?? 0);
+        $sessionId = (int)($_POST['session_id'] ?? 0);
+        $intakeId = (int)($_POST['intake_id'] ?? 0) ?: null;
+        $programmeId = (int)($_POST['programme_id'] ?? 0) ?: null;
+        if ($studentId === 0 || $academicSessionId === 0 || $termId === 0 || $sessionId === 0) {
+            echo json_encode(['success' => false, 'message' => 'Student, academic year, term, and session are required.']);
+            return;
+        }
+        try {
+            $pdo = Database::getInstance($this->config['db']);
+            // Validate term belongs to academic session
+            $chk = $pdo->prepare('SELECT id FROM terms WHERE id = ? AND academic_session_id = ? LIMIT 1');
+            $chk->execute([$termId, $academicSessionId]);
+            if (!$chk->fetch()) {
+                echo json_encode(['success' => false, 'message' => 'Selected term does not belong to the selected academic year.']);
+                return;
+            }
+            // Validate session exists
+            $sChk = $pdo->prepare('SELECT id FROM sessions WHERE id = ? LIMIT 1');
+            $sChk->execute([$sessionId]);
+            if (!$sChk->fetch()) {
+                echo json_encode(['success' => false, 'message' => 'Selected session does not exist.']);
+                return;
+            }
+            $insert = $pdo->prepare('INSERT INTO student_enrollments (student_id, academic_session_id, term_id, intake_id, programme_id, session_id, enrollment_date, status) VALUES (?, ?, ?, ?, ?, ?, CURDATE(), ?)');
+            $insert->execute([$studentId, $academicSessionId, $termId, $intakeId, $programmeId, $sessionId, 'active']);
+            $enId = (int)$pdo->lastInsertId();
+            // audit
+            try {
+                $auditStmt = $pdo->prepare('INSERT INTO student_enrollment_audit (student_id, enrollment_id, action, changed_by, old_data, new_data) VALUES (?, ?, ?, ?, ?, ?)');
+                $auditStmt->execute([$studentId, $enId, 'created', $_SESSION['admin_id'] ?? null, null, json_encode(['id'=>$enId,'student_id'=>$studentId,'academic_session_id'=>$academicSessionId,'term_id'=>$termId,'session_id'=>$sessionId], JSON_UNESCAPED_SLASHES)]);
+            } catch (Throwable) {}
+            echo json_encode(['success' => true, 'message' => 'Enrollment created', 'enrollment_id' => $enId]);
+        } catch (PDOException $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 
