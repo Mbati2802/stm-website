@@ -246,7 +246,7 @@
             const editStudentModal = document.getElementById('editStudentModal');
             const suspendStudentModal = document.getElementById('suspendStudentModal');
             const deleteStudentModal = document.getElementById('deleteStudentModal');
-            
+
             if (resetPasswordModal) {
                 resetPasswordModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
@@ -255,7 +255,7 @@
                     document.getElementById('resetStudentEmail').value = button.getAttribute('data-student-email');
                 });
             }
-            
+
             if (assignAdmissionModal) {
                 assignAdmissionModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
@@ -263,7 +263,7 @@
                     document.getElementById('assignAdmissionNumber').value = button.getAttribute('data-admission-number');
                 });
             }
-            
+
             if (viewStudentModal) {
                 viewStudentModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
@@ -286,6 +286,7 @@
                 });
             }
 
+            // Initialize edit modal loader
             if (editStudentModal) {
                 editStudentModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
@@ -293,32 +294,132 @@
                     fetch('<?= e(base_url('admin/students/edit-form')) ?>?id=' + studentId, {
                         credentials: 'same-origin'
                     })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.text();
-                        })
-                        .then(html => {
-                            document.getElementById('editStudentContent').innerHTML = html;
-                        })
-                        .catch(() => {
-                            document.getElementById('editStudentContent').innerHTML = '<p class="text-danger">Failed to load edit form.</p>';
-                        });
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.text();
+                    })
+                    .then(html => {
+                        document.getElementById('editStudentContent').innerHTML = html;
+                        try { initStudentEditContent(studentId); } catch (e) { console.error('initStudentEditContent error', e); }
+                    })
+                    .catch(() => {
+                        document.getElementById('editStudentContent').innerHTML = '<p class="text-danger">Failed to load edit form.</p>';
+                    });
                 });
             }
-            
+
+            function initStudentEditContent(studentId) {
+                // Initialize the enrollment management UI inside the loaded edit content
+                try {
+                    const editContent = document.getElementById('editStudentContent');
+                    if (!editContent) return;
+                    const manageBtn = editContent.querySelector('#manageEnrollmentBtn');
+                    const modal = editContent.querySelector('#enrollmentManageModal');
+                    const listArea = editContent.querySelector('#enrollmentListArea');
+                    const newAY = editContent.querySelector('#newAcademicSession');
+                    const newTerm = editContent.querySelector('#newTerm');
+                    const newSession = editContent.querySelector('#newSession');
+                    const createBtn = editContent.querySelector('#createEnrollmentBtn');
+
+                    if (manageBtn && modal) {
+                        manageBtn.addEventListener('click', function(){
+                            const bsModal = new bootstrap.Modal(modal);
+                            bsModal.show();
+                            loadEnrollments(studentId, listArea);
+                        });
+                    }
+
+                    if (newAY && newTerm) {
+                        newAY.addEventListener('change', function(){
+                            const ay = this.value;
+                            newTerm.innerHTML = '<option value="">Loading...</option>';
+                            if (!ay) { newTerm.innerHTML = '<option value="">Select Term</option>'; return; }
+                            fetch('<?= e(base_url('admin/semester/terms')) ?>?session_id=' + encodeURIComponent(ay))
+                                .then(r => r.json())
+                                .then(data => {
+                                    newTerm.innerHTML = '<option value="">Select Term</option>';
+                                    if (Array.isArray(data)) data.forEach(t => { const o = document.createElement('option'); o.value = t.id; o.textContent = t.name; newTerm.appendChild(o); });
+                                })
+                                .catch(err => { console.error(err); newTerm.innerHTML = '<option value="">Select Term</option>'; });
+                        });
+                    }
+
+                    if (createBtn) {
+                        createBtn.addEventListener('click', function(){
+                            const ay = newAY.value;
+                            const term = newTerm.value;
+                            const session = newSession.value;
+                            if (!ay || !term || !session) { alert('Select academic year, term, and session'); return; }
+                            const body = new URLSearchParams({ student_id: studentId, academic_session_id: ay, term_id: term, session_id: session, programme_id: editContent.querySelector('[name="programme_id"]') ? editContent.querySelector('[name="programme_id"]').value : '' , intake_id: '' });
+                            fetch('<?= e(base_url('admin/students/create-enrollment')) ?>', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body })
+                                .then(r => r.json())
+                                .then(resp => {
+                                    if (resp.success) { loadEnrollments(studentId, listArea); alert('Enrollment created'); location.reload(); } else { alert(resp.message || 'Failed'); }
+                                })
+                                .catch(err => { console.error(err); alert('Request failed'); });
+                        });
+                    }
+
+                    if (listArea) {
+                        listArea.addEventListener('click', function(e){
+                            const btn = e.target.closest('.btn-reactivate');
+                            if (!btn) return;
+                            const enrollmentId = btn.getAttribute('data-id');
+                            if (!enrollmentId) return;
+                            if (!confirm('Set this enrollment as active?')) return;
+                            fetch('<?= e(base_url('admin/students/set-enrollment-status')) ?>', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: new URLSearchParams({ enrollment_id: enrollmentId, student_id: studentId, status: 'active' })
+                            })
+                            .then(r => r.json())
+                            .then(resp => {
+                                if (resp.success) { loadEnrollments(studentId, listArea); location.reload(); } else { alert(resp.message || 'Failed'); }
+                            })
+                            .catch(err => { console.error(err); alert('Request failed'); });
+                        });
+                    }
+
+                } catch (e) { console.error('initStudentEditContent', e); }
+            }
+
+            function loadEnrollments(studentId, listArea){
+                if (!listArea) return;
+                listArea.innerHTML = 'Loading...';
+                fetch('<?= e(base_url('admin/students/enrollments')) ?>?student_id=' + studentId)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!Array.isArray(data)) { listArea.innerHTML = '<div class="alert alert-danger">Failed to load</div>'; return; }
+                        if (data.length === 0) { listArea.innerHTML = '<div class="alert alert-info">No enrollments found</div>'; return; }
+                        let html = '<ul class="list-group">';
+                        data.forEach(row => {
+                            const badgeClass = (row.status === 'active') ? 'bg-success' : 'bg-secondary';
+                            let actions = '';
+                            if (row.status !== 'active') {
+                                actions += `<button class="btn btn-sm btn-primary me-1 btn-reactivate" data-id="${row.id}" data-student="${studentId}">Make Active</button>`;
+                            } else {
+                                actions += `<span class="text-muted small">Active</span>`;
+                            }
+                            html += `<li class="list-group-item d-flex justify-content-between align-items-start"><div><strong>${escapeHtml(row.academic_session_name||row.academic_session_id||'')}</strong> — ${escapeHtml(row.term_name||row.term_id||'')} <br><small>Session: ${escapeHtml(row.session_name||row.session_id||'')}</small></div><div>${actions}<span class="badge ${badgeClass} ms-2">${escapeHtml(row.status)}</span></div></li>`;
+                        });
+                        html += '</ul>';
+                        listArea.innerHTML = html;
+                    })
+                    .catch(err => { console.error(err); listArea.innerHTML = '<div class="alert alert-danger">Failed to load</div>'; });
+            }
+
+
             if (suspendStudentModal) {
                 suspendStudentModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
                     const studentId = button.getAttribute('data-student-id');
                     const studentName = button.getAttribute('data-student-name');
                     const isSuspended = button.getAttribute('data-is-suspended') === '1';
-                    
+
                     document.getElementById('suspendStudentId').value = studentId;
                     document.getElementById('suspendIsSuspended').value = isSuspended ? '0' : '1';
                     document.getElementById('deleteStudentName').textContent = studentName;
-                    
+
                     if (isSuspended) {
                         document.getElementById('suspendModalTitle').textContent = 'Activate Student';
                         document.getElementById('suspendModalMessage').textContent = 'Are you sure you want to activate this student? They will be able to log in.';
@@ -332,7 +433,7 @@
                     }
                 });
             }
-            
+
             if (deleteStudentModal) {
                 deleteStudentModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
