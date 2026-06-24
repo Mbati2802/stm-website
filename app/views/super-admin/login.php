@@ -258,6 +258,7 @@
             </div>
 
             <form id="loginForm">
+                <?php echo csrf_field(); ?>
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <input type="email" id="email" name="email" placeholder="super.admin@stmarysmchmcollege.ac.ke" required>
@@ -322,13 +323,14 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner"></span>Logging in...';
 
-            try {
+                try {
+                const csrfToken = document.querySelector('input[name="_csrf"]') ? document.querySelector('input[name="_csrf"]').value : '';
                 const response = await fetch('/super-admin/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+                    body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&_csrf=${encodeURIComponent(csrfToken)}`
                 });
 
                 const data = await response.json();
@@ -373,13 +375,14 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner"></span>Verifying...';
 
-            try {
+                try {
+                const csrfToken = document.querySelector('input[name="_csrf"]') ? document.querySelector('input[name="_csrf"]').value : '';
                 const response = await fetch('/super-admin/verify-2fa', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: `otp=${encodeURIComponent(otp)}`
+                    body: `otp=${encodeURIComponent(otp)}&_csrf=${encodeURIComponent(csrfToken)}`
                 });
 
                 const data = await response.json();
