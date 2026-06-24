@@ -320,7 +320,14 @@ class SuperAdminAuth
      */
     private static function sendOTP($admin_id, $otp, $email)
     {
-        // Store OTP in database (valid for 10 minutes)
+        // Invalidate any previous unused OTPs for this admin
+        self::$db->prepare("
+            UPDATE two_fa_otp 
+            SET is_used = TRUE 
+            WHERE super_admin_id = ? AND is_used = FALSE AND verified_at IS NULL
+        ")->execute([$admin_id]);
+
+        // Store new OTP (valid for 10 minutes)
         $expires_at = date('Y-m-d H:i:s', time() + 600);
         
         $stmt = self::$db->prepare("
