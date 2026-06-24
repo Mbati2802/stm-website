@@ -118,28 +118,21 @@ class SuperAdminAuth
         $ip_address = $ip_address ?? $_SERVER['REMOTE_ADDR'];
         $user_agent = $user_agent ?? $_SERVER['HTTP_USER_AGENT'];
 
-        // Verify OTP from database (inline to isolate PDO binding)
-        $safe_id = (int)$admin_id;
-        $safe_otp = self::$db->quote($otp_code);
-        $stmt = self::$db->query("
+        // Verify OTP from database
+        $stmt = self::$db->prepare("
             SELECT id FROM two_fa_otp 
-            WHERE super_admin_id = $safe_id 
-            AND otp_code = $safe_otp
+            WHERE super_admin_id = ? 
+            AND otp_code = ?
             AND is_used = FALSE
             AND expires_at > NOW()
             AND verified_at IS NULL
             ORDER BY created_at DESC
             LIMIT 1
         ");
+        $stmt->execute([$admin_id, $otp_code]);
         $otp = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$otp) {
-            $col_collation = self::$db->query("SELECT COLLATION_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'two_fa_otp' AND COLUMN_NAME = 'otp_code'")->fetchColumn();
-            $conn_collation = self::$db->query("SELECT @@collation_connection")->fetchColumn();
-            $stored = self::$db->prepare("SELECT id, otp_code, is_used, expires_at, verified_at FROM two_fa_otp WHERE super_admin_id = ? ORDER BY created_at DESC LIMIT 3");
-            $stored->execute([$admin_id]);
-            error_log("verify2FA FAIL: admin_id=$admin_id otp=[$otp_code] email={$temp['email']} col_collation=$col_collation conn_collation=$conn_collation stored=" . json_encode($stored->fetchAll(PDO::FETCH_ASSOC)));
-
             // Increment failed attempts
             self::$db->prepare("
                 UPDATE two_fa_otp 
@@ -334,15 +327,13 @@ class SuperAdminAuth
             WHERE super_admin_id = ? AND is_used = FALSE AND verified_at IS NULL
         ")->execute([$admin_id]);
 
-        // Store new OTP (valid for 10 minutes)
-        $expires_at = date('Y-m-d H:i:s', time() + 600);
-        
+        // Store new OTP (valid for 10 minutes, using MySQL NOW() to match expires_at > NOW() comparison)
         $stmt = self::$db->prepare("
             INSERT INTO two_fa_otp 
             (super_admin_id, otp_code, otp_type, expires_at) 
-            VALUES (?, ?, 'email', ?)
+            VALUES (?, ?, 'email', DATE_ADD(NOW(), INTERVAL 10 MINUTE))
         ");
-        $stmt->execute([$admin_id, $otp, $expires_at]);
+        $stmt->execute([$admin_id, $otp]);
 
         // Send email with OTP
         $subject = "Super Admin Login - 2FA Code";
