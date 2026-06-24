@@ -118,18 +118,19 @@ class SuperAdminAuth
         $ip_address = $ip_address ?? $_SERVER['REMOTE_ADDR'];
         $user_agent = $user_agent ?? $_SERVER['HTTP_USER_AGENT'];
 
-        // Verify OTP from database
-        $stmt = self::$db->prepare("
+        // Verify OTP from database (inline to isolate PDO binding)
+        $safe_id = (int)$admin_id;
+        $safe_otp = self::$db->quote($otp_code);
+        $stmt = self::$db->query("
             SELECT id FROM two_fa_otp 
-            WHERE super_admin_id = ? 
-            AND otp_code = ?
+            WHERE super_admin_id = $safe_id 
+            AND otp_code = $safe_otp
             AND is_used = FALSE
             AND expires_at > NOW()
             AND verified_at IS NULL
             ORDER BY created_at DESC
             LIMIT 1
         ");
-        $stmt->execute([$admin_id, $otp_code]);
         $otp = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$otp) {
