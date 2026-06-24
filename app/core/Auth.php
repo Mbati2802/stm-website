@@ -94,6 +94,15 @@ class Auth
         if (self::isSuperAdmin()) {
             return true;
         }
+        
+        // Check AccessMatrix first (new system)
+        if (class_exists('AccessMatrix') && isset($_SESSION['admin_id'])) {
+            if (AccessMatrix::hasPermission($_SESSION['admin_id'], $entity, 'view')) {
+                return true;
+            }
+        }
+        
+        // Fallback to CSV permissions (legacy system)
         $role = self::role();
         $defaults = self::roleDefaultViewPermissions($role);
         return in_array($entity, self::configuredPermissions(self::roleViewSessionKey($role), $defaults), true);
@@ -105,6 +114,15 @@ class Auth
         if (self::isSuperAdmin()) {
             return true;
         }
+        
+        // Check AccessMatrix first (new system)
+        if (class_exists('AccessMatrix') && isset($_SESSION['admin_id'])) {
+            if (AccessMatrix::hasPermission($_SESSION['admin_id'], $entity, 'edit')) {
+                return true;
+            }
+        }
+        
+        // Fallback to CSV permissions (legacy system)
         $role = self::role();
         $defaults = self::roleDefaultManagePermissions($role);
         return in_array($entity, self::configuredPermissions(self::roleManageSessionKey($role), $defaults), true);
