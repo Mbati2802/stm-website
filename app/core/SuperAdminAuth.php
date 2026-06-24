@@ -340,21 +340,7 @@ class SuperAdminAuth
             <p>If you did not request this, please ignore this email.</p>
         ";
 
-        return self::sendEmail($email, $subject, $message);
-    }
-
-    /**
-     * Send email (using existing email config)
-     */
-    private static function sendEmail($to, $subject, $message)
-    {
-        $headers = "MIME-Version: 1.0" . "\r\n";
-        $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
-        
-        $from_email = $GLOBALS['config']['email'] ?? 'noreply@stmarysmchmcollege.ac.ke';
-        $headers .= "From: <{$from_email}>" . "\r\n";
-
-        return @mail($to, $subject, $message, $headers);
+        return send_notification_email($email, $subject, 'Your 2FA code is: ' . $otp, $message);
     }
 
     /**
