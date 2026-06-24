@@ -170,15 +170,14 @@ class SuperAdminAuth
     private static function createSession($admin_id, $email, $ip_address, $user_agent)
     {
         $token = self::generateToken();
-        $expires_at = date('Y-m-d H:i:s', time() + 3600); // 1 hour
 
-        // Store session in database
+        // Store session in database (use DATE_ADD with NOW() so expires_at > NOW() comparison works)
         $stmt = self::$db->prepare("
             INSERT INTO user_sessions 
             (user_id, user_type, session_token, ip_address, user_agent, expires_at) 
-            VALUES (?, 'super_admin', ?, ?, ?, ?)
+            VALUES (?, 'super_admin', ?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
         ");
-        $stmt->execute([$admin_id, $token, $ip_address, $user_agent, $expires_at]);
+        $stmt->execute([$admin_id, $token, $ip_address, $user_agent]);
 
         // Update last login
         self::$db->prepare("
