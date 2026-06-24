@@ -19,6 +19,7 @@ class SuperAdminAuth
     public static function initSession()
     {
         session_start();
+        self::ensureDb();
         
         if (isset($_SESSION['super_admin_token'])) {
             $token = $_SESSION['super_admin_token'];
@@ -33,6 +34,8 @@ class SuperAdminAuth
     {
         $ip_address = $ip_address ?? $_SERVER['REMOTE_ADDR'];
         $user_agent = $user_agent ?? $_SERVER['HTTP_USER_AGENT'];
+
+        self::ensureDb();
 
         // Check if IP is whitelisted
         if (!self::isIpWhitelisted($email, $ip_address)) {
@@ -107,6 +110,8 @@ class SuperAdminAuth
         if (!isset($_SESSION['super_admin_temp'])) {
             return ['success' => false, 'message' => '2FA session expired. Please login again.'];
         }
+
+        self::ensureDb();
 
         $temp = $_SESSION['super_admin_temp'];
         $admin_id = $temp['admin_id'];
@@ -224,6 +229,16 @@ class SuperAdminAuth
         }
 
         return false;
+    }
+
+    /**
+     * Ensure database connection is initialized
+     */
+    private static function ensureDb(): void
+    {
+        if (self::$db === null) {
+            self::$db = Database::getInstance();
+        }
     }
 
     /**
@@ -402,6 +417,7 @@ class SuperAdminAuth
      */
     public static function logout()
     {
+        self::ensureDb();
         if (isset($_SESSION['super_admin_token'])) {
             // Deactivate session token
             self::$db->prepare("
