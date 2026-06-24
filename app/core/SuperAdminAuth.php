@@ -133,6 +133,8 @@ class SuperAdminAuth
         $otp = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$otp) {
+            error_log("verify2FA FAIL: admin_id=$admin_id otp=[$otp_code] email={$temp['email']}");
+
             // Increment failed attempts
             self::$db->prepare("
                 UPDATE two_fa_otp 
