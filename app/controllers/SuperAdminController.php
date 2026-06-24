@@ -266,6 +266,11 @@ class SuperAdminController extends Controller
                 return $this->jsonResponse(['success' => false, 'message' => 'Invalid email']);
             }
 
+            // Prevent creating additional super_admin accounts
+            if (strtolower($role) === 'super_admin') {
+                return $this->jsonResponse(['success' => false, 'message' => 'Creating additional super admin accounts is not permitted']);
+            }
+
             // Check if email exists
             $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ?");
             $stmt->execute([$email]);
@@ -296,6 +301,7 @@ class SuperAdminController extends Controller
         }
 
         $roles = $this->db->query("SELECT DISTINCT role FROM users ORDER BY role")->fetchAll(PDO::FETCH_COLUMN);
+        $roles = array_values(array_filter($roles, fn($r) => strtolower($r) !== 'super_admin'));
         return $this->view('super-admin/create-user', ['roles' => $roles]);
     }
 
@@ -332,6 +338,11 @@ class SuperAdminController extends Controller
                 return $this->jsonResponse(['success' => false, 'message' => 'Email already exists']);
             }
 
+            // Prevent promoting to super_admin
+            if (strtolower($role) === 'super_admin') {
+                return $this->jsonResponse(['success' => false, 'message' => 'Promoting users to super admin is not permitted']);
+            }
+
             // Update user
             $stmt = $this->db->prepare("
                 UPDATE users 
@@ -362,6 +373,7 @@ class SuperAdminController extends Controller
         }
 
         $roles = $this->db->query("SELECT DISTINCT role FROM users ORDER BY role")->fetchAll(PDO::FETCH_COLUMN);
+        $roles = array_values(array_filter($roles, fn($r) => strtolower($r) !== 'super_admin'));
         return $this->view('super-admin/edit-user', ['user' => $user, 'roles' => $roles]);
     }
 

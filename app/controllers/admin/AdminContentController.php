@@ -2044,7 +2044,7 @@ class AdminContentController extends Controller
                     flash('error', 'Provide valid user details.');
                     $this->redirect('admin/list/users');
                 }
-                if (!in_array($role, ['super_admin', 'junior_admin', 'editor', 'viewer', 'registrar', 'teacher'], true) || !Auth::canManageRole($role)) {
+                if ($role === 'super_admin' || !in_array($role, ['junior_admin', 'editor', 'viewer', 'registrar', 'teacher'], true) || !Auth::canManageRole($role)) {
                     flash('error', 'You do not have permission to assign this role.');
                     $this->redirect('admin/list/users');
                 }

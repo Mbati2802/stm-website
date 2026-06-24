@@ -320,7 +320,11 @@ function email_delivery_log(string $status, array $context = []): void
     } catch (Throwable) {
         // Keep email sending non-blocking even if logging storage fails.
     }
-    @error_log('[email:' . $status . '] ' . json_encode($safeContext, JSON_UNESCAPED_SLASHES));
+    @file_put_contents(
+        (defined('LOG_DIR') ? LOG_DIR : __DIR__ . '/../../logs') . '/email_delivery.log',
+        '[' . date('Y-m-d H:i:s') . '] [email:' . $status . '] ' . json_encode($safeContext, JSON_UNESCAPED_SLASHES) . "\n",
+        FILE_APPEND | LOCK_EX
+    );
 }
 
 function email_delivery_last_status(): array
