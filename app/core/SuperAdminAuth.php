@@ -118,6 +118,12 @@ class SuperAdminAuth
         $ip_address = $ip_address ?? $_SERVER['REMOTE_ADDR'];
         $user_agent = $user_agent ?? $_SERVER['HTTP_USER_AGENT'];
 
+        // Debug: log stored OTPs for this admin
+        $debug_stmt = self::$db->prepare("SELECT id, otp_code, is_used, expires_at, verified_at FROM two_fa_otp WHERE super_admin_id = ? ORDER BY created_at DESC LIMIT 5");
+        $debug_stmt->execute([$admin_id]);
+        $stored_otps = $debug_stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("verify2FA: admin_id=$admin_id entered_otp=$otp_code stored_otps=" . json_encode($stored_otps));
+
         // Verify OTP from database
         $stmt = self::$db->prepare("
             SELECT id FROM two_fa_otp 
