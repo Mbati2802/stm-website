@@ -438,15 +438,21 @@ class AuditLogger
      */
     public static function getSuspiciousAlerts($limit = 50, $status = 'new')
     {
-        $stmt = self::$db->prepare("
-            SELECT * FROM suspicious_activity_alerts 
-            WHERE status = ?
-            ORDER BY created_at DESC
-            LIMIT ?
-        ");
-        $stmt->execute([$status, $limit]);
+        self::ensureDb();
+        try {
+            $stmt = self::$db->prepare("
+                SELECT * FROM suspicious_activity_alerts 
+                WHERE status = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+            ");
+            $stmt->execute([$status, $limit]);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("AuditLogger::getSuspiciousAlerts error: " . $e->getMessage());
+            return [];
+        }
     }
 
     /**
@@ -468,53 +474,66 @@ class AuditLogger
      */
     public static function getActivityStats($days = 7)
     {
+        self::ensureDb();
+
+        $default = ['action_breakdown' => [], 'user_type_breakdown' => [], 'failed_actions' => 0, 'suspicious_alerts' => 0, 'period_days' => $days];
         $start_date = date('Y-m-d', strtotime("-$days days"));
 
-        // Action breakdown
-        $stmt = self::$db->prepare("
-            SELECT action, COUNT(*) as count 
-            FROM audit_logs 
-            WHERE DATE(timestamp) >= ?
-            GROUP BY action
-            ORDER BY count DESC
-        ");
-        $stmt->execute([$start_date]);
-        $action_stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            // Action breakdown
+            $stmt = self::$db->prepare("
+                SELECT action, COUNT(*) as count 
+                FROM audit_logs 
+                WHERE DATE(timestamp) >= ?
+                GROUP BY action
+                ORDER BY count DESC
+            ");
+            $stmt->execute([$start_date]);
+            $default['action_breakdown'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("AuditLogger::getActivityStats action_breakdown error: " . $e->getMessage());
+        }
 
-        // User type breakdown
-        $stmt = self::$db->prepare("
-            SELECT user_type, COUNT(*) as count 
-            FROM audit_logs 
-            WHERE DATE(timestamp) >= ?
-            GROUP BY user_type
-        ");
-        $stmt->execute([$start_date]);
-        $user_type_stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            // User type breakdown
+            $stmt = self::$db->prepare("
+                SELECT user_type, COUNT(*) as count 
+                FROM audit_logs 
+                WHERE DATE(timestamp) >= ?
+                GROUP BY user_type
+            ");
+            $stmt->execute([$start_date]);
+            $default['user_type_breakdown'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("AuditLogger::getActivityStats user_type_breakdown error: " . $e->getMessage());
+        }
 
-        // Failed actions
-        $stmt = self::$db->prepare("
-            SELECT COUNT(*) as count 
-            FROM audit_logs 
-            WHERE DATE(timestamp) >= ? AND status = 'failed'
-        ");
-        $stmt->execute([$start_date]);
-        $failed_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        try {
+            // Failed actions
+            $stmt = self::$db->prepare("
+                SELECT COUNT(*) as count 
+                FROM audit_logs 
+                WHERE DATE(timestamp) >= ? AND status = 'failed'
+            ");
+            $stmt->execute([$start_date]);
+            $default['failed_actions'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        } catch (Exception $e) {
+            error_log("AuditLogger::getActivityStats failed_actions error: " . $e->getMessage());
+        }
 
-        // Suspicious activities
-        $stmt = self::$db->prepare("
-            SELECT COUNT(*) as count 
-            FROM suspicious_activity_alerts 
-            WHERE DATE(created_at) >= ? AND status = 'new'
-        ");
-        $stmt->execute([$start_date]);
-        $suspicious_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        try {
+            // Suspicious activities
+            $stmt = self::$db->prepare("
+                SELECT COUNT(*) as count 
+                FROM suspicious_activity_alerts 
+                WHERE DATE(created_at) >= ? AND status = 'new'
+            ");
+            $stmt->execute([$start_date]);
+            $default['suspicious_alerts'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        } catch (Exception $e) {
+            error_log("AuditLogger::getActivityStats suspicious_alerts error: " . $e->getMessage());
+        }
 
-        return [
-            'action_breakdown' => $action_stats,
-            'user_type_breakdown' => $user_type_stats,
-            'failed_actions' => $failed_count,
-            'suspicious_alerts' => $suspicious_count,
-            'period_days' => $days
-        ];
+        return $default;
     }
 }

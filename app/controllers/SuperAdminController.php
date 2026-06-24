@@ -115,45 +115,76 @@ class SuperAdminController extends Controller
         $this->init();
         $data = [];
 
-        // Get activity stats
-        $data['activity_stats'] = AuditLogger::getActivityStats(7);
+        // Get activity stats (wrapped for missing tables)
+        try {
+            $data['activity_stats'] = AuditLogger::getActivityStats(7);
+        } catch (Exception $e) {
+            error_log("dashboard activity_stats error: " . $e->getMessage());
+            $data['activity_stats'] = ['action_breakdown' => [], 'user_type_breakdown' => [], 'failed_actions' => 0, 'suspicious_alerts' => 0, 'period_days' => 7];
+        }
 
-        // Get system overview
-        $data['admin_count'] = $this->db->query("SELECT COUNT(*) FROM users")->fetchColumn();
-        $data['student_count'] = $this->db->query("SELECT COUNT(*) FROM student_accounts")->fetchColumn();
-        $data['crm_users_count'] = $this->db->query("SELECT COUNT(*) FROM crm_users")->fetchColumn();
+        // Get system overview (wrapped for missing tables)
+        $tables = ['admin_count' => 'users', 'student_count' => 'student_accounts', 'crm_users_count' => 'crm_users'];
+        foreach ($tables as $key => $table) {
+            try {
+                $data[$key] = $this->db->query("SELECT COUNT(*) FROM $table")->fetchColumn();
+            } catch (Exception $e) {
+                error_log("dashboard count $table error: " . $e->getMessage());
+                $data[$key] = 0;
+            }
+        }
 
-        // Get suspicious alerts
-        $data['suspicious_alerts'] = AuditLogger::getSuspiciousAlerts(10);
+        // Get suspicious alerts (table may not exist)
+        try {
+            $data['suspicious_alerts'] = AuditLogger::getSuspiciousAlerts(10);
+        } catch (Exception $e) {
+            error_log("dashboard suspicious_alerts error: " . $e->getMessage());
+            $data['suspicious_alerts'] = [];
+        }
 
         // Get recent activity
-        $stmt = $this->db->prepare("
-            SELECT * FROM audit_logs 
-            ORDER BY timestamp DESC 
-            LIMIT 20
-        ");
-        $stmt->execute();
-        $data['recent_activity'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->db->prepare("
+                SELECT * FROM audit_logs 
+                ORDER BY timestamp DESC 
+                LIMIT 20
+            ");
+            $stmt->execute();
+            $data['recent_activity'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("dashboard recent_activity error: " . $e->getMessage());
+            $data['recent_activity'] = [];
+        }
 
         // Get active sessions
-        $stmt = $this->db->prepare("
-            SELECT * FROM user_sessions 
-            WHERE is_active = TRUE 
-            ORDER BY last_activity DESC 
-            LIMIT 15
-        ");
-        $stmt->execute();
-        $data['active_sessions'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->db->prepare("
+                SELECT * FROM user_sessions 
+                WHERE is_active = TRUE 
+                ORDER BY last_activity DESC 
+                LIMIT 15
+            ");
+            $stmt->execute();
+            $data['active_sessions'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("dashboard active_sessions error: " . $e->getMessage());
+            $data['active_sessions'] = [];
+        }
 
         // Get active sessions count by user type
-        $stmt = $this->db->prepare("
-            SELECT user_type, COUNT(*) as count 
-            FROM user_sessions 
-            WHERE is_active = TRUE
-            GROUP BY user_type
-        ");
-        $stmt->execute();
-        $data['sessions_by_type'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->db->prepare("
+                SELECT user_type, COUNT(*) as count 
+                FROM user_sessions 
+                WHERE is_active = TRUE
+                GROUP BY user_type
+            ");
+            $stmt->execute();
+            $data['sessions_by_type'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("dashboard sessions_by_type error: " . $e->getMessage());
+            $data['sessions_by_type'] = [];
+        }
 
         return $this->view('super-admin/dashboard', $data);
     }
