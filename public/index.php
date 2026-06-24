@@ -114,7 +114,31 @@ $router->add('POST', 'crm/leads/update-status', [CRMController::class, 'updateLe
 $router->add('POST', 'crm/leads/assign', [CRMController::class, 'assignLead']);
 $router->add('POST', 'crm/payments/{id}/verify', [CRMController::class, 'verifyPayment']);
 $router->add('POST', 'crm/communication/send', [CRMController::class, 'sendCommunication']);
-
+// Super Admin Routes
+$router->add('GET', 'super-admin/login', [SuperAdminController::class, 'login']);
+$router->add('POST', 'super-admin/login', [SuperAdminController::class, 'login']);
+$router->add('POST', 'super-admin/verify-2fa', [SuperAdminController::class, 'verify2FA']);
+$router->add('GET', 'super-admin/logout', [SuperAdminController::class, 'logout']);
+$router->add('GET', 'super-admin/dashboard', [SuperAdminController::class, 'dashboard']);
+$router->add('GET', 'super-admin/users', [SuperAdminController::class, 'users']);
+$router->add('GET', 'super-admin/create-user', [SuperAdminController::class, 'createUser']);
+$router->add('POST', 'super-admin/create-user', [SuperAdminController::class, 'createUser']);
+$router->add('GET', 'super-admin/edit-user/{id}', [SuperAdminController::class, 'editUser']);
+$router->add('POST', 'super-admin/edit-user/{id}', [SuperAdminController::class, 'editUser']);
+$router->add('POST', 'super-admin/delete-user/{id}', [SuperAdminController::class, 'deleteUser']);
+$router->add('GET', 'super-admin/audit-logs', [SuperAdminController::class, 'auditLogs']);
+$router->add('GET', 'super-admin/suspicious-alerts', [SuperAdminController::class, 'suspiciousAlerts']);
+$router->add('POST', 'super-admin/review-alert/{id}', [SuperAdminController::class, 'reviewAlert']);
+$router->add('GET', 'super-admin/access-matrix', [SuperAdminController::class, 'accessMatrix']);
+$router->add('POST', 'super-admin/update-access-matrix', [SuperAdminController::class, 'updateAccessMatrix']);
+$router->add('GET', 'super-admin/user-permissions/{id}', [SuperAdminController::class, 'userPermissions']);
+$router->add('GET', 'super-admin/sessions', [SuperAdminController::class, 'sessions']);
+$router->add('POST', 'super-admin/force-logout/{id}', [SuperAdminController::class, 'forceLogout']);
+$router->add('POST', 'super-admin/force-logout-all', [SuperAdminController::class, 'forceLogoutAll']);
+$router->add('GET', 'super-admin/emergency-mode', [SuperAdminController::class, 'emergencyMode']);
+$router->add('POST', 'super-admin/emergency-mode', [SuperAdminController::class, 'emergencyMode']);
+$router->add('POST', 'super-admin/lockdown-portal', [SuperAdminController::class, 'lockdownPortal']);
+$router->add('GET', 'super-admin/system-status', [SuperAdminController::class, 'systemStatus']);
 // Student Portal Routes (must be defined before admin routes to avoid conflicts)
 $router->add('GET', 'student/receipt/{id}', [StudentPortalController::class, 'receipt']);
 $router->add('GET', 'student/invoice/{id}', [StudentPortalController::class, 'invoice']);
