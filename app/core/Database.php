@@ -17,6 +17,8 @@ class Database
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
+            // Set connection collation to match table defaults
+            self::$instance->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
         }
 
         return self::$instance;

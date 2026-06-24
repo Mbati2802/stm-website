@@ -118,11 +118,11 @@ class SuperAdminAuth
         $ip_address = $ip_address ?? $_SERVER['REMOTE_ADDR'];
         $user_agent = $user_agent ?? $_SERVER['HTTP_USER_AGENT'];
 
-        // Verify OTP from database (COLLATE must match table: utf8mb4_unicode_ci)
+        // Verify OTP from database
         $stmt = self::$db->prepare("
             SELECT id FROM two_fa_otp 
             WHERE super_admin_id = ? 
-            AND otp_code COLLATE utf8mb4_unicode_ci = ?
+            AND otp_code = ?
             AND is_used = FALSE
             AND expires_at > NOW()
             AND verified_at IS NULL
