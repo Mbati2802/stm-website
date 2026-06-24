@@ -362,19 +362,23 @@ class SuperAdminAuth
      */
     private static function logSuspiciousActivity($email, $alert_type, $description)
     {
-        $stmt = self::$db->prepare("
-            INSERT INTO suspicious_activity_alerts 
-            (user_id, user_type, alert_type, description, ip_address, severity) 
-            VALUES (
-                (SELECT id FROM super_admin WHERE email = ?),
-                'super_admin',
-                ?,
-                ?,
-                ?,
-                'medium'
-            )
-        ");
-        $stmt->execute([$email, $alert_type, $description, $_SERVER['REMOTE_ADDR']]);
+        try {
+            $stmt = self::$db->prepare("
+                INSERT INTO suspicious_activity_alerts 
+                (user_id, user_type, alert_type, description, ip_address, severity) 
+                VALUES (
+                    (SELECT id FROM super_admin WHERE email = ?),
+                    'super_admin',
+                    ?,
+                    ?,
+                    ?,
+                    'medium'
+                )
+            ");
+            $stmt->execute([$email, $alert_type, $description, $_SERVER['REMOTE_ADDR']]);
+        } catch (Exception $e) {
+            error_log("SuperAdminAuth::logSuspiciousActivity failed: " . $e->getMessage());
+        }
     }
 
     /**
