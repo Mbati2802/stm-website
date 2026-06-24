@@ -118,17 +118,11 @@ class SuperAdminAuth
         $ip_address = $ip_address ?? $_SERVER['REMOTE_ADDR'];
         $user_agent = $user_agent ?? $_SERVER['HTTP_USER_AGENT'];
 
-        // Debug: log stored OTPs for this admin
-        $debug_stmt = self::$db->prepare("SELECT id, otp_code, is_used, expires_at, verified_at FROM two_fa_otp WHERE super_admin_id = ? ORDER BY created_at DESC LIMIT 5");
-        $debug_stmt->execute([$admin_id]);
-        $stored_otps = $debug_stmt->fetchAll(PDO::FETCH_ASSOC);
-        error_log("verify2FA: admin_id=$admin_id (type=" . gettype($admin_id) . ") entered_otp=$otp_code (type=" . gettype($otp_code) . ", len=" . strlen($otp_code) . ", hex=" . bin2hex($otp_code) . ") stored_otps=" . json_encode($stored_otps));
-
-        // Verify OTP from database
+        // Verify OTP from database (COLLATE must match table: utf8mb4_unicode_ci)
         $stmt = self::$db->prepare("
             SELECT id FROM two_fa_otp 
             WHERE super_admin_id = ? 
-            AND BINARY otp_code = ?
+            AND otp_code COLLATE utf8mb4_unicode_ci = ?
             AND is_used = FALSE
             AND expires_at > NOW()
             AND verified_at IS NULL
@@ -137,24 +131,6 @@ class SuperAdminAuth
         ");
         $stmt->execute([$admin_id, $otp_code]);
         $otp = $stmt->fetch(PDO::FETCH_ASSOC);
-        error_log("verify2FA query result: " . ($otp !== false ? json_encode($otp) : 'NO MATCH'));
-
-        if (!$otp) {
-            // Retry without BINARY in case of type mismatch
-            $retry = self::$db->prepare("
-                SELECT id FROM two_fa_otp 
-                WHERE super_admin_id = CAST(? AS UNSIGNED)
-                AND otp_code = CAST(? AS CHAR)
-                AND is_used = FALSE
-                AND expires_at > NOW()
-                AND verified_at IS NULL
-                ORDER BY created_at DESC
-                LIMIT 1
-            ");
-            $retry->execute([$admin_id, $otp_code]);
-            $otp = $retry->fetch(PDO::FETCH_ASSOC);
-            error_log("verify2FA retry result: " . ($otp !== false ? json_encode($otp) : 'NO MATCH'));
-        }
 
         if (!$otp) {
             // Increment failed attempts
