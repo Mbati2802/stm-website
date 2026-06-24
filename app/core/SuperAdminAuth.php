@@ -137,6 +137,7 @@ class SuperAdminAuth
         ");
         $stmt->execute([$admin_id, $otp_code]);
         $otp = $stmt->fetch(PDO::FETCH_ASSOC);
+        error_log("verify2FA query result: " . ($otp !== false ? json_encode($otp) : 'NO MATCH'));
 
         if (!$otp) {
             // Increment failed attempts
