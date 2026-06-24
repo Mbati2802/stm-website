@@ -27,6 +27,8 @@ class Controller
             }
         } elseif (str_starts_with($view, 'admin/')) {
             $layout = 'admin.php';
+        } elseif (str_starts_with($view, 'super-admin/')) {
+            $layout = 'super-admin.php';
         } elseif (str_starts_with($view, 'pages/portal_')) {
             $layout = 'portal.php';
         } elseif (str_starts_with($view, 'student/')) {
