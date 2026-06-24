@@ -6,9 +6,9 @@ class SuperAdminController extends Controller
     private $accessMatrix;
     private $db;
 
-    public function __construct()
+    public function __construct(array $config = [])
     {
-        parent::__construct();
+        parent::__construct($config);
     }
 
     /**
