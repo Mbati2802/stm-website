@@ -133,9 +133,11 @@ class SuperAdminAuth
         $otp = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$otp) {
+            $col_collation = self::$db->query("SELECT COLLATION_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'two_fa_otp' AND COLUMN_NAME = 'otp_code'")->fetchColumn();
+            $conn_collation = self::$db->query("SELECT @@collation_connection")->fetchColumn();
             $stored = self::$db->prepare("SELECT id, otp_code, is_used, expires_at, verified_at FROM two_fa_otp WHERE super_admin_id = ? ORDER BY created_at DESC LIMIT 3");
             $stored->execute([$admin_id]);
-            error_log("verify2FA FAIL: admin_id=$admin_id otp=[$otp_code] email={$temp['email']} stored=" . json_encode($stored->fetchAll(PDO::FETCH_ASSOC)));
+            error_log("verify2FA FAIL: admin_id=$admin_id otp=[$otp_code] email={$temp['email']} col_collation=$col_collation conn_collation=$conn_collation stored=" . json_encode($stored->fetchAll(PDO::FETCH_ASSOC)));
 
             // Increment failed attempts
             self::$db->prepare("
