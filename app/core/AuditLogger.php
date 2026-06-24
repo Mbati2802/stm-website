@@ -12,6 +12,16 @@ class AuditLogger
     }
 
     /**
+     * Ensure database connection is initialized
+     */
+    private static function ensureDb(): void
+    {
+        if (self::$db === null) {
+            self::$db = Database::getInstance();
+        }
+    }
+
+    /**
      * Initialize audit logger with current user context
      */
     public static function init($user_id, $user_type = 'admin')
@@ -38,6 +48,8 @@ class AuditLogger
         if (!self::$current_user) {
             return false;
         }
+
+        self::ensureDb();
 
         $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
         $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
@@ -128,6 +140,7 @@ class AuditLogger
      */
     public static function logFailedLogin($email_or_username, $user_type = 'admin')
     {
+        self::ensureDb();
         try {
             $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
             $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
